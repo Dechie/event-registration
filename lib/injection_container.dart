@@ -16,9 +16,7 @@ final GetIt sl = GetIt.instance;
 Future<void> init() async {
   // ! Features - Registration
   // Bloc
-  sl.registerFactory(
-    () => RegistrationBloc(repository: sl()),
-  );
+  sl.registerFactory(() => RegistrationBloc(repository: sl()));
 
   // Repository
   sl.registerLazySingleton<RegistrationRepository>(
@@ -39,13 +37,9 @@ Future<void> init() async {
   );
 
   // ! Core
-  sl.registerLazySingleton<NetworkInfo>(
-    () => NetworkInfoImpl(sl()),
-  );
+  sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
 
-  sl.registerLazySingleton<DioClient>(
-    () => DioClient(sl()),
-  );
+  sl.registerLazySingleton<DioClient>(() => DioClient(sl()));
 
   // ! External
   sl.registerLazySingleton(() => Dio());

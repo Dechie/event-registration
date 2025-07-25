@@ -23,15 +23,13 @@ class AppTheme {
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: AppColors.onPrimary,
-        )
+        ),
       ),
 
       // Card Theme
       cardTheme: CardThemeData(
         elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         color: AppColors.surface,
       ),
 
@@ -41,36 +39,31 @@ class AppTheme {
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.onPrimary,
           elevation: 2,
-          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12,),
+          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
 
-       // Outlined Button Theme
+      // Outlined Button Theme
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           side: const BorderSide(color: AppColors.primary),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
-      
+
       // Input Decoration Theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surface,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: AppColors.outline),
@@ -94,7 +87,7 @@ class AppTheme {
         labelStyle: const TextStyle(color: AppColors.onSurfaceVariant),
         hintStyle: const TextStyle(color: AppColors.onSurfaceVariant),
       ),
-      
+
       // Text Theme
       textTheme: const TextTheme(
         headlineLarge: TextStyle(
@@ -158,20 +151,20 @@ class AppTheme {
           color: AppColors.onSurfaceVariant,
         ),
       ),
-      
+
       // Divider Theme
       dividerTheme: const DividerThemeData(
         color: AppColors.outline,
         thickness: 1,
       ),
-      
+
       // Progress Indicator Theme
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: AppColors.primary,
       ),
     );
   }
-  
+
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
@@ -182,7 +175,7 @@ class AppTheme {
       primaryColor: AppColors.primary,
       scaffoldBackgroundColor: AppColors.backgroundDark,
       fontFamily: 'Roboto',
-      
+
       // AppBar Theme
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.surfaceDark,
@@ -195,17 +188,14 @@ class AppTheme {
           color: AppColors.onSurfaceDark,
         ),
       ),
-      
+
       // Card Theme
       cardTheme: CardThemeData(
         elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         color: AppColors.surfaceDark,
       ),
-    
-      
+
       // Elevated Button Theme
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -213,21 +203,19 @@ class AppTheme {
           foregroundColor: AppColors.onPrimary,
           elevation: 2,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
-      
+
       // Input Decoration Theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surfaceDark,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: AppColors.outlineDark),
@@ -247,7 +235,7 @@ class AppTheme {
         labelStyle: const TextStyle(color: AppColors.onSurfaceVariantDark),
         hintStyle: const TextStyle(color: AppColors.onSurfaceVariantDark),
       ),
-      
+
       // Text Theme
       textTheme: const TextTheme(
         headlineLarge: TextStyle(
@@ -291,16 +279,15 @@ class AppTheme {
           color: AppColors.onSurfaceVariantDark,
         ),
       ),
-      
+
       dividerTheme: const DividerThemeData(
         color: AppColors.outlineDark,
         thickness: 1,
       ),
-      
+
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: AppColors.primary,
       ),
     );
-  
   }
 }

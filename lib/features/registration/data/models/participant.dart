@@ -1,47 +1,47 @@
 class Participant {
-    final String id;
-    final String fullName;
-    final String? gender;
-    final DateTime? dateOfBirth;
-    final String? nationality;
-    final String phoneNumber;
-    final String email;
-    final String? region;
-    final String? city;
-    final String? woreda;
-    final String? idNumber;
-    final String occupation;
-    final String organization;
-    final String? department;
-    final String industry;
-    final int? yearsOfExperience;
-    final String? photoUrl;
-    final List<String> selectedSessions;
-    final DateTime createdAt;
+  final String id;
+  final String fullName;
+  final String? gender;
+  final DateTime? dateOfBirth;
+  final String? nationality;
+  final String phoneNumber;
+  final String email;
+  final String? region;
+  final String? city;
+  final String? woreda;
+  final String? idNumber;
+  final String occupation;
+  final String organization;
+  final String? department;
+  final String industry;
+  final int? yearsOfExperience;
+  final String? photoUrl;
+  final List<String> selectedSessions;
+  final DateTime createdAt;
 
-    const Participant({
-        required this.id,
-        required this.fullName,
-        this.gender,
-        this.dateOfBirth,
-        this.nationality,
-        required this.phoneNumber,
-        required this.email,
-        this.region,
-        this.city,
-        this.woreda,
-        this.idNumber,
-        required this.occupation,
-        required this.organization,
-        this.department,
-        required this.industry,
-        this.yearsOfExperience,
-        this.photoUrl,
-        required this.selectedSessions,
-        required this.createdAt,
-    });
+  const Participant({
+    required this.id,
+    required this.fullName,
+    this.gender,
+    this.dateOfBirth,
+    this.nationality,
+    required this.phoneNumber,
+    required this.email,
+    this.region,
+    this.city,
+    this.woreda,
+    this.idNumber,
+    required this.occupation,
+    required this.organization,
+    this.department,
+    required this.industry,
+    this.yearsOfExperience,
+    this.photoUrl,
+    required this.selectedSessions,
+    required this.createdAt,
+  });
 
-    // Factory constructor for JSON deserialization
+  // Factory constructor for JSON deserialization
   factory Participant.fromJson(Map<String, dynamic> json) {
     return Participant(
       id: json['id'] as String,

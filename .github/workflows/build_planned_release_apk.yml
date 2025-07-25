@@ -1,29 +1,57 @@
 name: Build Release APK manually 
 
 on:
-  push:
-    branches: [ main ]
-
+  workflow_dispatch:
+    inputs:
+      flavor:
+        description: 'select build flavor'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      build_type:
+        description: 'Build Type:'
+        required: true
+        default: 'release'
+        options:
+          - release
+          - debug
 jobs:
   build_apk:
-    runs-on: ubuntu-latest 
-  
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Setup Flutter
+
+      - name: Setup Flutter 
         uses: subosito/flutter-action@v2
-        with:
-            channel: 'stable'
+        with: 
+          channel: 'stable'
+          cache: true
       - name: Get Flutter dependencies 
         run: flutter pub get
-      - name: Build Android release apk
+      
+      - name: Verify formatting
+        run: dart format --set-exit-if-changed lib
+
+      - name: Static Analysis
+        run: flutter analyze lib
+      
+      - name: Run Tests
+        run: flutter test
+
+      - name: Build Apk
         run: |
-          flutter build apk --release \
-            --flavor development
+          flutter build apk --${{ inputs.build_type }} \
+            --flavor ${{ inputs.flavor }} \
+            --target lib/main_${{ inputs.flavor }}.dart \
             --no-color
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk-development
-          path: build/app/outputs/flutter/development/release
+          name: ${{inputs.flavor}}-${inputs.build_type}-apk
+          path: build/app/outputs/flutter-apk/${{ inputs.build_type }}app-${{inputs.flavor}}-${{inputs.build_type}}.apk
+          retention-days: 4
