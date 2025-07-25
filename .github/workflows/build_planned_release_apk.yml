@@ -3,15 +3,6 @@ name: Build Release APK manually
 on:
   workflow_dispatch:
     inputs:
-      flavor:
-        description: 'select build flavor'
-        required: true
-        default: 'development'
-        type: choice
-        options:
-          - development
-          - staging
-          - production
       build_type:
         description: 'Build Type:'
         required: true
@@ -46,12 +37,10 @@ jobs:
       - name: Build Apk
         run: |
           flutter build apk --${{ inputs.build_type }} \
-            --flavor ${{ inputs.flavor }} \
-            --target lib/main_${{ inputs.flavor }}.dart \
             --no-color
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{inputs.flavor}}-${inputs.build_type}-apk
-          path: build/app/outputs/flutter-apk/${{ inputs.build_type }}app-${{inputs.flavor}}-${{inputs.build_type}}.apk
+          name: ${inputs.build_type}-app
+          path: build/app/outputs/flutter-apk/${{inputs.build_type}}-app.apk
           retention-days: 4
