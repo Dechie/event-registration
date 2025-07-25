@@ -1,3 +1,7 @@
+---
+layout: default
+title: Home
+---
 # Event Registration System
 
 Event Registration System is a comprehensive Flutter mobile application for event registration with participant management, OTP verification, and QR code generation.
