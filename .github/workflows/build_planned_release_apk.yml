@@ -1,0 +1,29 @@
+name: Build Release APK manually 
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build_apk:
+    runs-on: ubuntu-latest 
+  
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Flutter
+        uses: subosito/flutter-action@
+        with:
+            channel: 'stable'
+      - name: Get Flutter dependencies 
+        run: flutter pub get
+      - name: Build Android release apk
+        run: |
+          flutter build apk --release \
+            --flavor development
+            --no-color
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk-development
+          path: build/app/outputs/
