@@ -1,4 +1,5 @@
 import 'package:event_reg/config/routes/route_names.dart';
+import 'package:event_reg/features/dashboard/lib/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:event_reg/features/registration/presentation/bloc/registration_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,10 +11,13 @@ import 'injection_container.dart' as di;
 class EventRegistrationApp extends StatelessWidget {
   const EventRegistrationApp({super.key});
 
-  @override
+  @override 
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      providers: [BlocProvider(create: (_) => di.sl<RegistrationBloc>())],
+      providers: [
+        BlocProvider(create: (_) => di.sl<RegistrationBloc>()),
+        BlocProvider(create: (_) => di.sl<DashboardBloc>()),
+      ],
       child: MaterialApp(
         title: "Event Registration",
         theme: AppTheme.lightTheme,

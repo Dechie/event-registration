@@ -1,5 +1,17 @@
 class RouteNames {
-  static const String registrationPage = "/registration";
-  static const String confirmationPage = "/confirmation";
-  static const String loginPage = "/login";
+  // Registration routes
+  static const String registrationPage = '/registration';
+  static const String otpVerificationPage = '/otp-verification';
+  static const String registrationSuccessPage = '/registration-success';
+
+  // Dashboard routes
+  static const String adminDashboardPage = '/admin-dashboard';
+  static const String participantDashboardPage = '/participant-dashboard';
+  static const String participantLoginPage = '/participant-login';
+
+  // Utility routes
+  static const String landingPage = '/';
+  static const String contactPage = '/contact';
+  static const String faqPage = '/faq';
+  static const String eventAgendaPage = '/event-agenda';
 }
