@@ -1,0 +1,807 @@
+lib  [error opening dir]
+
+0 directories, 0 files
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'config/routes/app_router.dart';
+import 'config/themes/app_theme.dart';
+import 'injection_container.dart' as di;
+
+class EventRegistrationApp extends StatelessWidget {
+    const EventRegistrationApp({super.key});
+
+    @override
+    Widget build(BuildContext context) {
+        return MultiBlocProvider(
+            providers: [
+                BlocProvider(create: (_) => di.sl<RegistrationBloc>()),
+            ],
+            child: MaterialApp(
+                title: "Event Registration",
+                theme: AppTheme.lightTheme,
+                darkTheme: AppTheme.darkTheme,
+                onGenerateRoute: AppRouter.generateRoute,
+                initialRoute: '/',
+            ),
+        );
+    }
+}
+import 'package:get_it/get_it.dart';
+import 'package:dio/dio.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'core/network/dio_client.dart';
+import 'core/network/network_info.dart';
+
+
+import 'features/registration/data/datasources/registration_remote_datasource.dart';
+import 'features/registration/data/datasources/registratoin_local_datasource.dart';
+import 'features/registration/data/repositories/registration_repository.dart';
+import 'features/registration/presentation/bloc/registration_bloc.dart';
+
+final GetIt sl = GetIt.instance();
+
+Future<void> init() async {
+    // ! Features - registration
+    // Bloc
+    sl.registerFactory(
+
+        () => RegistrationBloc(repository: sl()),
+    );
+
+
+    // Repository
+    sl.registerLazySingleton<RegistrationRepository>(
+        () => RegistrationRepositoryImpl(
+            remoteDataSource: sl(),
+            localDataSource: sl(),
+            networkInfo: sl(),
+        ),
+    );
+
+    // DataSources
+    sl.registerLazySingleton<RegistrationRemoteDataSource>(
+        ()=> RegistrationRemoteDataSourceImpl(dioClient: sl()),
+    );
+
+    sl.registerlazySingleton<RegistrationLocalDataSource>(
+        ()=> RegistrationLocalDataSourceImpl(sharedPreferences: sl()),
+    );
+
+    // !Core
+    sl.registerLazySingleton<NetworkInfo>(
+        ()=> NetworkInfoImpl(sl());
+    );
+
+    sl.registerLazySingleton<DioClient>(
+        () => DioClient(sl()),
+    );
+
+    // ! External
+    sl.registerLazySingleton(() => Dio());
+    sl.registerLazySingleton(() => InternetConnectionChecker());
+
+    // shared prefs
+    final  sharedPrefs = await SharedPreferences.getInstance();
+    sl.registerLazySingleton(() =>  sharedPrefs);
+
+}
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'app.dart';
+import 'injection_container.dart' as di;
+
+void main() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    await di.init();
+    runApp(const EventRegistrationApp());
+}
+import 'package:event_reg/config/routes/route_names.dart';
+import 'package:flutter/material.dart';
+
+class AppRouter {
+  static Route<dynamic> generateRoute(RouteSettings settings) {
+    switch (settings.name) {
+      case RouteNames.registrationPage:
+        return MaterialPageRoute(builder: (_) => Scaffold());
+      case RouteNames.loginPage:
+        return MaterialPageRoute(builder: (_) => Scaffold());
+      default:
+        return MaterialPageRoute(builder: (_) => Scaffold());
+    }
+  }
+}
+class RouteNames {
+  static const String registrationPage = "registrationPage";
+  static const String loginPage = "loginPage";
+}
+import 'package:flutter/material.dart';
+
+class AppColors {
+  // Primary Colors
+  static const Color primary = Color(0xFF1976D2);
+  static const Color primaryVariant = Color(0xFF1565C0);
+  static const Color onPrimary = Color(0xFFFFFFFF);
+  
+  // Secondary Colors
+  static const Color secondary = Color(0xFF03DAC6);
+  static const Color secondaryVariant = Color(0xFF018786);
+  static const Color onSecondary = Color(0xFF000000);
+  
+  // Background Colors - Light Theme
+  static const Color background = Color(0xFFFFFFFF);
+  static const Color onBackground = Color(0xFF000000);
+  static const Color surface = Color(0xFFFFFFFF);
+  static const Color onSurface = Color(0xFF000000);
+  static const Color surfaceVariant = Color(0xFFF5F5F5);
+  static const Color onSurfaceVariant = Color(0xFF757575);
+  
+  // Background Colors - Dark Theme
+  static const Color backgroundDark = Color(0xFF121212);
+  static const Color onBackgroundDark = Color(0xFFFFFFFF);
+  static const Color surfaceDark = Color(0xFF1E1E1E);
+  static const Color onSurfaceDark = Color(0xFFFFFFFF);
+  static const Color surfaceVariantDark = Color(0xFF2C2C2C);
+  static const Color onSurfaceVariantDark = Color(0xFFB0B0B0);
+  
+  // Error Colors
+  static const Color error = Color(0xFFB00020);
+  static const Color onError = Color(0xFFFFFFFF);
+  
+  // Success Colors
+  static const Color success = Color(0xFF4CAF50);
+  static const Color onSuccess = Color(0xFFFFFFFF);
+  
+  // Warning Colors
+  static const Color warning = Color(0xFFFF9800);
+  static const Color onWarning = Color(0xFFFFFFFF);
+  
+  // Info Colors
+  static const Color info = Color(0xFF2196F3);
+  static const Color onInfo = Color(0xFFFFFFFF);
+  
+  // Outline Colors
+  static const Color outline = Color(0xFFE0E0E0);
+  static const Color outlineDark = Color(0xFF424242);
+  
+  // Text Colors
+  static const Color textPrimary = Color(0xFF000000);
+  static const Color textSecondary = Color(0xFF757575);
+  static const Color textDisabled = Color(0xFFBDBDBD);
+  
+  // Text Colors - Dark Theme
+  static const Color textPrimaryDark = Color(0xFFFFFFFF);
+  static const Color textSecondaryDark = Color(0xFFB0B0B0);
+  static const Color textDisabledDark = Color(0xFF616161);
+  
+  // Special Colors
+  static const Color divider = Color(0xFFE0E0E0);
+  static const Color dividerDark = Color(0xFF424242);
+  static const Color shadow = Color(0x29000000);
+  static const Color shadowDark = Color(0x52000000);
+  
+  // Status Colors
+  static const Color pending = Color(0xFFFF9800);
+  static const Color confirmed = Color(0xFF4CAF50);
+  static const Color cancelled = Color(0xFFF44336);
+  static const Color checkedIn = Color(0xFF2196F3);
+  
+  // Gradient Colors
+  static const LinearGradient primaryGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [primary, primaryVariant],
+  );
+  
+  static const LinearGradient secondaryGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [secondary, secondaryVariant],
+  );
+}import 'package:event_reg/config/themes/app_colors.dart';
+import 'package:flutter/material.dart';
+
+class AppTheme {
+  static ThemeData get lightTheme {
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.primary,
+        brightness: Brightness.light,
+      ),
+      primaryColor: AppColors.primary,
+      scaffoldBackgroundColor: AppColors.background,
+      fontFamily: 'Roboto',
+
+      // AppBar Theme
+      appBarTheme: const AppBarTheme(
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.onPrimary,
+        elevation: 0,
+        centerTitle: true,
+        titleTextStyle: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: AppColors.onPrimary,
+        )
+      ),
+
+      // Card Theme
+      cardTheme: CardThemeData(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        color: AppColors.surface,
+      ),
+
+      // Elevated Button Theme
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: AppColors.onPrimary,
+          elevation: 2,
+          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12,),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          textStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+
+       // Outlined Button Theme
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.primary,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          side: const BorderSide(color: AppColors.primary),
+          textStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      
+      // Input Decoration Theme
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.surface,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: AppColors.outline),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: AppColors.outline),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.error),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.error, width: 2),
+        ),
+        labelStyle: const TextStyle(color: AppColors.onSurfaceVariant),
+        hintStyle: const TextStyle(color: AppColors.onSurfaceVariant),
+      ),
+      
+      // Text Theme
+      textTheme: const TextTheme(
+        headlineLarge: TextStyle(
+          fontSize: 32,
+          fontWeight: FontWeight.bold,
+          color: AppColors.onBackground,
+        ),
+        headlineMedium: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          color: AppColors.onBackground,
+        ),
+        headlineSmall: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.w600,
+          color: AppColors.onBackground,
+        ),
+        titleLarge: TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.w600,
+          color: AppColors.onBackground,
+        ),
+        titleMedium: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w500,
+          color: AppColors.onBackground,
+        ),
+        titleSmall: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: AppColors.onBackground,
+        ),
+        bodyLarge: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.normal,
+          color: AppColors.onBackground,
+        ),
+        bodyMedium: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.normal,
+          color: AppColors.onBackground,
+        ),
+        bodySmall: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.normal,
+          color: AppColors.onSurfaceVariant,
+        ),
+        labelLarge: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: AppColors.onBackground,
+        ),
+        labelMedium: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: AppColors.onSurfaceVariant,
+        ),
+        labelSmall: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+          color: AppColors.onSurfaceVariant,
+        ),
+      ),
+      
+      // Divider Theme
+      dividerTheme: const DividerThemeData(
+        color: AppColors.outline,
+        thickness: 1,
+      ),
+      
+      // Progress Indicator Theme
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.primary,
+      ),
+    );
+  }
+  
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.primary,
+        brightness: Brightness.dark,
+      ),
+      primaryColor: AppColors.primary,
+      scaffoldBackgroundColor: AppColors.backgroundDark,
+      fontFamily: 'Roboto',
+      
+      // AppBar Theme
+      appBarTheme: const AppBarTheme(
+        backgroundColor: AppColors.surfaceDark,
+        foregroundColor: AppColors.onSurfaceDark,
+        elevation: 0,
+        centerTitle: true,
+        titleTextStyle: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: AppColors.onSurfaceDark,
+        ),
+      ),
+      
+      // Card Theme
+      cardTheme: CardThemeData(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        color: AppColors.surfaceDark,
+      ),
+    
+      
+      // Elevated Button Theme
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: AppColors.onPrimary,
+          elevation: 2,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          textStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      
+      // Input Decoration Theme
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.surfaceDark,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: AppColors.outlineDark),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: AppColors.outlineDark),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.error),
+        ),
+        labelStyle: const TextStyle(color: AppColors.onSurfaceVariantDark),
+        hintStyle: const TextStyle(color: AppColors.onSurfaceVariantDark),
+      ),
+      
+      // Text Theme
+      textTheme: const TextTheme(
+        headlineLarge: TextStyle(
+          fontSize: 32,
+          fontWeight: FontWeight.bold,
+          color: AppColors.onBackgroundDark,
+        ),
+        headlineMedium: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          color: AppColors.onBackgroundDark,
+        ),
+        headlineSmall: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.w600,
+          color: AppColors.onBackgroundDark,
+        ),
+        titleLarge: TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.w600,
+          color: AppColors.onBackgroundDark,
+        ),
+        titleMedium: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w500,
+          color: AppColors.onBackgroundDark,
+        ),
+        bodyLarge: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.normal,
+          color: AppColors.onBackgroundDark,
+        ),
+        bodyMedium: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.normal,
+          color: AppColors.onBackgroundDark,
+        ),
+        bodySmall: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.normal,
+          color: AppColors.onSurfaceVariantDark,
+        ),
+      ),
+      
+      dividerTheme: const DividerThemeData(
+        color: AppColors.outlineDark,
+        thickness: 1,
+      ),
+      
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.primary,
+      ),
+    );
+  
+  }
+}
+class AppUrls {
+  static const String baseUrl = "http://somethingsomething";
+}
+
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
+import 'package:event_reg/core/constants/app_urls.dart';
+
+class DioClient {
+  late final Dio dio;
+
+  static final DioClient _instance = DioClient._internal();
+
+  factory DioClient() {
+    return _instance;
+  }
+
+  DioClient._internal() {
+    dio = Dio(
+      BaseOptions(
+        baseUrl: AppUrls.baseUrl,
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
+    );
+
+    // Add Interceptors for logging & authentication
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        if (options.extra["token"] != null) {
+          final token = options.extra["token"];
+          options.headers["Authorization"] = "Bearer $token";
+        }
+        return handler.next(options);
+      },
+      onError: (DioException e, handler) {
+        if (e.response?.statusCode == 401) {
+          debugPrint("Unauthorized! Token might be expired.");
+          // Handle token refresh if needed
+        }
+        return handler.next(e);
+      },
+    ));
+    // Add Interceptors
+    dio.interceptors.add(LogInterceptor(
+      request: true,
+      requestBody: true,
+      responseBody: true,
+      error: true,
+    ));
+  }
+
+  Future<Response> get(String path,
+      {Map<String, dynamic>? queryParams, String? token}) async {
+    try {
+      return await dio.get(path,
+          queryParameters: queryParams,
+          options: Options(extra: {"token": token}));
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    } catch (e) {
+      throw ApiError("Unexpected error: ${e.toString()}");
+    }
+  }
+
+  Future<Response> post(String path, {dynamic data, String? token}) async {
+    try {
+      return await dio.post(path,
+          data: jsonEncode(data), options: Options(extra: {"token": token}));
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    } catch (e) {
+      throw ApiError("Unexpected error: ${e.toString()}");
+    }
+  }
+
+  Future<Response> put(String path, {dynamic data, String? token}) async {
+    try {
+      return await dio.put(path,
+          data: data, options: Options(extra: {"token": token}));
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    } catch (e) {
+      throw ApiError("Unexpected error: ${e.toString()}");
+    }
+  }
+
+  Future<Response> delete(String path) async {
+    try {
+      return await dio.delete(path);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    } catch (e) {
+      throw ApiError("Unexpected error: ${e.toString()}");
+    }
+  }
+
+  // Handle Dio errors
+  ApiError _handleDioError(DioException error) {
+    // this section handles a case where the api returns message for fails
+    if (error.response != null) {
+      // Check if the response has data
+      if (error.response!.data is Map<String, dynamic>) {
+        // Extract message from JSON response
+        return ApiError(
+            error.response!.data["message"] ?? "An unknown error occurred!");
+      } else if (error.response!.data is String) {
+        return ApiError(
+            error.response!.data); // In case API returns raw string message
+      }
+    }
+    switch (error.type) {
+      case DioExceptionType.connectionTimeout:
+        return ApiError("Connection timed out!", statusCode: 408);
+      case DioExceptionType.sendTimeout:
+        return ApiError("Request send timed out!", statusCode: 408);
+      case DioExceptionType.receiveTimeout:
+        return ApiError("Response receive timed out!", statusCode: 408);
+      case DioExceptionType.badResponse:
+        return ApiError(
+          "Received an invalid response: ${error.response?.statusCode}",
+          statusCode: error.response?.statusCode,
+        );
+      case DioExceptionType.cancel:
+        return ApiError("Request was cancelled!");
+      case DioExceptionType.unknown:
+      default:
+        return ApiError("Something went wrong!", statusCode: 500);
+    }
+  }
+}
+
+class ApiError {
+  final String message;
+  final int? statusCode;
+
+  ApiError(this.message, {this.statusCode});
+}
+class Participant {
+    final String id;
+    final String fullName;
+    final String? gender;
+    final DateTime? dateOfBirth;
+    final String? nationality;
+    final String phoneNumber;
+    final String email;
+    final String? region;
+    final String? city;
+    final String? woreda;
+    final String? idNumber;
+    final String occupation;
+    final String organization;
+    final String? department;
+    final String industry;
+    final int? yearsOfExperience;
+    final String? photoUrl;
+    final List<String> selectedSessions;
+    final DateTime createdAt;
+
+    const Participant({
+        required this.id,
+        required this.fullName,
+        this.gender,
+        this.dateOfBirth,
+        this.nationality,
+        required this.phoneNumber,
+        required this.email,
+        this.region,
+        this.city,
+        this.woreda,
+        this.idNumber,
+        required this.occupation,
+        required this.organization,
+        this.department,
+        required this.industry,
+        this.yearsOfExperience,
+        this.photoUrl,
+        required this.selectedSessions,
+        required this.createdAt,
+    });
+
+    // Factory constructor for JSON deserialization
+  factory Participant.fromJson(Map<String, dynamic> json) {
+    return Participant(
+      id: json['id'] as String,
+      fullName: json['fullName'] as String,
+      gender: json['gender'] as String?,
+      dateOfBirth: json['dateOfBirth'] != null
+          ? DateTime.parse(json['dateOfBirth'] as String)
+          : null,
+      nationality: json['nationality'] as String?,
+      phoneNumber: json['phoneNumber'] as String,
+      email: json['email'] as String,
+      region: json['region'] as String?,
+      city: json['city'] as String?,
+      woreda: json['woreda'] as String?,
+      idNumber: json['idNumber'] as String?,
+      occupation: json['occupation'] as String,
+      organization: json['organization'] as String,
+      department: json['department'] as String?,
+      industry: json['industry'] as String,
+      yearsOfExperience: json['yearsOfExperience'] as int?,
+      photoUrl: json['photoUrl'] as String?,
+      selectedSessions: List<String>.from(json['selectedSessions'] as List),
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
+
+  // Method for JSON serialization
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'fullName': fullName,
+      'gender': gender,
+      'dateOfBirth': dateOfBirth?.toIso8601String(),
+      'nationality': nationality,
+      'phoneNumber': phoneNumber,
+      'email': email,
+      'region': region,
+      'city': city,
+      'woreda': woreda,
+      'idNumber': idNumber,
+      'occupation': occupation,
+      'organization': organization,
+      'department': department,
+      'industry': industry,
+      'yearsOfExperience': yearsOfExperience,
+      'photoUrl': photoUrl,
+      'selectedSessions': selectedSessions,
+      'createdAt': createdAt.toIso8601String(),
+    };
+  }
+
+  // CopyWith method for immutable updates
+  Participant copyWith({
+    String? id,
+    String? fullName,
+    String? gender,
+    DateTime? dateOfBirth,
+    String? nationality,
+    String? phoneNumber,
+    String? email,
+    String? region,
+    String? city,
+    String? woreda,
+    String? idNumber,
+    String? occupation,
+    String? organization,
+    String? department,
+    String? industry,
+    int? yearsOfExperience,
+    String? photoUrl,
+    List<String>? selectedSessions,
+    DateTime? createdAt,
+  }) {
+    return Participant(
+      id: id ?? this.id,
+      fullName: fullName ?? this.fullName,
+      gender: gender ?? this.gender,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      nationality: nationality ?? this.nationality,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      email: email ?? this.email,
+      region: region ?? this.region,
+      city: city ?? this.city,
+      woreda: woreda ?? this.woreda,
+      idNumber: idNumber ?? this.idNumber,
+      occupation: occupation ?? this.occupation,
+      organization: organization ?? this.organization,
+      department: department ?? this.department,
+      industry: industry ?? this.industry,
+      yearsOfExperience: yearsOfExperience ?? this.yearsOfExperience,
+      photoUrl: photoUrl ?? this.photoUrl,
+      selectedSessions: selectedSessions ?? this.selectedSessions,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Participant &&
+        other.id == id &&
+        other.fullName == fullName &&
+        other.email == email;
+  }
+
+  @override
+  int get hashCode => id.hashCode ^ fullName.hashCode ^ email.hashCode;
+
+  @override
+  String toString() {
+    return 'Participant(id: $id, fullName: $fullName, email: $email)';
+  }
+}
