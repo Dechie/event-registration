@@ -45,3 +45,5 @@ linux/*
 /android/app/debug
 /android/app/profile
 /android/app/release
+alls3.txt
+allz.txt

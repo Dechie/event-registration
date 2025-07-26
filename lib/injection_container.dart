@@ -1,4 +1,3 @@
-// Updated injection_container.dart to include dashboard dependencies
 import 'package:dio/dio.dart';
 import 'package:event_reg/features/dashboard/lib/features/dashboard/data/datasource/dashboard_datasource.dart';
 import 'package:event_reg/features/dashboard/lib/features/dashboard/data/datasource/dashboard_local_datasource.dart';
@@ -6,6 +5,9 @@ import 'package:event_reg/features/dashboard/lib/features/dashboard/data/reposit
 import 'package:event_reg/features/dashboard/lib/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:event_reg/features/registration/data/datasources/registratoin_local_datasource.dart';
 import 'package:event_reg/features/registration/data/repositories/registration_repository.dart';
+import 'package:event_reg/features/splash/lib/features/splash/data/datasource/splash_datasource.dart';
+import 'package:event_reg/features/splash/lib/features/splash/data/repositories/splash_repository.dart';
+import 'package:event_reg/features/splash/lib/features/splash/presentation/bloc/splash_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,6 +20,20 @@ import 'features/registration/presentation/bloc/registration_bloc.dart';
 final GetIt sl = GetIt.instance;
 
 Future<void> init() async {
+  // ! Features - Splash
+  // Bloc
+  sl.registerFactory(() => SplashBloc(repository: sl()));
+
+  // Repository
+  sl.registerLazySingleton<SplashRepository>(
+    () => SplashRepositoryImpl(localDataSource: sl()),
+  );
+
+  // DataSources
+  sl.registerLazySingleton<SplashLocalDataSource>(
+    () => SplashLocalDataSourceImpl(sharedPreferences: sl()),
+  );
+
   // ! Features - Dashboard
   // Bloc
   sl.registerFactory(() => DashboardBloc(repository: sl()));
