@@ -1,16 +1,14 @@
-cd lib/features
-
 feature=$1
 
-mkdir $feature; cd $feature;
 path_prefix="lib/features/${feature}"
-datasource_path="${path_prefix}/data/datasource"
-models_path="${path_prefix}/data/models"
-repos_path="${path_prefix}/data/repositories"
+mkdir $path_prefix; cd $path_prefix;
+datasource_path="data/datasource"
+models_path="data/models"
+repos_path="data/repositories"
 
-bloc_path="${path_prefix}/presentation/bloc"
-pages_path="${path_prefix}/presentation/pages"
-widgets_path="${path_prefix}/presentation/widgets"
+bloc_path="presentation/bloc"
+pages_path="presentation/pages"
+widgets_path="presentation/widgets"
 
 mkdir -p $datasource_path $models_path $repos_path 
 mkdir -p $bloc_path $pages_path $widgets_path

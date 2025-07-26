@@ -1,8 +1,8 @@
 import 'package:event_reg/config/routes/route_names.dart';
-import 'package:event_reg/features/landing/lib/features/landing/presentation/pages/landing_page.dart';
-import 'package:event_reg/features/splash/lib/features/splash/presentation/pages/splash_page.dart';
-import 'package:event_reg/features/dashboard/lib/features/dashboard/presentation/pages/admin_dashboard_page.dart';
-import 'package:event_reg/features/dashboard/lib/features/dashboard/presentation/pages/participant_dashboard_page.dart';
+import 'package:event_reg/features/landing/presentation/pages/landing_page.dart';
+import 'package:event_reg/features/splash/presentation/pages/splash_page.dart';
+import 'package:event_reg/features/dashboard/presentation/pages/admin_dashboard_page.dart';
+import 'package:event_reg/features/dashboard/presentation/pages/participant_dashboard_page.dart';
 import 'package:event_reg/features/registration/presentation/pages/registration_page.dart';
 import 'package:flutter/material.dart';
 
@@ -13,7 +13,7 @@ class AppRouter {
     switch (settings.name) {
       case RouteNames.splashPage:
         return MaterialPageRoute(builder: (_) => const SplashPage());
-        
+
       case RouteNames.landingPage:
         return MaterialPageRoute(builder: (_) => const LandingPage());
 
@@ -25,7 +25,9 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => Scaffold(
             appBar: AppBar(title: const Text('OTP Verification')),
-            body: const Center(child: Text('OTP Verification - To be implemented')),
+            body: const Center(
+              child: Text('OTP Verification - To be implemented'),
+            ),
           ),
         );
 
@@ -34,7 +36,9 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => Scaffold(
             appBar: AppBar(title: const Text('Registration Success')),
-            body: const Center(child: Text('Registration Success - To be implemented')),
+            body: const Center(
+              child: Text('Registration Success - To be implemented'),
+            ),
           ),
         );
 
@@ -49,22 +53,20 @@ class AppRouter {
 
       case RouteNames.participantLoginPage:
         return MaterialPageRoute(builder: (_) => const ParticipantLoginPage());
-        
+
       case RouteNames.adminLoginPage:
         return MaterialPageRoute(builder: (_) => const AdminLoginPage());
 
       case RouteNames.eventAgendaPage:
         return MaterialPageRoute(builder: (_) => const EventAgendaPage());
-        
+
       case RouteNames.contactPage:
         return MaterialPageRoute(builder: (_) => const ContactPage());
 
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
-            body: Center(
-              child: Text('No route defined for ${settings.name}'),
-            ),
+            body: Center(child: Text('No route defined for ${settings.name}')),
           ),
         );
     }
@@ -78,9 +80,7 @@ class AdminLoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Admin Login')),
-      body: const Center(
-        child: Text('Admin Login Page - To be implemented'),
-      ),
+      body: const Center(child: Text('Admin Login Page - To be implemented')),
     );
   }
 }
@@ -92,9 +92,7 @@ class EventAgendaPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Event Agenda')),
-      body: const Center(
-        child: Text('Event Agenda Page - To be implemented'),
-      ),
+      body: const Center(child: Text('Event Agenda Page - To be implemented')),
     );
   }
 }
@@ -106,9 +104,7 @@ class ContactPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Contact Us')),
-      body: const Center(
-        child: Text('Contact Us Page - To be implemented'),
-      ),
+      body: const Center(child: Text('Contact Us Page - To be implemented')),
     );
   }
 }

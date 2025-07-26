@@ -2,7 +2,7 @@ class RouteNames {
   // App flow routes
   static const String splashPage = '/splash';
   static const String landingPage = '/';
-  
+
   // Registration routes
   static const String registrationPage = '/registration';
   static const String otpVerificationPage = '/otp-verification';

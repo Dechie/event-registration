@@ -1,7 +1,7 @@
 import 'package:event_reg/config/routes/route_names.dart';
-import 'package:event_reg/features/dashboard/lib/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:event_reg/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:event_reg/features/registration/presentation/bloc/registration_bloc.dart';
-import 'package:event_reg/features/splash/lib/features/splash/presentation/bloc/splash_bloc.dart';
+import 'package:event_reg/features/splash/presentation/bloc/splash_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
