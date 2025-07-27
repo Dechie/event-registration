@@ -1,3 +1,19 @@
+import 'package:event_reg/features/dashboard/data/models/session.dart';
+
+enum RegistrationStatus {
+  pending,
+  confirmed,
+  cancelled,
+  waitlisted,
+}
+
+enum AttendanceStatus {
+  notCheckedIn,
+  checkedIn,
+  checkedOut,
+  noShow,
+}
+
 class Participant {
   final String id;
   final String fullName;
@@ -16,8 +32,12 @@ class Participant {
   final String industry;
   final int? yearsOfExperience;
   final String? photoUrl;
-  final List<String> selectedSessions;
+  final List<Session> selectedSessions; // Changed to List<Session>
   final DateTime createdAt;
+  final RegistrationStatus registrationStatus;
+  final AttendanceStatus attendanceStatus;
+  final String? qrCodeId;
+  final DateTime? lastUpdatedAt;
 
   const Participant({
     required this.id,
@@ -37,11 +57,14 @@ class Participant {
     required this.industry,
     this.yearsOfExperience,
     this.photoUrl,
-    required this.selectedSessions,
+    this.selectedSessions = const [], // Default empty list
     required this.createdAt,
+    this.registrationStatus = RegistrationStatus.pending,
+    this.attendanceStatus = AttendanceStatus.notCheckedIn,
+    this.qrCodeId,
+    this.lastUpdatedAt,
   });
 
-  // Factory constructor for JSON deserialization
   factory Participant.fromJson(Map<String, dynamic> json) {
     return Participant(
       id: json['id'] as String,
@@ -63,12 +86,26 @@ class Participant {
       industry: json['industry'] as String,
       yearsOfExperience: json['yearsOfExperience'] as int?,
       photoUrl: json['photoUrl'] as String?,
-      selectedSessions: List<String>.from(json['selectedSessions'] as List),
+      selectedSessions: (json['selectedSessions'] as List<dynamic>?)
+              ?.map((e) => Session.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [], // Parse list of Sessions
       createdAt: DateTime.parse(json['createdAt'] as String),
+      registrationStatus: RegistrationStatus.values.firstWhere(
+        (e) => e.toString().split('.').last == json['registrationStatus'],
+        orElse: () => RegistrationStatus.pending,
+      ),
+      attendanceStatus: AttendanceStatus.values.firstWhere(
+        (e) => e.toString().split('.').last == json['attendanceStatus'],
+        orElse: () => AttendanceStatus.notCheckedIn,
+      ),
+      qrCodeId: json['qrCodeId'] as String?,
+      lastUpdatedAt: json['lastUpdatedAt'] != null
+          ? DateTime.parse(json['lastUpdatedAt'] as String)
+          : null,
     );
   }
 
-  // Method for JSON serialization
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -88,12 +125,16 @@ class Participant {
       'industry': industry,
       'yearsOfExperience': yearsOfExperience,
       'photoUrl': photoUrl,
-      'selectedSessions': selectedSessions,
+      'selectedSessions':
+          selectedSessions.map((e) => e.toJson()).toList(), // Serialize list of Sessions
       'createdAt': createdAt.toIso8601String(),
+      'registrationStatus': registrationStatus.toString().split('.').last,
+      'attendanceStatus': attendanceStatus.toString().split('.').last,
+      'qrCodeId': qrCodeId,
+      'lastUpdatedAt': lastUpdatedAt?.toIso8601String(),
     };
   }
 
-  // CopyWith method for immutable updates
   Participant copyWith({
     String? id,
     String? fullName,
@@ -112,8 +153,12 @@ class Participant {
     String? industry,
     int? yearsOfExperience,
     String? photoUrl,
-    List<String>? selectedSessions,
+    List<Session>? selectedSessions,
     DateTime? createdAt,
+    RegistrationStatus? registrationStatus,
+    AttendanceStatus? attendanceStatus,
+    String? qrCodeId,
+    DateTime? lastUpdatedAt,
   }) {
     return Participant(
       id: id ?? this.id,
@@ -135,23 +180,59 @@ class Participant {
       photoUrl: photoUrl ?? this.photoUrl,
       selectedSessions: selectedSessions ?? this.selectedSessions,
       createdAt: createdAt ?? this.createdAt,
+      registrationStatus: registrationStatus ?? this.registrationStatus,
+      attendanceStatus: attendanceStatus ?? this.attendanceStatus,
+      qrCodeId: qrCodeId ?? this.qrCodeId,
+      lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
     );
   }
 
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is Participant &&
-        other.id == id &&
-        other.fullName == fullName &&
-        other.email == email;
+  // Helper methods
+  bool get isConfirmed => registrationStatus == RegistrationStatus.confirmed;
+  bool get isPending => registrationStatus == RegistrationStatus.pending;
+  bool get isCancelled => registrationStatus == RegistrationStatus.cancelled;
+  bool get isWaitlisted =>
+      registrationStatus == RegistrationStatus.waitlisted;
+
+  bool get hasCheckedIn =>
+      attendanceStatus == AttendanceStatus.checkedIn ||
+      attendanceStatus == AttendanceStatus.checkedOut;
+  bool get isPresent => attendanceStatus == AttendanceStatus.checkedIn;
+  bool get hasLeft => attendanceStatus == AttendanceStatus.checkedOut;
+  bool get isNoShow => attendanceStatus == AttendanceStatus.noShow;
+
+  int get sessionsCount => selectedSessions.length;
+
+  String get fullAddress {
+    final parts = [city, region].where((part) => part?.isNotEmpty == true);
+    return parts.join(', ');
   }
 
-  @override
-  int get hashCode => id.hashCode ^ fullName.hashCode ^ email.hashCode;
+  String get displayName => fullName;
 
-  @override
-  String toString() {
-    return 'Participant(id: $id, fullName: $fullName, email: $email)';
+  String get registrationStatusDisplay {
+    switch (registrationStatus) {
+      case RegistrationStatus.pending:
+        return 'Pending';
+      case RegistrationStatus.confirmed:
+        return 'Confirmed';
+      case RegistrationStatus.cancelled:
+        return 'Cancelled';
+      case RegistrationStatus.waitlisted:
+        return 'Waitlisted';
+    }
+  }
+
+  String get attendanceStatusDisplay {
+    switch (attendanceStatus) {
+      case AttendanceStatus.notCheckedIn:
+        return 'Not Checked In';
+      case AttendanceStatus.checkedIn:
+        return 'Checked In';
+      case AttendanceStatus.checkedOut:
+        return 'Checked Out';
+      case AttendanceStatus.noShow:
+        return 'No Show';
+    }
   }
 }

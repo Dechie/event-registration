@@ -1,0 +1,710 @@
+lib
+├── app.dart
+├── config
+│   ├── app_config.dart
+│   ├── routes
+│   │   ├── app_router.dart
+│   │   ├── participant_login.dart
+│   │   └── route_names.dart
+│   └── themes
+│       ├── app_colors.dart
+│       └── app_theme.dart
+├── core
+│   ├── constants
+│   │   ├── app_constants.dart
+│   │   └── app_urls.dart
+│   ├── error
+│   │   ├── exceptions.dart
+│   │   └── failures.dart
+│   ├── network
+│   │   ├── dio_client.dart
+│   │   └── network_info.dart
+│   ├── utils
+│   │   ├── date_utils.dart
+│   │   ├── file_utils.dart
+│   │   └── validators.dart
+│   └── widgets
+│       ├── custom_button.dart
+│       ├── custom_text_field.dart
+│       ├── error_widget.dart
+│       └── loading_widget.dart
+├── features
+│   ├── auth
+│   │   ├── data
+│   │   │   ├── datasource
+│   │   │   │   ├── auth_local_datasource.dart
+│   │   │   │   └── auth_remote_datasource.dart
+│   │   │   ├── models
+│   │   │   │   ├── login_request.dart
+│   │   │   │   └── login_response.dart
+│   │   │   └── repositories
+│   │   │       └── auth_repository.dart
+│   │   └── presentation
+│   │       ├── bloc
+│   │       │   ├── auth_bloc.dart
+│   │       │   ├── auth_event.dart
+│   │       │   └── auth_state.dart
+│   │       ├── pages
+│   │       │   └── auth_page.dart
+│   │       └── widgets
+│   ├── dashboard
+│   │   ├── data
+│   │   │   ├── datasource
+│   │   │   │   ├── dashboard_datasource.dart
+│   │   │   │   └── dashboard_local_datasource.dart
+│   │   │   ├── models
+│   │   │   │   ├── dashboard_stats.dart
+│   │   │   │   ├── event_info.dart
+│   │   │   │   ├── info_item.dart
+│   │   │   │   ├── participant_dashboard.dart
+│   │   │   │   └── session.dart
+│   │   │   └── repositories
+│   │   │       └── dashboard_repository.dart
+│   │   └── presentation
+│   │       ├── bloc
+│   │       │   ├── dashboard_bloc.dart
+│   │       │   ├── dashboard_event.dart
+│   │       │   └── dashboard_state.dart
+│   │       ├── pages
+│   │       │   ├── admin_dashboard_page.dart
+│   │       │   └── participant_dashboard_page.dart
+│   │       └── widgets
+│   │           ├── dashboard_stats.dart
+│   │           ├── event_info_card.dart
+│   │           ├── participant_info_card.dart
+│   │           ├── participant_list.dart
+│   │           ├── qr_code_card.dart
+│   │           ├── session_list_card.dart
+│   │           └── session_management.dart
+│   ├── landing
+│   │   ├── data
+│   │   │   ├── datasource
+│   │   │   │   └── landing_datasource.dart
+│   │   │   ├── models
+│   │   │   └── repositories
+│   │   │       └── landing_repository.dart
+│   │   └── presentation
+│   │       ├── bloc
+│   │       │   ├── landing_bloc.dart
+│   │       │   ├── landing_event.dart
+│   │       │   └── landing_state.dart
+│   │       ├── pages
+│   │       │   └── landing_page.dart
+│   │       └── widgets
+│   │           ├── event_highlights.dart
+│   │           ├── event_info.dart
+│   │           └── hero_section.dart
+│   ├── registration
+│   │   ├── data
+│   │   │   ├── datasources
+│   │   │   │   ├── registration_remote_datasource.dart
+│   │   │   │   └── registratoin_local_datasource.dart
+│   │   │   ├── models
+│   │   │   │   ├── participant.dart
+│   │   │   │   ├── registration_request.dart
+│   │   │   │   ├── registration_response.dart
+│   │   │   │   └── registration_result.dart
+│   │   │   └── repositories
+│   │   │       └── registration_repository.dart
+│   │   └── presentation
+│   │       ├── bloc
+│   │       │   ├── registration_bloc.dart
+│   │       │   ├── registration_event.dart
+│   │       │   └── registration_state.dart
+│   │       ├── pages
+│   │       │   ├── otp_verification_page.dart
+│   │       │   ├── registration_page.dart
+│   │       │   └── registration_success_page.dart
+│   │       └── widgets
+│   │           ├── personal_info_form.dart
+│   │           ├── photo_upload_widget.dart
+│   │           ├── professional_info_form.dart
+│   │           └── session_selection.dart
+│   └── splash
+│       ├── data
+│       │   ├── datasource
+│       │   │   └── splash_datasource.dart
+│       │   ├── models
+│       │   │   └── auth_status.dart
+│       │   └── repositories
+│       │       └── splash_repository.dart
+│       └── presentation
+│           ├── bloc
+│           │   ├── splash_bloc.dart
+│           │   ├── splash_event.dart
+│           │   └── splash_state.dart
+│           ├── pages
+│           │   └── splash_page.dart
+│           └── widgets
+├── injection_container.dart
+└── main.dart
+
+56 directories, 84 files
+lib
+├── app.dart
+├── config
+│   ├── app_config.dart
+│   ├── routes
+│   │   ├── app_router.dart
+│   │   ├── participant_login.dart
+│   │   └── route_names.dart
+│   └── themes
+│       ├── app_colors.dart
+│       └── app_theme.dart
+├── core
+│   ├── constants
+│   │   ├── app_constants.dart
+│   │   └── app_urls.dart
+│   ├── error
+│   │   ├── exceptions.dart
+│   │   └── failures.dart
+│   ├── network
+│   │   ├── dio_client.dart
+│   │   └── network_info.dart
+│   ├── utils
+│   │   ├── date_utils.dart
+│   │   ├── file_utils.dart
+│   │   └── validators.dart
+│   └── widgets
+│       ├── custom_button.dart
+│       ├── custom_text_field.dart
+│       ├── error_widget.dart
+│       └── loading_widget.dart
+├── features
+│   ├── auth
+│   │   ├── data
+│   │   │   ├── datasource
+│   │   │   │   ├── auth_local_datasource.dart
+│   │   │   │   └── auth_remote_datasource.dart
+│   │   │   ├── models
+│   │   │   │   ├── login_request.dart
+│   │   │   │   └── login_response.dart
+│   │   │   └── repositories
+│   │   │       └── auth_repository.dart
+│   │   └── presentation
+│   │       ├── bloc
+│   │       │   ├── auth_bloc.dart
+│   │       │   ├── auth_event.dart
+│   │       │   └── auth_state.dart
+│   │       ├── pages
+│   │       │   └── auth_page.dart
+│   │       └── widgets
+│   ├── dashboard
+│   │   ├── data
+│   │   │   ├── datasource
+│   │   │   │   ├── dashboard_datasource.dart
+│   │   │   │   └── dashboard_local_datasource.dart
+│   │   │   ├── models
+│   │   │   │   ├── dashboard_stats.dart
+│   │   │   │   ├── event_info.dart
+│   │   │   │   ├── info_item.dart
+│   │   │   │   ├── participant_dashboard.dart
+│   │   │   │   └── session.dart
+│   │   │   └── repositories
+│   │   │       └── dashboard_repository.dart
+│   │   └── presentation
+│   │       ├── bloc
+│   │       │   ├── dashboard_bloc.dart
+│   │       │   ├── dashboard_event.dart
+│   │       │   └── dashboard_state.dart
+│   │       ├── pages
+│   │       │   ├── admin_dashboard_page.dart
+│   │       │   └── participant_dashboard_page.dart
+│   │       └── widgets
+│   │           ├── dashboard_stats.dart
+│   │           ├── event_info_card.dart
+│   │           ├── participant_info_card.dart
+│   │           ├── participant_list.dart
+│   │           ├── qr_code_card.dart
+│   │           ├── session_list_card.dart
+│   │           └── session_management.dart
+│   ├── landing
+│   │   ├── data
+│   │   │   ├── datasource
+│   │   │   │   └── landing_datasource.dart
+│   │   │   ├── models
+│   │   │   └── repositories
+│   │   │       └── landing_repository.dart
+│   │   └── presentation
+│   │       ├── bloc
+│   │       │   ├── landing_bloc.dart
+│   │       │   ├── landing_event.dart
+│   │       │   └── landing_state.dart
+│   │       ├── pages
+│   │       │   └── landing_page.dart
+│   │       └── widgets
+│   │           ├── event_highlights.dart
+│   │           ├── event_info.dart
+│   │           └── hero_section.dart
+│   ├── registration
+│   │   ├── data
+│   │   │   ├── datasources
+│   │   │   │   ├── registration_remote_datasource.dart
+│   │   │   │   └── registratoin_local_datasource.dart
+│   │   │   ├── models
+│   │   │   │   ├── participant.dart
+│   │   │   │   ├── registration_request.dart
+│   │   │   │   ├── registration_response.dart
+│   │   │   │   └── registration_result.dart
+│   │   │   └── repositories
+│   │   │       └── registration_repository.dart
+│   │   └── presentation
+│   │       ├── bloc
+│   │       │   ├── registration_bloc.dart
+│   │       │   ├── registration_event.dart
+│   │       │   └── registration_state.dart
+│   │       ├── pages
+│   │       │   ├── otp_verification_page.dart
+│   │       │   ├── registration_page.dart
+│   │       │   └── registration_success_page.dart
+│   │       └── widgets
+│   │           ├── personal_info_form.dart
+│   │           ├── photo_upload_widget.dart
+│   │           ├── professional_info_form.dart
+│   │           └── session_selection.dart
+│   └── splash
+│       ├── data
+│       │   ├── datasource
+│       │   │   └── splash_datasource.dart
+│       │   ├── models
+│       │   │   └── auth_status.dart
+│       │   └── repositories
+│       │       └── splash_repository.dart
+│       └── presentation
+│           ├── bloc
+│           │   ├── splash_bloc.dart
+│           │   ├── splash_event.dart
+│           │   └── splash_state.dart
+│           ├── pages
+│           │   └── splash_page.dart
+│           └── widgets
+├── injection_container.dart
+└── main.dart
+
+56 directories, 84 files
+lib
+├── app.dart
+├── config
+│   ├── app_config.dart
+│   ├── routes
+│   │   ├── app_router.dart
+│   │   ├── participant_login.dart
+│   │   └── route_names.dart
+│   └── themes
+│       ├── app_colors.dart
+│       └── app_theme.dart
+├── core
+│   ├── constants
+│   │   ├── app_constants.dart
+│   │   └── app_urls.dart
+│   ├── error
+│   │   ├── exceptions.dart
+│   │   └── failures.dart
+│   ├── network
+│   │   ├── dio_client.dart
+│   │   └── network_info.dart
+│   ├── utils
+│   │   ├── date_utils.dart
+│   │   ├── file_utils.dart
+│   │   └── validators.dart
+│   └── widgets
+│       ├── custom_button.dart
+│       ├── custom_text_field.dart
+│       ├── error_widget.dart
+│       └── loading_widget.dart
+├── features
+│   ├── auth
+│   │   ├── data
+│   │   │   ├── datasource
+│   │   │   │   ├── auth_local_datasource.dart
+│   │   │   │   └── auth_remote_datasource.dart
+│   │   │   ├── models
+│   │   │   │   ├── login_request.dart
+│   │   │   │   └── login_response.dart
+│   │   │   └── repositories
+│   │   │       └── auth_repository.dart
+│   │   └── presentation
+│   │       ├── bloc
+│   │       │   ├── auth_bloc.dart
+│   │       │   ├── auth_event.dart
+│   │       │   └── auth_state.dart
+│   │       ├── pages
+│   │       │   └── auth_page.dart
+│   │       └── widgets
+│   ├── dashboard
+│   │   ├── data
+│   │   │   ├── datasource
+│   │   │   │   ├── dashboard_datasource.dart
+│   │   │   │   └── dashboard_local_datasource.dart
+│   │   │   ├── models
+│   │   │   │   ├── dashboard_stats.dart
+│   │   │   │   ├── event_info.dart
+│   │   │   │   ├── info_item.dart
+│   │   │   │   ├── participant_dashboard.dart
+│   │   │   │   └── session.dart
+│   │   │   └── repositories
+│   │   │       └── dashboard_repository.dart
+│   │   └── presentation
+│   │       ├── bloc
+│   │       │   ├── dashboard_bloc.dart
+│   │       │   ├── dashboard_event.dart
+│   │       │   └── dashboard_state.dart
+│   │       ├── pages
+│   │       │   ├── admin_dashboard_page.dart
+│   │       │   └── participant_dashboard_page.dart
+│   │       └── widgets
+│   │           ├── dashboard_stats.dart
+│   │           ├── event_info_card.dart
+│   │           ├── participant_info_card.dart
+│   │           ├── participant_list.dart
+│   │           ├── qr_code_card.dart
+│   │           ├── session_list_card.dart
+│   │           └── session_management.dart
+│   ├── landing
+│   │   ├── data
+│   │   │   ├── datasource
+│   │   │   │   └── landing_datasource.dart
+│   │   │   ├── models
+│   │   │   └── repositories
+│   │   │       └── landing_repository.dart
+│   │   └── presentation
+│   │       ├── bloc
+│   │       │   ├── landing_bloc.dart
+│   │       │   ├── landing_event.dart
+│   │       │   └── landing_state.dart
+│   │       ├── pages
+│   │       │   └── landing_page.dart
+│   │       └── widgets
+│   │           ├── event_highlights.dart
+│   │           ├── event_info.dart
+│   │           └── hero_section.dart
+│   ├── registration
+│   │   ├── data
+│   │   │   ├── datasources
+│   │   │   │   ├── registration_remote_datasource.dart
+│   │   │   │   └── registratoin_local_datasource.dart
+│   │   │   ├── models
+│   │   │   │   ├── participant.dart
+│   │   │   │   ├── registration_request.dart
+│   │   │   │   ├── registration_response.dart
+│   │   │   │   └── registration_result.dart
+│   │   │   └── repositories
+│   │   │       └── registration_repository.dart
+│   │   └── presentation
+│   │       ├── bloc
+│   │       │   ├── registration_bloc.dart
+│   │       │   ├── registration_event.dart
+│   │       │   └── registration_state.dart
+│   │       ├── pages
+│   │       │   ├── otp_verification_page.dart
+│   │       │   ├── registration_page.dart
+│   │       │   └── registration_success_page.dart
+│   │       └── widgets
+│   │           ├── personal_info_form.dart
+│   │           ├── photo_upload_widget.dart
+│   │           ├── professional_info_form.dart
+│   │           └── session_selection.dart
+│   └── splash
+│       ├── data
+│       │   ├── datasource
+│       │   │   └── splash_datasource.dart
+│       │   ├── models
+│       │   │   └── auth_status.dart
+│       │   └── repositories
+│       │       └── splash_repository.dart
+│       └── presentation
+│           ├── bloc
+│           │   ├── splash_bloc.dart
+│           │   ├── splash_event.dart
+│           │   └── splash_state.dart
+│           ├── pages
+│           │   └── splash_page.dart
+│           └── widgets
+├── injection_container.dart
+└── main.dart
+
+56 directories, 84 files
+lib
+├── app.dart
+├── config
+│   ├── app_config.dart
+│   ├── routes
+│   │   ├── app_router.dart
+│   │   ├── participant_login.dart
+│   │   └── route_names.dart
+│   └── themes
+│       ├── app_colors.dart
+│       └── app_theme.dart
+├── core
+│   ├── constants
+│   │   ├── app_constants.dart
+│   │   └── app_urls.dart
+│   ├── error
+│   │   ├── exceptions.dart
+│   │   └── failures.dart
+│   ├── network
+│   │   ├── dio_client.dart
+│   │   └── network_info.dart
+│   ├── utils
+│   │   ├── date_utils.dart
+│   │   ├── file_utils.dart
+│   │   └── validators.dart
+│   └── widgets
+│       ├── custom_button.dart
+│       ├── custom_text_field.dart
+│       ├── error_widget.dart
+│       └── loading_widget.dart
+├── features
+│   ├── auth
+│   │   ├── data
+│   │   │   ├── datasource
+│   │   │   │   ├── auth_local_datasource.dart
+│   │   │   │   └── auth_remote_datasource.dart
+│   │   │   ├── models
+│   │   │   │   ├── login_request.dart
+│   │   │   │   └── login_response.dart
+│   │   │   └── repositories
+│   │   │       └── auth_repository.dart
+│   │   └── presentation
+│   │       ├── bloc
+│   │       │   ├── auth_bloc.dart
+│   │       │   ├── auth_event.dart
+│   │       │   └── auth_state.dart
+│   │       ├── pages
+│   │       │   └── auth_page.dart
+│   │       └── widgets
+│   ├── dashboard
+│   │   ├── data
+│   │   │   ├── datasource
+│   │   │   │   ├── dashboard_datasource.dart
+│   │   │   │   └── dashboard_local_datasource.dart
+│   │   │   ├── models
+│   │   │   │   ├── dashboard_stats.dart
+│   │   │   │   ├── event_info.dart
+│   │   │   │   ├── info_item.dart
+│   │   │   │   ├── participant_dashboard.dart
+│   │   │   │   └── session.dart
+│   │   │   └── repositories
+│   │   │       └── dashboard_repository.dart
+│   │   └── presentation
+│   │       ├── bloc
+│   │       │   ├── dashboard_bloc.dart
+│   │       │   ├── dashboard_event.dart
+│   │       │   └── dashboard_state.dart
+│   │       ├── pages
+│   │       │   ├── admin_dashboard_page.dart
+│   │       │   └── participant_dashboard_page.dart
+│   │       └── widgets
+│   │           ├── dashboard_stats.dart
+│   │           ├── event_info_card.dart
+│   │           ├── participant_info_card.dart
+│   │           ├── participant_list.dart
+│   │           ├── qr_code_card.dart
+│   │           ├── session_list_card.dart
+│   │           └── session_management.dart
+│   ├── landing
+│   │   ├── data
+│   │   │   ├── datasource
+│   │   │   │   └── landing_datasource.dart
+│   │   │   ├── models
+│   │   │   └── repositories
+│   │   │       └── landing_repository.dart
+│   │   └── presentation
+│   │       ├── bloc
+│   │       │   ├── landing_bloc.dart
+│   │       │   ├── landing_event.dart
+│   │       │   └── landing_state.dart
+│   │       ├── pages
+│   │       │   └── landing_page.dart
+│   │       └── widgets
+│   │           ├── event_highlights.dart
+│   │           ├── event_info.dart
+│   │           └── hero_section.dart
+│   ├── registration
+│   │   ├── data
+│   │   │   ├── datasources
+│   │   │   │   ├── registration_remote_datasource.dart
+│   │   │   │   └── registratoin_local_datasource.dart
+│   │   │   ├── models
+│   │   │   │   ├── participant.dart
+│   │   │   │   ├── registration_request.dart
+│   │   │   │   ├── registration_response.dart
+│   │   │   │   └── registration_result.dart
+│   │   │   └── repositories
+│   │   │       └── registration_repository.dart
+│   │   └── presentation
+│   │       ├── bloc
+│   │       │   ├── registration_bloc.dart
+│   │       │   ├── registration_event.dart
+│   │       │   └── registration_state.dart
+│   │       ├── pages
+│   │       │   ├── otp_verification_page.dart
+│   │       │   ├── registration_page.dart
+│   │       │   └── registration_success_page.dart
+│   │       └── widgets
+│   │           ├── personal_info_form.dart
+│   │           ├── photo_upload_widget.dart
+│   │           ├── professional_info_form.dart
+│   │           └── session_selection.dart
+│   └── splash
+│       ├── data
+│       │   ├── datasource
+│       │   │   └── splash_datasource.dart
+│       │   ├── models
+│       │   │   └── auth_status.dart
+│       │   └── repositories
+│       │       └── splash_repository.dart
+│       └── presentation
+│           ├── bloc
+│           │   ├── splash_bloc.dart
+│           │   ├── splash_event.dart
+│           │   └── splash_state.dart
+│           ├── pages
+│           │   └── splash_page.dart
+│           └── widgets
+├── injection_container.dart
+└── main.dart
+
+56 directories, 84 files
+lib
+├── app.dart
+├── config
+│   ├── app_config.dart
+│   ├── routes
+│   │   ├── app_router.dart
+│   │   ├── participant_login.dart
+│   │   └── route_names.dart
+│   └── themes
+│       ├── app_colors.dart
+│       └── app_theme.dart
+├── core
+│   ├── constants
+│   │   ├── app_constants.dart
+│   │   └── app_urls.dart
+│   ├── error
+│   │   ├── exceptions.dart
+│   │   └── failures.dart
+│   ├── network
+│   │   ├── dio_client.dart
+│   │   └── network_info.dart
+│   ├── utils
+│   │   ├── date_utils.dart
+│   │   ├── file_utils.dart
+│   │   └── validators.dart
+│   └── widgets
+│       ├── custom_button.dart
+│       ├── custom_text_field.dart
+│       ├── error_widget.dart
+│       └── loading_widget.dart
+├── features
+│   ├── auth
+│   │   ├── data
+│   │   │   ├── datasource
+│   │   │   │   ├── auth_local_datasource.dart
+│   │   │   │   └── auth_remote_datasource.dart
+│   │   │   ├── models
+│   │   │   │   ├── login_request.dart
+│   │   │   │   └── login_response.dart
+│   │   │   └── repositories
+│   │   │       └── auth_repository.dart
+│   │   └── presentation
+│   │       ├── bloc
+│   │       │   ├── auth_bloc.dart
+│   │       │   ├── auth_event.dart
+│   │       │   └── auth_state.dart
+│   │       ├── pages
+│   │       │   └── auth_page.dart
+│   │       └── widgets
+│   ├── dashboard
+│   │   ├── data
+│   │   │   ├── datasource
+│   │   │   │   ├── dashboard_datasource.dart
+│   │   │   │   └── dashboard_local_datasource.dart
+│   │   │   ├── models
+│   │   │   │   ├── dashboard_stats.dart
+│   │   │   │   ├── event_info.dart
+│   │   │   │   ├── info_item.dart
+│   │   │   │   ├── participant_dashboard.dart
+│   │   │   │   └── session.dart
+│   │   │   └── repositories
+│   │   │       └── dashboard_repository.dart
+│   │   └── presentation
+│   │       ├── bloc
+│   │       │   ├── dashboard_bloc.dart
+│   │       │   ├── dashboard_event.dart
+│   │       │   └── dashboard_state.dart
+│   │       ├── pages
+│   │       │   ├── admin_dashboard_page.dart
+│   │       │   └── participant_dashboard_page.dart
+│   │       └── widgets
+│   │           ├── dashboard_stats.dart
+│   │           ├── event_info_card.dart
+│   │           ├── participant_info_card.dart
+│   │           ├── participant_list.dart
+│   │           ├── qr_code_card.dart
+│   │           ├── session_list_card.dart
+│   │           └── session_management.dart
+│   ├── landing
+│   │   ├── data
+│   │   │   ├── datasource
+│   │   │   │   └── landing_datasource.dart
+│   │   │   ├── models
+│   │   │   └── repositories
+│   │   │       └── landing_repository.dart
+│   │   └── presentation
+│   │       ├── bloc
+│   │       │   ├── landing_bloc.dart
+│   │       │   ├── landing_event.dart
+│   │       │   └── landing_state.dart
+│   │       ├── pages
+│   │       │   └── landing_page.dart
+│   │       └── widgets
+│   │           ├── event_highlights.dart
+│   │           ├── event_info.dart
+│   │           └── hero_section.dart
+│   ├── registration
+│   │   ├── data
+│   │   │   ├── datasources
+│   │   │   │   ├── registration_remote_datasource.dart
+│   │   │   │   └── registratoin_local_datasource.dart
+│   │   │   ├── models
+│   │   │   │   ├── participant.dart
+│   │   │   │   ├── registration_request.dart
+│   │   │   │   ├── registration_response.dart
+│   │   │   │   └── registration_result.dart
+│   │   │   └── repositories
+│   │   │       └── registration_repository.dart
+│   │   └── presentation
+│   │       ├── bloc
+│   │       │   ├── registration_bloc.dart
+│   │       │   ├── registration_event.dart
+│   │       │   └── registration_state.dart
+│   │       ├── pages
+│   │       │   ├── otp_verification_page.dart
+│   │       │   ├── registration_page.dart
+│   │       │   └── registration_success_page.dart
+│   │       └── widgets
+│   │           ├── personal_info_form.dart
+│   │           ├── photo_upload_widget.dart
+│   │           ├── professional_info_form.dart
+│   │           └── session_selection.dart
+│   └── splash
+│       ├── data
+│       │   ├── datasource
+│       │   │   └── splash_datasource.dart
+│       │   ├── models
+│       │   │   └── auth_status.dart
+│       │   └── repositories
+│       │       └── splash_repository.dart
+│       └── presentation
+│           ├── bloc
+│           │   ├── splash_bloc.dart
+│           │   ├── splash_event.dart
+│           │   └── splash_state.dart
+│           ├── pages
+│           │   └── splash_page.dart
+│           └── widgets
+├── injection_container.dart
+└── main.dart
+
+56 directories, 84 files

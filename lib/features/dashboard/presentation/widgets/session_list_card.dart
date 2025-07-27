@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../data/models/event_info.dart';
+import '../../data/models/event.dart';
 
 class SessionListCard extends StatelessWidget {
   final List<String> sessions;
