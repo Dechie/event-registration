@@ -1,10 +1,10 @@
+import 'package:event_reg/features/dashboard/data/models/event.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../data/models/event_info.dart';
 
 class EventInfoCard extends StatelessWidget {
-  final EventInfo eventInfo;
+  final Event eventInfo;
 
   const EventInfoCard({super.key, required this.eventInfo});
 

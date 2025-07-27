@@ -1,4 +1,4 @@
-import 'package:event_reg/features/dashboard/data/models/event_info.dart';
+import 'package:event_reg/features/dashboard/data/models/event.dart';
 import 'package:event_reg/features/registration/data/models/participant.dart';
 
 class ParticipantDashboard {
@@ -6,7 +6,7 @@ class ParticipantDashboard {
   final String qrCode;
   final String confirmationStatus;
   final List<String> selectedSessions;
-  final EventInfo eventInfo;
+  final Event eventInfo;
   final bool canEditInfo;
 
   const ParticipantDashboard({
@@ -26,7 +26,7 @@ class ParticipantDashboard {
       qrCode: json['qrCode'] as String,
       confirmationStatus: json['confirmationStatus'] as String,
       selectedSessions: List<String>.from(json['selectedSessions'] as List),
-      eventInfo: EventInfo.fromJson(json['eventInfo'] as Map<String, dynamic>),
+      eventInfo: Event.fromJson(json['eventInfo'] as Map<String, dynamic>),
       canEditInfo: json['canEditInfo'] as bool,
     );
   }

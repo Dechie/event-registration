@@ -7,11 +7,13 @@ class LoadDashboardStatsEvent extends DashboardEvent {}
 class LoadParticipantsEvent extends DashboardEvent {
   final String? searchQuery;
   final String? sessionFilter;
+  final String? email;
   final String? statusFilter;
 
   LoadParticipantsEvent({
     this.searchQuery,
     this.sessionFilter,
+    this.email,
     this.statusFilter,
   });
 }

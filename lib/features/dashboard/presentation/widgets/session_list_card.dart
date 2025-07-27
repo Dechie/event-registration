@@ -4,7 +4,7 @@ import '../../data/models/event.dart';
 
 class SessionListCard extends StatelessWidget {
   final List<String> sessions;
-  final EventInfo eventInfo;
+  final Event eventInfo;
 
   const SessionListCard({
     super.key,

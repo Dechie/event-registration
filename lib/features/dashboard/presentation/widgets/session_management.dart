@@ -177,19 +177,19 @@ class _SessionManagementWidgetState extends State<SessionManagementWidget> {
                     Icon(Icons.location_on, size: 16, color: Colors.grey[600]),
                     const SizedBox(width: 4),
                     Text(
-                      session.location,
+                      session.roomOrLocation,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
-                if (session.speaker != null) ...[
+                if (session.speakerName != null) ...[
                   const SizedBox(height: 4),
                   Row(
                     children: [
                       Icon(Icons.person, size: 16, color: Colors.grey[600]),
                       const SizedBox(width: 4),
                       Text(
-                        'Speaker: ${session.speaker}',
+                        'Speaker: ${session.speakerName}',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
