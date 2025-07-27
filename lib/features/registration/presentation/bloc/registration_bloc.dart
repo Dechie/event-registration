@@ -1,4 +1,4 @@
-import 'package:event_reg/features/registration/data/models/participant.dart';
+import 'package:event_reg/core/shared/models/participant.dart';
 import 'package:event_reg/features/registration/data/repositories/registration_repository.dart';
 import 'package:event_reg/features/registration/presentation/bloc/registration_event.dart';
 import 'package:event_reg/features/registration/presentation/bloc/registration_state.dart';
@@ -79,8 +79,8 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
 
       emit(
         RegistrationSuccessState(
-          participant: result.participant,
-          qrCode: result.qrCode,
+          participant: result.participant!,
+          qrCode: result.qrCodeUrl ?? "",
         ),
       );
     } catch (e) {

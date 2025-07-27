@@ -1,3 +1,5 @@
+import 'package:event_reg/features/dashboard/data/models/session.dart';
+
 class RegisterParticipantEvent extends RegistrationEvent {
   final String fullName;
   final String? gender;
@@ -15,7 +17,7 @@ class RegisterParticipantEvent extends RegistrationEvent {
   final String industry;
   final int? yearsOfExperience;
   final String? photoPath;
-  final List<String> selectedSessions;
+  final List<Session> selectedSessions;
 
   RegisterParticipantEvent({
     required this.fullName,

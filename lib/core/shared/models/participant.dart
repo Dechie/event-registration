@@ -21,6 +21,7 @@ class Participant extends BaseUser {
   final RegistrationStatus registrationStatus;
   final AttendanceStatus attendanceStatus;
   final String? qrCodeId;
+  final String? photoUrl;
   final DateTime? lastUpdatedAt;
   final Map<String, dynamic>? customFields;
 
@@ -46,6 +47,7 @@ class Participant extends BaseUser {
     this.registrationStatus = RegistrationStatus.pending,
     this.attendanceStatus = AttendanceStatus.notCheckedIn,
     this.qrCodeId,
+    this.photoUrl,
     this.lastUpdatedAt,
     this.customFields,
     super.status,
@@ -266,6 +268,8 @@ class Participant extends BaseUser {
       'selectedSessions': selectedSessions.map((e) => e.toJson()).toList(),
       'registrationStatus': registrationStatus.toString().split('.').last,
       'attendanceStatus': attendanceStatus.toString().split('.').last,
+      'photoUrl': photoUrl,
+      'createdAt': createdAt.toIso8601String(),
       'qrCodeId': qrCodeId,
       'lastUpdatedAt': lastUpdatedAt?.toIso8601String(),
       'customFields': customFields,

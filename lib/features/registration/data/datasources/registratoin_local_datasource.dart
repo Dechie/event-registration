@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:event_reg/features/registration/data/models/participant.dart';
+import 'package:event_reg/core/shared/models/participant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 abstract class RegistrationLocalDataSource {

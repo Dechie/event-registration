@@ -1,8 +1,5 @@
-
-
-// lib/features/registration/data/models/registration_response.dart
 import 'package:equatable/equatable.dart';
-import 'package:event_reg/features/registration/data/models/participant.dart';
+import 'package:event_reg/core/shared/models/participant.dart';
 
 class RegistrationResponse extends Equatable {
   final String id;

@@ -1,4 +1,5 @@
-import 'package:event_reg/features/registration/data/models/participant.dart';
+
+import 'package:event_reg/core/shared/models/participant.dart';
 
 import '../../data/models/dashboard_stats.dart';
 import '../../data/models/participant_dashboard.dart';

@@ -1,5 +1,5 @@
 import 'package:event_reg/core/network/network_info.dart';
-import 'package:event_reg/features/registration/data/models/participant.dart';
+import 'package:event_reg/core/shared/models/participant.dart';
 
 import '../datasource/dashboard_datasource.dart';
 import '../datasource/dashboard_local_datasource.dart';

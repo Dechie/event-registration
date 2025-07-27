@@ -1,0 +1,16 @@
+{
+  "configurations": [
+    {
+      "name": "Flutter (lib/features/dashboard/presentation/pages/participant_dashboard_page.dart)",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/features/dashboard/presentation/pages/participant_dashboard_page.dart"
+    },
+    {
+      "name": "Flutter (lib/features/landing/presentation/widgets/event_info.dart)",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/features/landing/presentation/widgets/event_info.dart"
+    }
+  ]
+}

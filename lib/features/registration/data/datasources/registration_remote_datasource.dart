@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:event_reg/core/network/dio_client.dart';
 import 'package:event_reg/core/error/exceptions.dart';
-import 'package:event_reg/features/registration/data/models/participant.dart';
+import 'package:event_reg/core/shared/models/participant.dart';
 import 'package:event_reg/features/registration/data/models/registration_request.dart';
 import 'package:event_reg/features/registration/data/models/registration_response.dart';
 import 'package:event_reg/features/registration/data/models/registration_result.dart';

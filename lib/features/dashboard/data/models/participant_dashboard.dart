@@ -1,5 +1,5 @@
+import 'package:event_reg/core/shared/models/participant.dart';
 import 'package:event_reg/features/dashboard/data/models/event.dart';
-import 'package:event_reg/features/registration/data/models/participant.dart';
 
 class ParticipantDashboard {
   final Participant participant;

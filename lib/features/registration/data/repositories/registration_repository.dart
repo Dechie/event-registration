@@ -1,9 +1,10 @@
 import 'package:event_reg/core/network/network_info.dart';
+import 'package:event_reg/core/shared/models/participant.dart';
 import 'package:event_reg/features/registration/data/datasources/registratoin_local_datasource.dart';
+import 'package:event_reg/features/registration/data/models/registration_response.dart';
 import 'package:event_reg/features/registration/data/models/registration_result.dart';
 
 import '../datasources/registration_remote_datasource.dart';
-import '../models/participant.dart';
 
 abstract class RegistrationRepository {
   Future<List<Participant>> getAllParticipants();
@@ -72,7 +73,7 @@ class RegistrationRepositoryImpl implements RegistrationRepository {
   }
 
   @override
-  Future<RegistrationResult> registerParticipant(
+  Future<RegistrationResponse> registerParticipant(
     Participant participant,
   ) async {
     if (await networkInfo.isConnected) {

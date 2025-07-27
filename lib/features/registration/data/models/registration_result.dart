@@ -1,7 +1,5 @@
-
-// lib/features/registration/data/models/registration_result.dart
 import 'package:equatable/equatable.dart';
-import 'package:event_reg/features/registration/data/models/participant.dart';
+import 'package:event_reg/core/shared/models/participant.dart';
 
 enum RegistrationResultStatus {
   success,

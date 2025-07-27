@@ -6,7 +6,6 @@ import 'package:event_reg/features/auth/data/datasource/auth_remote_datasource.d
 import 'package:event_reg/features/auth/data/datasource/auth_local_datasource.dart';
 import 'package:event_reg/features/auth/data/models/login_response.dart';
 import 'package:event_reg/features/auth/data/models/login_request.dart';
-import 'package:event_reg/features/auth/data/models/admin.dart';
 import 'package:event_reg/features/auth/data/models/user.dart';
 
 abstract class AuthRepository {

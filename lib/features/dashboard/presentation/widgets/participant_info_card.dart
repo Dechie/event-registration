@@ -1,5 +1,5 @@
 // lib/features/dashboard/presentation/widgets/participant_info_card.dart
-import 'package:event_reg/features/registration/data/models/participant.dart';
+import 'package:event_reg/core/shared/models/participant.dart';
 import 'package:flutter/material.dart';
 
 class ParticipantInfoCard extends StatelessWidget {

@@ -2,11 +2,11 @@
 import 'package:dio/dio.dart';
 import 'package:event_reg/core/network/dio_client.dart';
 import 'package:event_reg/core/error/exceptions.dart';
+import 'package:event_reg/core/shared/models/participant.dart';
 import 'package:event_reg/features/dashboard/data/models/dashboard_stats.dart';
 import 'package:event_reg/features/dashboard/data/models/participant_dashboard.dart';
 import 'package:event_reg/features/dashboard/data/models/event.dart';
 import 'package:event_reg/features/dashboard/data/models/session.dart';
-import 'package:event_reg/features/registration/data/models/participant.dart';
 
 abstract class DashboardRemoteDataSource {
   // Admin Dashboard Methods
