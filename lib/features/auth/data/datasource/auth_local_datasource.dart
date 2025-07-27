@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:event_reg/core/error/exceptions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:event_reg/features/auth/data/models/login_response.dart';
 

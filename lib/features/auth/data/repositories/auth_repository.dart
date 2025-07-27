@@ -1,16 +1,31 @@
+// lib/features/auth/data/repositories/auth_repository.dart
+import 'package:dartz/dartz.dart';
+import 'package:event_reg/core/error/failures.dart';
+import 'package:event_reg/core/error/exceptions.dart';
 import 'package:event_reg/core/network/network_info.dart';
 import 'package:event_reg/features/auth/data/datasource/auth_local_datasource.dart';
 import 'package:event_reg/features/auth/data/datasource/auth_remote_datasource.dart';
+import 'package:event_reg/features/auth/data/models/login_request.dart';
 import 'package:event_reg/features/auth/data/models/login_response.dart';
-import 'package:event_reg/features/splash/data/models/auth_status.dart';
-
-import '../models/login_request.dart';
+import 'package:event_reg/features/auth/data/models/user.dart';
 
 abstract class AuthRepository {
-  Future<AuthStatus> getCurrentAuthStatus();
-  Future<LoginResponse> loginAdmin(LoginRequest request);
-  Future<LoginResponse> loginParticipant(LoginRequest request);
-  Future<void> logout();
+  Future<Either<Failure, LoginResponse>> login({
+    required String email,
+    required String password,
+    required String userType,
+    bool rememberMe = false,
+  });
+  
+  Future<Either<Failure, void>> logout();
+  Future<Either<Failure, User?>> getCurrentUser();
+  Future<Either<Failure, String>> forgotPassword(String email);
+  Future<Either<Failure, String>> resetPassword({
+    required String token,
+    required String newPassword,
+  });
+  Future<Either<Failure, LoginResponse>> refreshToken();
+  Future<Either<Failure, bool>> isAuthenticated();
 }
 
 class AuthRepositoryImpl implements AuthRepository {
@@ -25,60 +40,216 @@ class AuthRepositoryImpl implements AuthRepository {
   });
 
   @override
-  Future<AuthStatus> getCurrentAuthStatus() async {
-    return await localDataSource.getAuthStatus();
-  }
-
-  @override
-  Future<LoginResponse> loginAdmin(LoginRequest request) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final response = await remoteDataSource.loginAdmin(request);
-
-        // Save authentication data locally
-        await localDataSource.saveAuthStatus(
-          AuthStatus(
-            userType: UserType.admin,
-            token: response.token,
-            email: request.email,
-          ),
-        );
-
-        return response;
-      } catch (e) {
-        throw Exception('Failed to login: ${e.toString()}');
+  Future<Either<Failure, LoginResponse>> login({
+    required String email,
+    required String password,
+    required String userType,
+    bool rememberMe = false,
+  }) async {
+    try {
+      // Check network connectivity
+      if (!await networkInfo.isConnected) {
+        return const Left(NetworkFailure(
+          message: 'No internet connection',
+          code: 'NETWORK_ERROR',
+        ));
       }
-    } else {
-      throw Exception('No internet connection');
+
+      // Create login request
+      final loginRequest = LoginRequest(
+        email: email,
+        password: password,
+        userType: userType,
+        rememberMe: rememberMe,
+      );
+
+      // Perform remote login
+      final loginResponse = await remoteDataSource.login(loginRequest);
+
+      // Cache user data locally
+      await localDataSource.cacheUserData(loginResponse);
+      await localDataSource.setRememberMe(rememberMe);
+
+      return Right(loginResponse);
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message, code: e.code));
+    } on AuthenticationException catch (e) {
+      return Left(AuthenticationFailure(message: e.message, code: e.code));
+    } on ValidationException catch (e) {
+      return Left(ValidationFailure(
+        message: e.message,
+        code: e.code,
+        errors: e.errors,
+      ));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, code: e.code));
+    } on CacheException catch (e) {
+      // Login succeeded but caching failed - still return success
+      return Right(await remoteDataSource.login(LoginRequest(
+        email: email,
+        password: password,
+        userType: userType,
+        rememberMe: rememberMe,
+      )));
+    } catch (e) {
+      return const Left(UnknownFailure());
     }
   }
 
   @override
-  Future<LoginResponse> loginParticipant(LoginRequest request) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final response = await remoteDataSource.loginParticipant(request);
+  Future<Either<Failure, void>> logout() async {
+    try {
+      // Always clear local data first
+      await localDataSource.clearUserData();
 
-        // Save authentication data locally
-        await localDataSource.saveAuthStatus(
-          AuthStatus(
-            userType: UserType.participant,
-            token: response.token,
-            email: request.email,
-          ),
-        );
-
-        return response;
-      } catch (e) {
-        throw Exception('Failed to login: ${e.toString()}');
+      // Try to logout from server (can fail silently)
+      if (await networkInfo.isConnected) {
+        try {
+          await remoteDataSource.logout();
+        } catch (e) {
+          // Server logout can fail - we still consider local logout successful
+        }
       }
-    } else {
-      throw Exception('No internet connection');
+
+      return const Right(null);
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message, code: e.code));
+    } catch (e) {
+      return const Left(UnknownFailure());
     }
   }
 
   @override
-  Future<void> logout() async {
-    await localDataSource.clearAuthData();
+  Future<Either<Failure, User?>> getCurrentUser() async {
+    try {
+      // Check if token is still valid
+      final isTokenValid = await localDataSource.isTokenValid();
+      
+      if (!isTokenValid) {
+        // Try to refresh token if available
+        final refreshResult = await refreshToken();
+        return refreshResult.fold(
+          (failure) => const Right(null), // No valid user
+          (loginResponse) => Right(loginResponse.user),
+        );
+      }
+
+      // Get cached user data
+      final cachedData = await localDataSource.getCachedUserData();
+      
+      if (cachedData != null) {
+        return Right(cachedData.user);
+      }
+
+      return const Right(null);
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message, code: e.code));
+    } catch (e) {
+      return const Left(UnknownFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> forgotPassword(String email) async {
+    try {
+      if (!await networkInfo.isConnected) {
+        return const Left(NetworkFailure(
+          message: 'No internet connection',
+          code: 'NETWORK_ERROR',
+        ));
+      }
+
+      final message = await remoteDataSource.forgotPassword(email);
+      return Right(message);
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message, code: e.code));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, code: e.code));
+    } catch (e) {
+      return const Left(UnknownFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> resetPassword({
+    required String token,
+    required String newPassword,
+  }) async {
+    try {
+      if (!await networkInfo.isConnected) {
+        return const Left(NetworkFailure(
+          message: 'No internet connection',
+          code: 'NETWORK_ERROR',
+        ));
+      }
+
+      final message = await remoteDataSource.resetPassword(
+        token: token,
+        newPassword: newPassword,
+      );
+      return Right(message);
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message, code: e.code));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, code: e.code));
+    } catch (e) {
+      return const Left(UnknownFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, LoginResponse>> refreshToken() async {
+    try {
+      if (!await networkInfo.isConnected) {
+        return const Left(NetworkFailure(
+          message: 'No internet connection',
+          code: 'NETWORK_ERROR',
+        ));
+      }
+
+      final refreshToken = await localDataSource.getRefreshToken();
+      
+      if (refreshToken == null) {
+        return const Left(AuthenticationFailure(
+          message: 'No refresh token available',
+          code: 'NO_REFRESH_TOKEN',
+        ));
+      }
+
+      final loginResponse = await remoteDataSource.refreshToken(refreshToken);
+      
+      // Update cached data
+      await localDataSource.cacheUserData(loginResponse);
+      
+      return Right(loginResponse);
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message, code: e.code));
+    } on AuthenticationException catch (e) {
+      // Clear invalid tokens
+      await localDataSource.clearUserData();
+      return Left(AuthenticationFailure(message: e.message, code: e.code));
+    } on ServerException catch (e) {
+      if (e.code == 'REFRESH_TOKEN_EXPIRED') {
+        await localDataSource.clearUserData();
+      }
+      return Left(ServerFailure(message: e.message, code: e.code));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message, code: e.code));
+    } catch (e) {
+      return const Left(UnknownFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> isAuthenticated() async {
+    try {
+      final user = await getCurrentUser();
+      return user.fold(
+        (failure) => const Right(false),
+        (user) => Right(user != null),
+      );
+    } catch (e) {
+      return const Right(false);
+    }
   }
 }

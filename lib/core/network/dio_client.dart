@@ -75,6 +75,7 @@ class DioClient {
     String path, {
     Map<String, dynamic>? queryParams,
     String? token,
+    Map<String, dynamic>? queryParameters,
   }) async {
     try {
       return await dio.get(
@@ -89,12 +90,17 @@ class DioClient {
     }
   }
 
-  Future<Response> post(String path, {dynamic data, String? token}) async {
+  Future<Response> post(
+    String path, {
+    dynamic data,
+    String? token,
+    Options? options,
+  }) async {
     try {
       return await dio.post(
         path,
         data: data, // Remove jsonEncode here as Dio handles it
-        options: Options(extra: {"token": token}),
+        options: options ?? Options(extra: {"token": token}),
       );
     } on DioException catch (e) {
       throw _handleDioError(e);

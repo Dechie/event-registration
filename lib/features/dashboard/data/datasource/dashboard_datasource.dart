@@ -1,30 +1,50 @@
+// lib/features/dashboard/data/datasource/dashboard_remote_datasource.dart
+import 'package:dio/dio.dart';
 import 'package:event_reg/core/network/dio_client.dart';
+import 'package:event_reg/core/error/exceptions.dart';
+import 'package:event_reg/features/dashboard/data/models/dashboard_stats.dart';
+import 'package:event_reg/features/dashboard/data/models/participant_dashboard.dart';
+import 'package:event_reg/features/dashboard/data/models/event.dart';
+import 'package:event_reg/features/dashboard/data/models/session.dart';
 import 'package:event_reg/features/registration/data/models/participant.dart';
 
-import '../models/dashboard_stats.dart';
-import '../models/participant_dashboard.dart';
-import '../models/session.dart';
-
 abstract class DashboardRemoteDataSource {
-  Future<bool> checkInParticipant(String participantId);
-  Future<bool> checkOutParticipant(String participantId);
-  Future<String> downloadConfirmationPdf(String participantId);
+  // Admin Dashboard Methods
+  Future<DashboardStats> getAdminDashboardStats();
+  Future<List<Participant>> getRecentParticipants({int limit = 10});
   Future<List<Participant>> getAllParticipants({
-    String? searchQuery,
-    String? sessionFilter,
-    String? statusFilter,
+    int page = 1,
+    int limit = 20,
+    String? search,
+    RegistrationStatus? status,
+    AttendanceStatus? attendanceStatus, String? searchQuery, String? sessionFilter, String? statusFilter,
   });
-  Future<List<Session>> getAllSessions();
-  Future<Map<String, dynamic>> getAttendanceAnalytics();
+  Future<Event> getEventDetails();
+  Future<List<Session>> getEventSessions();
+  Future<Map<String, dynamic>> getAttendanceReport();
+  Future<Map<String, dynamic>> getRegistrationReport();
 
-  // Admin Dashboard
-  Future<DashboardStats> getDashboardStats();
-  // Participant Dashboard
-  Future<ParticipantDashboard> getParticipantDashboard(String email);
-  Future<bool> updateParticipantInfo(
+  // Participant Dashboard Methods
+  Future<ParticipantDashboard> getParticipantDashboard(String participantId);
+  Future<Participant> getParticipantProfile(String participantId);
+  Future<List<Session>> getParticipantSessions(String participantId);
+
+  // Session Management
+  Future<Session> updateSession(String sessionId, Map<String, dynamic> data);
+  Future<void> deleteSession(String sessionId);
+  Future<Session> createSession(Map<String, dynamic> data);
+
+  // Participant Management
+  Future<Participant> updateParticipantStatus(
     String participantId,
-    Map<String, dynamic> updateData,
+    RegistrationStatus status,
   );
+  Future<Participant> updateAttendanceStatus(
+    String participantId,
+    AttendanceStatus status,
+  );
+  Future<void> checkInParticipant(String participantId, String? qrCode);
+  Future<void> checkOutParticipant(String participantId);
 }
 
 class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
@@ -33,138 +53,456 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
   DashboardRemoteDataSourceImpl({required this.dioClient});
 
   @override
-  Future<bool> checkInParticipant(String participantId) async {
+  Future<DashboardStats> getAdminDashboardStats() async {
     try {
-      final response = await dioClient.post(
-        '/admin/participants/$participantId/checkin',
-        data: {
-          'checkedIn': true,
-          'timestamp': DateTime.now().toIso8601String(),
-        },
-      );
-      return response.data['success'] == true;
-    } catch (e) {
-      throw Exception('Failed to check in participant: ${e.toString()}');
+      final response = await dioClient.get('/admin/dashboard/stats');
+
+      if (response.statusCode == 200) {
+        return DashboardStats.fromJson(response.data['data']);
+      } else {
+        throw ServerException(
+          message: response.data['message'] ?? 'Failed to get dashboard stats',
+          code: 'DASHBOARD_STATS_ERROR',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'DASHBOARD_STATS_ERROR');
     }
   }
 
   @override
-  Future<bool> checkOutParticipant(String participantId) async {
-    try {
-      final response = await dioClient.post(
-        '/admin/participants/$participantId/checkout',
-        data: {
-          'checkedIn': false,
-          'timestamp': DateTime.now().toIso8601String(),
-        },
-      );
-      return response.data['success'] == true;
-    } catch (e) {
-      throw Exception('Failed to check out participant: ${e.toString()}');
-    }
-  }
-
-  @override
-  Future<String> downloadConfirmationPdf(String participantId) async {
+  Future<List<Participant>> getRecentParticipants({int limit = 10}) async {
     try {
       final response = await dioClient.get(
-        '/participants/$participantId/confirmation-pdf',
+        '/admin/participants/recent',
+        queryParameters: {'limit': limit},
       );
-      return response.data['downloadUrl'] as String;
-    } catch (e) {
-      throw Exception('Failed to get confirmation PDF: ${e.toString()}');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> participantsJson = response.data['data'] ?? [];
+        return participantsJson
+            .map((json) => Participant.fromJson(json))
+            .toList();
+      } else {
+        throw ServerException(
+          message:
+              response.data['message'] ?? 'Failed to get recent participants',
+          code: 'RECENT_PARTICIPANTS_ERROR',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'RECENT_PARTICIPANTS_ERROR');
     }
   }
 
   @override
   Future<List<Participant>> getAllParticipants({
-    String? searchQuery,
-    String? sessionFilter,
-    String? statusFilter,
+    int page = 1,
+    int limit = 20,
+    String? search,
+    RegistrationStatus? status,
+    AttendanceStatus? attendanceStatus,
   }) async {
     try {
-      final queryParams = <String, dynamic>{};
-      if (searchQuery != null && searchQuery.isNotEmpty) {
-        queryParams['search'] = searchQuery;
+      final queryParams = <String, dynamic>{'page': page, 'limit': limit};
+
+      if (search != null && search.isNotEmpty) {
+        queryParams['search'] = search;
       }
-      if (sessionFilter != null && sessionFilter.isNotEmpty) {
-        queryParams['session'] = sessionFilter;
+      if (status != null) {
+        queryParams['registration_status'] = status.toString().split('.').last;
       }
-      if (statusFilter != null && statusFilter.isNotEmpty) {
-        queryParams['status'] = statusFilter;
+      if (attendanceStatus != null) {
+        queryParams['attendance_status'] = attendanceStatus
+            .toString()
+            .split('.')
+            .last;
       }
 
       final response = await dioClient.get(
         '/admin/participants',
-        queryParams: queryParams,
+        queryParameters: queryParams,
       );
 
-      final List<dynamic> participantsJson = response.data['participants'];
-      return participantsJson
-          .map((json) => Participant.fromJson(json))
-          .toList();
-    } catch (e) {
-      throw Exception('Failed to get participants: ${e.toString()}');
+      if (response.statusCode == 200) {
+        final List<dynamic> participantsJson = response.data['data'] ?? [];
+        return participantsJson
+            .map((json) => Participant.fromJson(json))
+            .toList();
+      } else {
+        throw ServerException(
+          message: response.data['message'] ?? 'Failed to get participants',
+          code: 'GET_PARTICIPANTS_ERROR',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'GET_PARTICIPANTS_ERROR');
     }
   }
 
   @override
-  Future<List<Session>> getAllSessions() async {
+  Future<Event> getEventDetails() async {
+    try {
+      final response = await dioClient.get('/admin/event');
+
+      if (response.statusCode == 200) {
+        return Event.fromJson(response.data['data']);
+      } else {
+        throw ServerException(
+          message: response.data['message'] ?? 'Failed to get event details',
+          code: 'EVENT_DETAILS_ERROR',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'EVENT_DETAILS_ERROR');
+    }
+  }
+
+  @override
+  Future<List<Session>> getEventSessions() async {
     try {
       final response = await dioClient.get('/admin/sessions');
-      final List<dynamic> sessionsJson = response.data['sessions'];
-      return sessionsJson.map((json) => Session.fromJson(json)).toList();
-    } catch (e) {
-      throw Exception('Failed to get sessions: ${e.toString()}');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> sessionsJson = response.data['data'] ?? [];
+        return sessionsJson.map((json) => Session.fromJson(json)).toList();
+      } else {
+        throw ServerException(
+          message: response.data['message'] ?? 'Failed to get event sessions',
+          code: 'EVENT_SESSIONS_ERROR',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'EVENT_SESSIONS_ERROR');
     }
   }
 
   @override
-  Future<Map<String, dynamic>> getAttendanceAnalytics() async {
+  Future<Map<String, dynamic>> getAttendanceReport() async {
     try {
-      final response = await dioClient.get('/admin/analytics/attendance');
-      return response.data as Map<String, dynamic>;
-    } catch (e) {
-      throw Exception('Failed to get attendance analytics: ${e.toString()}');
+      final response = await dioClient.get('/admin/reports/attendance');
+
+      if (response.statusCode == 200) {
+        return response.data['data'] as Map<String, dynamic>;
+      } else {
+        throw ServerException(
+          message:
+              response.data['message'] ?? 'Failed to get attendance report',
+          code: 'ATTENDANCE_REPORT_ERROR',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'ATTENDANCE_REPORT_ERROR');
     }
   }
 
   @override
-  Future<DashboardStats> getDashboardStats() async {
+  Future<Map<String, dynamic>> getRegistrationReport() async {
     try {
-      final response = await dioClient.get('/admin/dashboard/stats');
-      return DashboardStats.fromJson(response.data);
-    } catch (e) {
-      throw Exception('Failed to get dashboard stats: ${e.toString()}');
+      final response = await dioClient.get('/admin/reports/registration');
+
+      if (response.statusCode == 200) {
+        return response.data['data'] as Map<String, dynamic>;
+      } else {
+        throw ServerException(
+          message:
+              response.data['message'] ?? 'Failed to get registration report',
+          code: 'REGISTRATION_REPORT_ERROR',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'REGISTRATION_REPORT_ERROR');
     }
   }
 
   @override
-  Future<ParticipantDashboard> getParticipantDashboard(String email) async {
+  Future<ParticipantDashboard> getParticipantDashboard(
+    String participantId,
+  ) async {
     try {
       final response = await dioClient.get(
-        '/participants/dashboard',
-        queryParams: {'email': email},
+        '/participant/dashboard/$participantId',
       );
-      return ParticipantDashboard.fromJson(response.data);
-    } catch (e) {
-      throw Exception('Failed to get participant dashboard: ${e.toString()}');
+
+      if (response.statusCode == 200) {
+        return ParticipantDashboard.fromJson(response.data['data']);
+      } else {
+        throw ServerException(
+          message:
+              response.data['message'] ?? 'Failed to get participant dashboard',
+          code: 'PARTICIPANT_DASHBOARD_ERROR',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'PARTICIPANT_DASHBOARD_ERROR');
     }
   }
 
   @override
-  Future<bool> updateParticipantInfo(
-    String participantId,
-    Map<String, dynamic> updateData,
+  Future<Participant> getParticipantProfile(String participantId) async {
+    try {
+      final response = await dioClient.get(
+        '/participant/profile/$participantId',
+      );
+
+      if (response.statusCode == 200) {
+        return Participant.fromJson(response.data['data']);
+      } else {
+        throw ServerException(
+          message:
+              response.data['message'] ?? 'Failed to get participant profile',
+          code: 'PARTICIPANT_PROFILE_ERROR',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'PARTICIPANT_PROFILE_ERROR');
+    }
+  }
+
+  @override
+  Future<List<Session>> getParticipantSessions(String participantId) async {
+    try {
+      final response = await dioClient.get(
+        '/participant/sessions/$participantId',
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> sessionsJson = response.data['data'] ?? [];
+        return sessionsJson.map((json) => Session.fromJson(json)).toList();
+      } else {
+        throw ServerException(
+          message:
+              response.data['message'] ?? 'Failed to get participant sessions',
+          code: 'PARTICIPANT_SESSIONS_ERROR',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'PARTICIPANT_SESSIONS_ERROR');
+    }
+  }
+
+  @override
+  Future<Session> updateSession(
+    String sessionId,
+    Map<String, dynamic> data,
   ) async {
     try {
       final response = await dioClient.put(
-        '/participants/$participantId',
-        data: updateData,
+        '/admin/sessions/$sessionId',
+        data: data,
       );
-      return response.data['success'] == true;
-    } catch (e) {
-      throw Exception('Failed to update participant info: ${e.toString()}');
+
+      if (response.statusCode == 200) {
+        return Session.fromJson(response.data['data']);
+      } else {
+        throw ServerException(
+          message: response.data['message'] ?? 'Failed to update session',
+          code: 'UPDATE_SESSION_ERROR',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'UPDATE_SESSION_ERROR');
+    }
+  }
+
+  @override
+  Future<void> deleteSession(String sessionId) async {
+    try {
+      final response = await dioClient.delete('/admin/sessions/$sessionId');
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw ServerException(
+          message: response.data['message'] ?? 'Failed to delete session',
+          code: 'DELETE_SESSION_ERROR',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'DELETE_SESSION_ERROR');
+    }
+  }
+
+  @override
+  Future<Session> createSession(Map<String, dynamic> data) async {
+    try {
+      final response = await dioClient.post('/admin/sessions', data: data);
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return Session.fromJson(response.data['data']);
+      } else {
+        throw ServerException(
+          message: response.data['message'] ?? 'Failed to create session',
+          code: 'CREATE_SESSION_ERROR',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'CREATE_SESSION_ERROR');
+    }
+  }
+
+  @override
+  Future<Participant> updateParticipantStatus(
+    String participantId,
+    RegistrationStatus status,
+  ) async {
+    try {
+      final response = await dioClient.put(
+        '/admin/participants/$participantId/status',
+        data: {'registration_status': status.toString().split('.').last},
+      );
+
+      if (response.statusCode == 200) {
+        return Participant.fromJson(response.data['data']);
+      } else {
+        throw ServerException(
+          message:
+              response.data['message'] ?? 'Failed to update participant status',
+          code: 'UPDATE_PARTICIPANT_STATUS_ERROR',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'UPDATE_PARTICIPANT_STATUS_ERROR');
+    }
+  }
+
+  @override
+  Future<Participant> updateAttendanceStatus(
+    String participantId,
+    AttendanceStatus status,
+  ) async {
+    try {
+      final response = await dioClient.put(
+        '/admin/participants/$participantId/attendance',
+        data: {'attendance_status': status.toString().split('.').last},
+      );
+
+      if (response.statusCode == 200) {
+        return Participant.fromJson(response.data['data']);
+      } else {
+        throw ServerException(
+          message:
+              response.data['message'] ?? 'Failed to update attendance status',
+          code: 'UPDATE_ATTENDANCE_ERROR',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'UPDATE_ATTENDANCE_ERROR');
+    }
+  }
+
+  @override
+  Future<void> checkInParticipant(String participantId, String? qrCode) async {
+    try {
+      final data = <String, dynamic>{'attendance_status': 'checkedIn'};
+
+      if (qrCode != null) {
+        data['qr_code'] = qrCode;
+      }
+
+      final response = await dioClient.post(
+        '/admin/participants/$participantId/checkin',
+        data: data,
+      );
+
+      if (response.statusCode != 200) {
+        throw ServerException(
+          message: response.data['message'] ?? 'Failed to check in participant',
+          code: 'CHECK_IN_ERROR',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'CHECK_IN_ERROR');
+    }
+  }
+
+  @override
+  Future<void> checkOutParticipant(String participantId) async {
+    try {
+      final response = await dioClient.post(
+        '/admin/participants/$participantId/checkout',
+        data: {'attendance_status': 'checkedOut'},
+      );
+
+      if (response.statusCode != 200) {
+        throw ServerException(
+          message:
+              response.data['message'] ?? 'Failed to check out participant',
+          code: 'CHECK_OUT_ERROR',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'CHECK_OUT_ERROR');
+    }
+  }
+
+  // Helper method to handle DioExceptions consistently
+  AppException _handleDioException(DioException e, String defaultCode) {
+    if (e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout ||
+        e.type == DioExceptionType.sendTimeout) {
+      return NetworkException(
+        message: 'Connection timeout. Please check your internet connection.',
+        code: 'TIMEOUT_ERROR',
+      );
+    } else if (e.type == DioExceptionType.connectionError) {
+      return NetworkException(
+        message: 'No internet connection. Please check your network.',
+        code: 'NETWORK_ERROR',
+      );
+    } else if (e.response != null) {
+      final statusCode = e.response!.statusCode;
+      final responseData = e.response!.data;
+
+      switch (statusCode) {
+        case 400:
+          return ServerException(
+            message: responseData['message'] ?? 'Bad request',
+            code: 'BAD_REQUEST',
+          );
+        case 401:
+          return AuthenticationException(
+            message: responseData['message'] ?? 'Authentication required',
+            code: 'AUTHENTICATION_ERROR',
+          );
+        case 403:
+          return AuthorizationException(
+            message: responseData['message'] ?? 'Access denied',
+            code: 'AUTHORIZATION_ERROR',
+          );
+        case 404:
+          return ServerException(
+            message: responseData['message'] ?? 'Resource not found',
+            code: 'NOT_FOUND',
+          );
+        case 422:
+          final errors = responseData['errors'] as Map<String, dynamic>?;
+          return ValidationException(
+            message: responseData['message'] ?? 'Validation failed',
+            code: 'VALIDATION_ERROR',
+            errors: errors?.map(
+              (key, value) => MapEntry(key, List<String>.from(value)),
+            ),
+          );
+        case 429:
+          return ServerException(
+            message: responseData['message'] ?? 'Too many requests',
+            code: 'RATE_LIMIT_ERROR',
+          );
+        case 500:
+          return ServerException(
+            message: responseData['message'] ?? 'Internal server error',
+            code: 'SERVER_ERROR',
+          );
+        default:
+          return ServerException(
+            message: responseData['message'] ?? 'Server error occurred',
+            code: defaultCode,
+          );
+      }
+    } else {
+      return ServerException(
+        message: 'Unknown server error occurred',
+        code: defaultCode,
+      );
     }
   }
 }

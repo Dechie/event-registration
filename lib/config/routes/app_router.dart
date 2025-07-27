@@ -98,7 +98,7 @@ class AppRouter {
             requiredUserType: 'admin',
             child: BlocProvider(
               create: (context) => di.sl<DashboardBloc>()
-                ..add(const LoadAdminDashboardEvent()),
+                ..add(const LoadAdminDashboardEvent() as DashboardEvent),
               child: const AdminDashboardPage(),
             ),
           ),

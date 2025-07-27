@@ -44,7 +44,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
   });
 
   @override
-  Future<bool> checkInParticipant(String participantId) async {
+  Future<bool?> checkInParticipant(String participantId) async {
     if (await networkInfo.isConnected) {
       try {
         return await remoteDataSource.checkInParticipant(participantId);

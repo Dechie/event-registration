@@ -7,6 +7,7 @@ import 'package:event_reg/features/auth/data/datasource/auth_local_datasource.da
 import 'package:event_reg/features/auth/data/models/login_response.dart';
 import 'package:event_reg/features/auth/data/models/login_request.dart';
 import 'package:event_reg/features/auth/data/models/admin.dart';
+import 'package:event_reg/features/auth/data/models/user.dart';
 
 abstract class AuthRepository {
   Future<Either<Failure, LoginResponse>> login({

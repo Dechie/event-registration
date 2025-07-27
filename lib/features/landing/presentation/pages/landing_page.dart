@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:event_reg/config/routes/route_names.dart';
 import 'package:event_reg/config/themes/app_colors.dart';
-import 'package:event_reg/core/widgets/custom_button.dart';
+import 'package:event_reg/core/shared/widgets/custom_button.dart';
 
 import '../widgets/event_highlights.dart';
 import '../widgets/event_info.dart';
