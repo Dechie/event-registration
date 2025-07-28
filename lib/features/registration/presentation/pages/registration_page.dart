@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:event_reg/features/dashboard/data/models/session.dart';
 import 'package:event_reg/features/registration/presentation/bloc/registration_bloc.dart';
 import 'package:event_reg/features/registration/presentation/bloc/registration_event.dart';
 import 'package:event_reg/features/registration/presentation/bloc/registration_state.dart';
@@ -39,7 +40,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   String? _selectedIndustry;
   int? _yearsOfExperience;
   File? _profileImage;
-  final List<String> _selectedSessions = [];
+  final List<Session> _selectedSessions = [];
 
   final List<String> _genders = ['Male', 'Female', 'Other'];
   final List<String> _nationalities = ['Ethiopian', 'Other'];
@@ -582,9 +583,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 onChanged: (bool? value) {
                   setState(() {
                     if (value == true) {
-                      _selectedSessions.add(session['id']!);
+                      _selectedSessions.add(Session(id: session['id']!, title: "title", description: "description", startTime: DateTime.now(), endTime: DateTime.now(), location: "location", capacity: 100, currentAttendees: 50, status: "active"));
                     } else {
-                      _selectedSessions.remove(session['id']);
+                      _selectedSessions.add(Session(id: session['id']!, title: "title", description: "description", startTime: DateTime.now(), endTime: DateTime.now(), location: "location", capacity: 100, currentAttendees: 50, status: "active"));
                     }
                   });
                 },

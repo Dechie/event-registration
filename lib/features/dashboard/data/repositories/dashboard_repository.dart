@@ -44,10 +44,13 @@ class DashboardRepositoryImpl implements DashboardRepository {
   });
 
   @override
-  Future<bool?> checkInParticipant(String participantId) async {
+  Future<bool> checkInParticipant(String participantId) async {
     if (await networkInfo.isConnected) {
       try {
-        return await remoteDataSource.checkInParticipant(participantId);
+        return await remoteDataSource.checkInParticipant(
+          participantId,
+          "qrcodee",
+        );
       } catch (e) {
         throw Exception('Failed to check in participant: ${e.toString()}');
       }
@@ -60,7 +63,9 @@ class DashboardRepositoryImpl implements DashboardRepository {
   Future<bool> checkOutParticipant(String participantId) async {
     if (await networkInfo.isConnected) {
       try {
-        return await remoteDataSource.checkOutParticipant(participantId);
+        //return await remoteDataSource.checkOutParticipant(participantId);
+        //return await localDataSource.checkOutParticipant(participantId);
+        return true;
       } catch (e) {
         throw Exception('Failed to check out participant: ${e.toString()}');
       }
@@ -78,7 +83,8 @@ class DashboardRepositoryImpl implements DashboardRepository {
   Future<String> downloadConfirmationPdf(String participantId) async {
     if (await networkInfo.isConnected) {
       try {
-        return await remoteDataSource.downloadConfirmationPdf(participantId);
+        //return await remoteDataSource.downloadConfirmationPdf(participantId);
+        return "";
       } catch (e) {
         throw Exception('Failed to download confirmation PDF: ${e.toString()}');
       }

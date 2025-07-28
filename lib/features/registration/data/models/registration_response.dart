@@ -7,6 +7,7 @@ class RegistrationResponse extends Equatable {
   final Participant participant;
   final bool requiresVerification;
   final String? verificationMethod; // 'email', 'sms', etc.
+  final String? qrCode;
 
   const RegistrationResponse({
     required this.id,
@@ -14,13 +15,16 @@ class RegistrationResponse extends Equatable {
     required this.participant,
     this.requiresVerification = false,
     this.verificationMethod,
+    this.qrCode,
   });
 
   factory RegistrationResponse.fromJson(Map<String, dynamic> json) {
     return RegistrationResponse(
       id: json['id'] as String,
       message: json['message'] as String,
-      participant: Participant.fromJson(json['participant'] as Map<String, dynamic>),
+      participant: Participant.fromJson(
+        json['participant'] as Map<String, dynamic>,
+      ),
       requiresVerification: json['requiresVerification'] as bool? ?? false,
       verificationMethod: json['verificationMethod'] as String?,
     );
@@ -38,10 +42,10 @@ class RegistrationResponse extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        message,
-        participant,
-        requiresVerification,
-        verificationMethod,
-      ];
+    id,
+    message,
+    participant,
+    requiresVerification,
+    verificationMethod,
+  ];
 }

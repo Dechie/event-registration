@@ -6,6 +6,7 @@ class Session {
   final DateTime endTime;
   final String location;
   final String? speaker;
+  final String? room;
   final int capacity;
   final int currentAttendees;
   final String status; // active, inactive, full
@@ -18,6 +19,7 @@ class Session {
     required this.endTime,
     required this.location,
     this.speaker,
+    this.room,
     required this.capacity,
     required this.currentAttendees,
     required this.status,

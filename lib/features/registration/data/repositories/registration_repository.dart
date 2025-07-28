@@ -7,9 +7,13 @@ import 'package:event_reg/features/registration/data/models/registration_result.
 import '../datasources/registration_remote_datasource.dart';
 
 abstract class RegistrationRepository {
-  Future<List<Participant>> getAllParticipants();
+  Future<List<Participant>> getAllParticipants(
+    String? searchQuery,
+    String? sessionFilter,
+    String? statusFilter,
+  );
   Future<Participant?> getParticipantByEmail(String email);
-  Future<RegistrationResult> registerParticipant(Participant participant);
+  Future<RegistrationResponse> registerParticipant(Participant participant);
   Future<void> sendOTP(String email);
   Future<bool> verifyOTP(String email, String otp);
 }
@@ -26,10 +30,16 @@ class RegistrationRepositoryImpl implements RegistrationRepository {
   });
 
   @override
-  Future<List<Participant>> getAllParticipants() async {
+  Future<List<Participant>> getAllParticipants(
+    String? searchQuery,
+    String? sessionFilter,
+    String? statusFilter,
+  ) async {
     if (await networkInfo.isConnected) {
       try {
-        final participants = await remoteDataSource.getAllParticipants();
+        final participants = await remoteDataSource.getAllParticipants(
+          
+        );
 
         // Cache all participants
         for (final participant in participants) {
@@ -98,7 +108,7 @@ class RegistrationRepositoryImpl implements RegistrationRepository {
   Future<void> sendOTP(String email) async {
     if (await networkInfo.isConnected) {
       try {
-        await remoteDataSource.sendOTP(email);
+        await remoteDataSource.sendOtp(email);
         // Cache the email for offline verification if needed
         await localDataSource.cacheEmail(email);
       } catch (e) {
@@ -113,7 +123,7 @@ class RegistrationRepositoryImpl implements RegistrationRepository {
   Future<bool> verifyOTP(String email, String otp) async {
     if (await networkInfo.isConnected) {
       try {
-        return await remoteDataSource.verifyOTP(email, otp);
+        return await remoteDataSource.verifyOtp(email, otp);
       } catch (e) {
         throw Exception('Failed to verify OTP: ${e.toString()}');
       }

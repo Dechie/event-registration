@@ -36,4 +36,14 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
   Future<Either<Failure, bool>> manualChekIn(String email) async {
     return Right<Failure, bool>(true);
   }
+  
+  @override
+  Future<Either<Failure, bool>> manualCheckIn(String email) {
+    // TODO: implement manualCheckIn
+    throw UnimplementedError();
+  }
+}
+
+class AttendanceRemoteDataSource {
+  Future checkInParticipant(String qrCodeId) async {}
 }

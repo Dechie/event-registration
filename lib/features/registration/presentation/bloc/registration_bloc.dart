@@ -80,7 +80,7 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
       emit(
         RegistrationSuccessState(
           participant: result.participant!,
-          qrCode: result.qrCodeUrl ?? "",
+          qrCode: result.qrCode ?? "",
         ),
       );
     } catch (e) {

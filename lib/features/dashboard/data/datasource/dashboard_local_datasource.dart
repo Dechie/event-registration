@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
+import 'package:event_reg/core/error/exceptions.dart';
 import 'package:event_reg/core/shared/models/participant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,6 +20,7 @@ abstract class DashboardLocalDataSource {
   Future<void> cacheSessions(List<Session> sessions);
   Future<List<Session>> getCachedSessions();
   Future<void> cacheParticipants(List<Participant> participants);
+  Future<bool> checkInParticipant(String participantId, String? qrCode);
   Future<List<Participant>> getCachedParticipants();
   Future<void> clearCache();
 }
@@ -31,6 +34,8 @@ class DashboardLocalDataSourceImpl implements DashboardLocalDataSource {
   static const String _participantsKey = 'dashboard_participants';
 
   DashboardLocalDataSourceImpl({required this.sharedPreferences});
+
+  get dioClient => null;
 
   @override
   Future<void> cacheDashboardStats(DashboardStats stats) async {
@@ -95,6 +100,33 @@ class DashboardLocalDataSourceImpl implements DashboardLocalDataSource {
   Future<void> cacheParticipants(List<Participant> participants) async {
     final jsonString = jsonEncode(participants.map((p) => p.toJson()).toList());
     await sharedPreferences.setString(_participantsKey, jsonString);
+  }
+
+  @override
+  Future<bool> checkInParticipant(String participantId, String? qrCode) async {
+    try {
+      final data = <String, dynamic>{'attendance_status': 'checkedIn'};
+
+      if (qrCode != null) {
+        data['qr_code'] = qrCode;
+      }
+
+      final response = await dioClient.post(
+        '/admin/participants/$participantId/checkin',
+        data: data,
+      );
+
+      if (response.statusCode != 200) {
+        throw ServerException(
+          message: response.data['message'] ?? 'Failed to check in participant',
+          code: 'CHECK_IN_ERROR',
+        );
+      }
+      return true;
+    } on DioException catch (e) {
+      //throw _handleDioException(e, 'CHECK_IN_ERROR');
+    }
+    return false;
   }
 
   @override
