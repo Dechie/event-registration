@@ -1,23 +1,24 @@
 // lib/config/routes/app_router.dart
-import 'package:event_reg/features/dashboard/presentation/bloc/dashboard_event.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:event_reg/config/routes/route_names.dart';
-import 'package:event_reg/features/auth/presentation/pages/participant_login.dart';
-import 'package:event_reg/features/auth/presentation/pages/admin_login_page.dart'; // New admin login
-import 'package:event_reg/features/landing/presentation/pages/landing_page.dart';
-import 'package:event_reg/features/splash/presentation/pages/splash_page.dart';
-import 'package:event_reg/features/dashboard/presentation/pages/admin_dashboard_page.dart';
-import 'package:event_reg/features/dashboard/presentation/pages/participant_dashboard_page.dart';
-import 'package:event_reg/features/registration/presentation/pages/registration_page.dart';
-import 'package:event_reg/injection_container.dart' as di;
-
 // Import BLoCs
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:event_reg/features/auth/presentation/bloc/auth_event.dart';
 import 'package:event_reg/features/auth/presentation/bloc/auth_state.dart';
-import 'package:event_reg/features/registration/presentation/bloc/registration_bloc.dart';
+import 'package:event_reg/features/auth/presentation/pages/admin_login_page.dart'; // New admin login
+import 'package:event_reg/features/auth/presentation/pages/auth_otp_verification_page.dart';
+import 'package:event_reg/features/auth/presentation/pages/participant_login.dart';
+import 'package:event_reg/features/auth/presentation/pages/user_registration.dart';
 import 'package:event_reg/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:event_reg/features/dashboard/presentation/bloc/dashboard_event.dart';
+import 'package:event_reg/features/dashboard/presentation/pages/admin_dashboard_page.dart';
+import 'package:event_reg/features/dashboard/presentation/pages/participant_dashboard_page.dart';
+import 'package:event_reg/features/landing/presentation/pages/landing_page.dart';
+import 'package:event_reg/features/registration/presentation/bloc/registration_bloc.dart';
+import 'package:event_reg/features/registration/presentation/pages/registration_page.dart';
+import 'package:event_reg/features/splash/presentation/pages/splash_page.dart';
+import 'package:event_reg/injection_container.dart' as di;
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -25,7 +26,8 @@ class AppRouter {
       case RouteNames.splashPage:
         return MaterialPageRoute(
           builder: (_) => BlocProvider(
-            create: (context) => di.sl<AuthBloc>()..add(const CheckAuthStatusEvent()),
+            create: (context) =>
+                di.sl<AuthBloc>()..add(const CheckAuthStatusEvent()),
             child: const SplashPage(),
           ),
         );
@@ -48,7 +50,8 @@ class AppRouter {
             create: (context) => di.sl<RegistrationBloc>(),
             child: OTPVerificationPagePlaceholder(
               email: args?['email'] as String? ?? '',
-              registrationData: args?['registrationData'] as Map<String, dynamic>? ?? {},
+              registrationData:
+                  args?['registrationData'] as Map<String, dynamic>? ?? {},
             ),
           ),
         );
@@ -57,9 +60,28 @@ class AppRouter {
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (_) => RegistrationSuccessPagePlaceholder(
-            participantData: args?['participantData'] as Map<String, dynamic>? ?? {},
+            participantData:
+                args?['participantData'] as Map<String, dynamic>? ?? {},
           ),
         );
+
+     
+      case RouteNames.userRegistrationPage:
+        return MaterialPageRoute(
+          builder: (_) => const UserRegistrationPage(),
+          settings: settings,
+        );
+
+      case RouteNames.authOtpVerificationPage:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => AuthOTPVerificationPage(
+            email: args?['email'] ?? '',
+            otpToken: args?['otpToken'],
+            message: args?['message'],
+          ),
+          settings: settings,
+        ); 
 
       case RouteNames.participantLoginPage:
         return MaterialPageRoute(
@@ -84,9 +106,12 @@ class AppRouter {
             requiredUserType: 'participant',
             child: BlocProvider(
               create: (context) => di.sl<DashboardBloc>()
-                ..add(LoadParticipantDashboardEvent(
-                  email: args?['email'] as String? ?? '',
-                ) as DashboardEvent),
+                ..add(
+                  LoadParticipantDashboardEvent(
+                        email: args?['email'] as String? ?? '',
+                      )
+                      as DashboardEvent,
+                ),
               child: ParticipantDashboardPage(email: args?['email'] ?? ''),
             ),
           ),
@@ -97,8 +122,9 @@ class AppRouter {
           builder: (_) => AuthGuard(
             requiredUserType: 'admin',
             child: BlocProvider(
-              create: (context) => di.sl<DashboardBloc>()
-                ..add(const LoadAdminDashboardEvent() as DashboardEvent),
+              create: (context) =>
+                  di.sl<DashboardBloc>()
+                    ..add(const LoadAdminDashboardEvent() as DashboardEvent),
               child: const AdminDashboardPage(),
             ),
           ),
@@ -140,28 +166,128 @@ class AuthGuard extends StatelessWidget {
           return child;
         } else if (state is AuthLoadingState) {
           return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
+            body: Center(child: CircularProgressIndicator()),
           );
         } else {
           // Redirect to appropriate login page
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            final route = requiredUserType == 'admin' 
-                ? RouteNames.adminLoginPage 
+            final route = requiredUserType == 'admin'
+                ? RouteNames.adminLoginPage
                 : RouteNames.participantLoginPage;
             Navigator.pushReplacementNamed(context, route);
           });
-          
+
           return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
+            body: Center(child: CircularProgressIndicator()),
           );
         }
       },
     );
   }
+}
+
+class ContactPage extends StatelessWidget {
+  const ContactPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Contact Us'), centerTitle: true),
+      body: const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.contact_support, size: 80, color: Colors.green),
+              SizedBox(height: 16),
+              Text(
+                'Contact Us',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Contact Us Page - To be implemented',
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class EventAgendaPage extends StatelessWidget {
+  const EventAgendaPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Event Agenda'), centerTitle: true),
+      body: const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.event_note, size: 80, color: Colors.blue),
+              SizedBox(height: 16),
+              Text(
+                'Event Agenda',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Event Agenda Page - To be implemented',
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class FAQPage extends StatelessWidget {
+  const FAQPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('FAQ'), centerTitle: true),
+      body: const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.help_outline, size: 80, color: Colors.purple),
+              SizedBox(height: 16),
+              Text(
+                'Frequently Asked Questions',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 16),
+              Text('FAQ Page - To be implemented', textAlign: TextAlign.center),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class LoadAdminDashboardEvent {
+  const LoadAdminDashboardEvent();
+}
+
+// Add these placeholder events to your dashboard bloc
+class LoadParticipantDashboardEvent {
+  final String email;
+  const LoadParticipantDashboardEvent({required this.email});
 }
 
 // Enhanced Not Found Page
@@ -177,10 +303,8 @@ class NotFoundPage extends StatelessWidget {
         title: const Text('Page Not Found'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pushReplacementNamed(
-            context,
-            RouteNames.landingPage,
-          ),
+          onPressed: () =>
+              Navigator.pushReplacementNamed(context, RouteNames.landingPage),
         ),
       ),
       body: Center(
@@ -189,11 +313,7 @@ class NotFoundPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline,
-                size: 100,
-                color: Colors.grey[400],
-              ),
+              Icon(Icons.error_outline, size: 100, color: Colors.grey[400]),
               const SizedBox(height: 24),
               Text(
                 '404',
@@ -205,18 +325,18 @@ class NotFoundPage extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 'Page Not Found',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.headlineSmall?.copyWith(color: Colors.grey[600]),
               ),
               const SizedBox(height: 16),
-              if (routeName != null) 
+              if (routeName != null)
                 Text(
                   'No route defined for "$routeName"',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[500],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
                 ),
               const SizedBox(height: 32),
               ElevatedButton.icon(
@@ -252,10 +372,7 @@ class OTPVerificationPagePlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('OTP Verification'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('OTP Verification'), centerTitle: true),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -398,141 +515,4 @@ class RegistrationSuccessPagePlaceholder extends StatelessWidget {
       ),
     );
   }
-}
-
-class EventAgendaPage extends StatelessWidget {
-  const EventAgendaPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Event Agenda'),
-        centerTitle: true,
-      ),
-      body: const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.event_note,
-                size: 80,
-                color: Colors.blue,
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Event Agenda',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Event Agenda Page - To be implemented',
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class ContactPage extends StatelessWidget {
-  const ContactPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Contact Us'),
-        centerTitle: true,
-      ),
-      body: const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.contact_support,
-                size: 80,
-                color: Colors.green,
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Contact Us',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Contact Us Page - To be implemented',
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class FAQPage extends StatelessWidget {
-  const FAQPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('FAQ'),
-        centerTitle: true,
-      ),
-      body: const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.help_outline,
-                size: 80,
-                color: Colors.purple,
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Frequently Asked Questions',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 16),
-              Text(
-                'FAQ Page - To be implemented',
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// Add these placeholder events to your dashboard bloc
-class LoadParticipantDashboardEvent {
-  final String email;
-  const LoadParticipantDashboardEvent({required this.email});
-}
-
-class LoadAdminDashboardEvent {
-  const LoadAdminDashboardEvent();
 }

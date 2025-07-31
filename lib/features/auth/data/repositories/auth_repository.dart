@@ -26,6 +26,12 @@ abstract class AuthRepository {
   });
   Future<Either<Failure, LoginResponse>> refreshToken();
   Future<Either<Failure, bool>> isAuthenticated();
+
+  Future registerUser({required String email, required String password, required String passwordConfirmation}) async {}
+
+  Future resendOTP(String email) async {}
+
+  Future verifyOTP({required String email, required String otp, String? otpToken}) async {}
 }
 
 class AuthRepositoryImpl implements AuthRepository {
@@ -251,5 +257,23 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e) {
       return const Right(false);
     }
+  }
+  
+  @override
+  Future registerUser({required String email, required String password, required String passwordConfirmation}) {
+    // TODO: implement registerUser
+    throw UnimplementedError();
+  }
+  
+  @override
+  Future resendOTP(String email) {
+    // TODO: implement resendOTP
+    throw UnimplementedError();
+  }
+  
+  @override
+  Future verifyOTP({required String email, required String otp, String? otpToken}) {
+    // TODO: implement verifyOTP
+    throw UnimplementedError();
   }
 }

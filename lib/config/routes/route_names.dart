@@ -4,6 +4,8 @@ class RouteNames {
   static const String landingPage = '/';
 
   // Registration routes
+  static const String userRegistrationPage = '/user-registration';
+  static const String authOtpVerificationPage = '/auth-otp-verification';
   static const String registrationPage = '/registration';
   static const String otpVerificationPage = '/otp-verification';
   static const String registrationSuccessPage = '/registration-success';
@@ -18,4 +20,5 @@ class RouteNames {
   static const String contactPage = '/contact';
   static const String faqPage = '/faq';
   static const String eventAgendaPage = '/event-agenda';
+
 }
