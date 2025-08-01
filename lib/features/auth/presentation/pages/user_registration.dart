@@ -537,7 +537,7 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
       }
 
       FocusScope.of(context).unfocus();
-      await Future.delayed(Duration(seconds: 2));
+      //await Future.delayed(Duration(seconds: 2));
       // Hide keyboard
       if (mounted) {
         context.read<AuthBloc>().add(

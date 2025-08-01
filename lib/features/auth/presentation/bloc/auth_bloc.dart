@@ -418,7 +418,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
 
-  AuthBloc({required this.authRepository}) : super(const AuthInitialState());
+  AuthBloc({required this.authRepository}) : super(const AuthInitialState()) {
+    on<LoginEvent>(_onLogin);
+    on<LogoutEvent>(_onLogout);
+    on<CheckAuthStatusEvent>(_onCheckAuthStatus);
+    on<RegisterUserEvent>(_onRegisterUser);
+    on<VerifyOTPEvent>(_onVerifyOTP);
+    on<ResendOTPEvent>(_onResendOTP);
+  }
 
   String _mapFailureToMessage(Failure failure) {
     switch (failure.code) {
@@ -547,6 +554,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               userData: loginResponse.user.toJson(),
             ),
           );
+        },
+      );
+    } catch (e) {
+      emit(const UnauthenticatedState());
+    }
+  }
+
+  Future<void> _onLogout(LogoutEvent event, Emitter<AuthState> emit) async {
+    emit(const AuthLoadingState());
+
+    try {
+      final result = await authRepository.logout();
+
+      result.fold(
+        (failure) {
+          emit(const UnauthenticatedState());
+        },
+        (_) {
+          emit(const UnauthenticatedState());
         },
       );
     } catch (e) {

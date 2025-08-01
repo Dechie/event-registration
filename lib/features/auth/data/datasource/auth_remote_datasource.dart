@@ -323,6 +323,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         "/register",
         data: registrationRequest.toJson(),
       );
+      debugPrint("register status: ${response.data["message"]}");
 
       if ([200, 201].contains(response.statusCode)) {
         // handle both nested data and direct respones formats
@@ -337,6 +338,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
           otpToken: responseData["otp_token"],
         );
       } else {
+        debugPrint("server error because of non 200/201?");
         throw ServerException(
           message: response.data["message"] ?? "Registration Failed",
           code: response.data["code"] ?? 'REGISTRATION_FAILED',
@@ -345,6 +347,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     } on ApiError catch (e) {
       _handleApiError(e, 'REGISTRATION_ERROR');
     } catch (e) {
+      debugPrint("is error here?");
       if (e is ServerException || e is ValidationException) rethrow;
       throw ServerException(
         message: "Registration failed. Please try again",

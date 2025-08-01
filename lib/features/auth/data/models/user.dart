@@ -13,6 +13,12 @@ class User extends Equatable {
   final DateTime createdAt;
   final DateTime? lastLoginAt;
   final Map<String, dynamic>? metadata;
+  
+  // Event-specific fields (based on /me endpoint)
+  final String? location;
+  final DateTime? startTime;
+  final DateTime? endTime;
+  final String? banner;
 
   const User({
     required this.id,
@@ -27,6 +33,10 @@ class User extends Equatable {
     required this.createdAt,
     this.lastLoginAt,
     this.metadata,
+    this.location,
+    this.startTime,
+    this.endTime,
+    this.banner,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -45,6 +55,14 @@ class User extends Equatable {
           ? DateTime.parse(json['last_login_at'] as String)
           : null,
       metadata: json['metadata'] as Map<String, dynamic>?,
+      location: json['location'] as String?,
+      startTime: json['start_time'] != null 
+          ? DateTime.parse(json['start_time'] as String)
+          : null,
+      endTime: json['end_time'] != null 
+          ? DateTime.parse(json['end_time'] as String)
+          : null,
+      banner: json['banner'] as String?,
     );
   }
 
@@ -62,6 +80,10 @@ class User extends Equatable {
       'created_at': createdAt.toIso8601String(),
       'last_login_at': lastLoginAt?.toIso8601String(),
       'metadata': metadata,
+      'location': location,
+      'start_time': startTime?.toIso8601String(),
+      'end_time': endTime?.toIso8601String(),
+      'banner': banner,
     };
   }
 
@@ -88,6 +110,10 @@ class User extends Equatable {
     DateTime? createdAt,
     DateTime? lastLoginAt,
     Map<String, dynamic>? metadata,
+    String? location,
+    DateTime? startTime,
+    DateTime? endTime,
+    String? banner,
   }) {
     return User(
       id: id ?? this.id,
@@ -102,6 +128,10 @@ class User extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       lastLoginAt: lastLoginAt ?? this.lastLoginAt,
       metadata: metadata ?? this.metadata,
+      location: location ?? this.location,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      banner: banner ?? this.banner,
     );
   }
 
@@ -119,6 +149,10 @@ class User extends Equatable {
         createdAt,
         lastLoginAt,
         metadata,
+        location,
+        startTime,
+        endTime,
+        banner,
       ];
 }
 

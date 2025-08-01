@@ -470,6 +470,7 @@ class AuthRepositoryImpl implements AuthRepository {
         passwordConfirmation: passwordConfirmation,
       );
 
+      
       final response = await remoteDatasource.registerUser(registrationRequest);
       return Right(response);
     } on NetworkException catch (e) {
