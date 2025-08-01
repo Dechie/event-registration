@@ -402,7 +402,7 @@ class _AuthOTPVerificationPageState extends State<AuthOTPVerificationPage>
       ],
     );
   }
-
+  
   Widget _buildChangeEmailOption() {
     return TextButton.icon(
       onPressed: () {
