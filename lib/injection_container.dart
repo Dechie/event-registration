@@ -40,8 +40,8 @@ Future<void> init() async {
   // ! Features - Auth
   // DataSources first (dependencies)
   debugPrint("registering authremotedatasource");
-  sl.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(dioClient: sl()),
+  sl.registerLazySingleton<AuthRemoteDatasource>(
+    () => AuthRemoteDatasourceImpl(dioClient: sl()),
   );
 
   debugPrint("registering authlocaldatasource");
@@ -53,7 +53,7 @@ Future<void> init() async {
   debugPrint("registering authrepository");
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(
-      remoteDataSource: sl<AuthRemoteDataSource>(),
+      remoteDatasource: sl<AuthRemoteDatasource>(),
       localDataSource: sl<AuthLocalDataSource>(),
       networkInfo: sl<NetworkInfo>(), // Fix: Add missing NetworkInfo
     ),
