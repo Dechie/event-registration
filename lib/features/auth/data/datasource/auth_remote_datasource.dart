@@ -1,12 +1,13 @@
 // // lib/features/auth/data/datasource/auth_remote_datasource.dart
 import 'package:event_reg/core/error/exceptions.dart';
 import 'package:event_reg/core/network/dio_client.dart';
-import 'package:event_reg/features/auth/data/models/login/login_request.dart';
-import 'package:event_reg/features/auth/data/models/login/login_response.dart';
-import 'package:event_reg/features/auth/data/models/otp/otp_verification_request.dart';
-import 'package:event_reg/features/auth/data/models/registration/user_registration_request.dart';
 import 'package:event_reg/features/auth/data/models/registration/user_registration_response.dart';
 import 'package:flutter/material.dart' show debugPrint;
+
+import '../models/login/login_request.dart';
+import '../models/login/login_response.dart';
+import '../models/otp/otp_verification_request.dart';
+import '../models/registration/user_registration_request.dart';
 
 abstract class AuthRemoteDatasource {
   Future<LoginResponse> login(LoginRequest loginRequest);
@@ -26,29 +27,53 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   @override
   Future<LoginResponse> login(LoginRequest loginRequest) async {
     try {
+      debugPrint('attempting login for: ${loginRequest.email}');
+
       final response = await dioClient.post(
         "/login",
         data: {"email": loginRequest.email, "password": loginRequest.password},
       );
 
+      debugPrint("Login response status: ${response.statusCode}");
+      debugPrint("Login response data: ${response.data}");
+
       if (response.statusCode == 200) {
         final data = response.data;
-        // handle both nested data and direct respones formats
-        final loginData = data["data"] ?? data;
+
+        // handle both nested data and direct response formats
+        final loginData = data is Map<String, dynamic>
+            ? (data["data"] ?? data)
+            : data;
+
+        if (loginData is! Map<String, dynamic>) {
+          throw ServerException(
+            message: "Invalid response format from server",
+            code: "INVALID_RESPONSE_FORMAT",
+          );
+        }
+
         return LoginResponse.fromJson(loginData);
       } else {
-        throw ServerException(
-          message: response.data["message"] ?? "Login failed",
-          code: response.data["code"] ?? "LOGIN_FAILED",
-        );
+        bool isMap = response.data is Map<String, dynamic>;
+        final errorMessage = isMap
+            ? response.data["message"] ?? "Login failed"
+            : "Login failed";
+
+        final errorCode = isMap
+            ? response.data["code"] ?? "LOGIN_FAILED"
+            : "LOGIN_FAILED";
+
+        throw ServerException(message: errorMessage, code: errorCode);
       }
     } on ApiError catch (e) {
+      debugPrint("API Error during login: ${e.message}");
       _handleApiError(e, "LOGIN_ERROR");
     } catch (e) {
+      debugPrint("Unexpected error during login");
       if (e is ServerException) rethrow;
       throw ServerException(
-        message: "An Unexpected error occurred during login",
-        code: "UNEXPECTED_LOGIN_ERROR",
+        message: "An unexpected error occurred during login",
+        code: 'UNEXPECTED_LOGIN_ERROR',
       );
     }
   }

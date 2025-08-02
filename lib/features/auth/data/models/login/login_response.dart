@@ -1,40 +1,33 @@
-import 'package:equatable/equatable.dart';
 import 'package:event_reg/features/auth/data/models/user.dart';
 
-class LoginResponse extends Equatable {
+class LoginResponse {
   final String token;
-  final String? refreshToken;
   final User user;
   final String message;
-  final DateTime expiresAt;
 
-  const LoginResponse({
+  LoginResponse({
     required this.token,
-    this.refreshToken,
-    required this.message,
     required this.user,
-    required this.expiresAt,
+    required this.message,
   });
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     return LoginResponse(
-      token: json['token'] as String,
-      refreshToken: json['refresh_token'] as String?,
-      message: json["message"] as String,
-      user: User.fromJson(json['user'] as Map<String, dynamic>),
-      expiresAt: DateTime.parse(json['expires_at'] as String),
+      token: json["token"] ?? '',
+      user: User.fromJson(json["user"] ?? {}),
+      message: json["message"] ?? "Login Successful",
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'token': token,
-      'refresh_token': refreshToken,
-      'user': user.toJson(),
-      'expires_at': expiresAt.toIso8601String(),
-    };
+    return {"token": token, "user": user.toJson, "message": message};
   }
 
-  @override
-  List<Object?> get props => [token, refreshToken, user, expiresAt];
+  LoginResponse copyWith({String? token, User? user, String? message}) {
+    return LoginResponse(
+      token: token ?? this.token,
+      user: user ?? this.user,
+      message: message ?? this.message,
+    );
+  }
 }

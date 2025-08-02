@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:event_reg/features/auth/data/datasource/auth_local_datasource.dart';
 import 'package:event_reg/features/auth/data/datasource/auth_remote_datasource.dart';
 import 'package:event_reg/features/auth/data/datasource/profile_remote_datasource.dart';
@@ -18,7 +19,6 @@ import 'package:flutter/material.dart' show debugPrint;
 import 'package:get_it/get_it.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'core/network/dio_client.dart';
 import 'core/network/network_info.dart';
 import 'features/registration/data/datasources/registration_remote_datasource.dart';
@@ -35,9 +35,14 @@ Future<void> init() async {
   sl.registerLazySingleton(() => Dio());
   sl.registerLazySingleton(() => InternetConnectionChecker.createInstance());
 
-  // Shared jPreferences
+  // Shared Preferences
   final sharedPrefs = await SharedPreferences.getInstance();
   sl.registerLazySingleton(() => sharedPrefs);
+
+  // ! Services
+  sl.registerLazySingleton<UserDataService>(
+    () => UserDataService(sl<SharedPreferences>()),
+  );
 
   // ! Features - Auth
   // DataSources first (dependencies)
@@ -51,8 +56,11 @@ Future<void> init() async {
   );
 
   debugPrint("registering authlocaldatasource");
-  sl.registerLazySingleton<AuthLocalDataSource>(
-    () => AuthLocalDataSourceImpl(sharedPreferences: sl()),
+  sl.registerLazySingleton<AuthLocalDatasource>(
+    () => AuthLocalDatasourceImpl(
+      userDataService: sl<UserDataService>(),
+      sharedPrefs: sl<SharedPreferences>(),
+    ),
   );
 
   // Repository (depends on datasources and network)
@@ -61,7 +69,7 @@ Future<void> init() async {
     () => AuthRepositoryImpl(
       profileRemoteDatasource: sl<ProfileRemoteDatasource>(),
       remoteDatasource: sl<AuthRemoteDatasource>(),
-      localDataSource: sl<AuthLocalDataSource>(),
+      localDataSource: sl<AuthLocalDatasource>(),
       networkInfo: sl<NetworkInfo>(), // Fix: Add missing NetworkInfo
     ),
   );

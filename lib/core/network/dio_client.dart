@@ -1,4 +1,6 @@
+// lib/core/network/dio_client.dart
 import 'package:dio/dio.dart';
+import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:flutter/material.dart' show debugPrint;
 
 import '../constants/app_urls.dart';
@@ -15,8 +17,9 @@ class ApiError implements Exception {
 
 class DioClient {
   late final Dio dio;
+  final UserDataService? userDataService;
 
-  DioClient(Dio dioInstance) {
+  DioClient(Dio dioInstance, {this.userDataService}) {
     dio = dioInstance;
 
     // Configure base options
@@ -34,34 +37,50 @@ class DioClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          debugPrint(
-            "request: ${options.uri.toString()}, data: ${options.data}",
-          );
+          debugPrint("🚀 Request: ${options.method} ${options.uri}");
+          debugPrint("📤 Data: ${options.data}");
+
+          // Handle explicit token from options
           if (options.extra["token"] != null) {
             final token = options.extra["token"];
             options.headers["Authorization"] = "Bearer $token";
+            debugPrint("🔑 Using explicit token");
           }
+
           return handler.next(options);
         },
+        onResponse: (response, handler) {
+          debugPrint(
+            "📥 Response: ${response.statusCode} ${response.requestOptions.uri}",
+          );
+          return handler.next(response);
+        },
         onError: (DioException e, handler) {
+          debugPrint(
+            "❌ Error: ${e.response?.statusCode} ${e.requestOptions.uri}",
+          );
+          debugPrint("❌ Error message: ${e.message}");
+
           if (e.response?.statusCode == 401) {
-            debugPrint("Unauthorized! Token might be expired.");
-            // Handle token refresh if needed
+            debugPrint("🚨 Unauthorized! Token might be expired.");
           }
           return handler.next(e);
         },
       ),
     );
 
-    // Add logging interceptor
-    dio.interceptors.add(
-      LogInterceptor(
-        request: true,
-        requestBody: true,
-        responseBody: true,
-        error: true,
-      ),
-    );
+    // Add logging interceptor (only in debug mode)
+    if (const bool.fromEnvironment('dart.vm.product') == false) {
+      dio.interceptors.add(
+        LogInterceptor(
+          request: true,
+          requestBody: true,
+          responseBody: true,
+          error: true,
+          logPrint: (object) => debugPrint(object.toString()),
+        ),
+      );
+    }
   }
 
   Future<Response> delete(String path, {String? token}) async {
@@ -83,7 +102,7 @@ class DioClient {
     try {
       return await dio.get(
         path,
-        queryParameters: queryParams,
+        queryParameters: queryParams ?? queryParameters,
         options: Options(extra: {"token": token}),
       );
     } on DioException catch (e) {
@@ -102,7 +121,7 @@ class DioClient {
     try {
       return await dio.post(
         path,
-        data: data, // Remove jsonEncode here as Dio handles it
+        data: data,
         options: options ?? Options(extra: {"token": token}),
       );
     } on DioException catch (e) {
@@ -126,40 +145,43 @@ class DioClient {
     }
   }
 
-  // Handle Dio errors
+  /// Handle Dio errors and convert them to ApiError
   ApiError _handleDioError(DioException error) {
-    // Handle case where API returns message for failures
-    if (error.response != null) {
+    String message = "An unknown error occurred";
+    int? statusCode = error.response?.statusCode;
+
+    // Extract message from response
+    if (error.response?.data != null) {
       if (error.response!.data is Map<String, dynamic>) {
-        return ApiError(
-          error.response!.data["message"] ?? "An unknown error occurred!",
-          statusCode: error.response!.statusCode,
-        );
+        final data = error.response!.data as Map<String, dynamic>;
+        message = data["message"] ?? data["error"] ?? message;
       } else if (error.response!.data is String) {
-        return ApiError(
-          error.response!.data,
-          statusCode: error.response!.statusCode,
-        );
+        message = error.response!.data;
       }
     }
 
+    // Handle different error types
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
-        return ApiError("Connection timed out!", statusCode: 408);
+        return ApiError("Connection timed out", statusCode: 408);
       case DioExceptionType.sendTimeout:
-        return ApiError("Request send timed out!", statusCode: 408);
+        return ApiError("Request send timed out", statusCode: 408);
       case DioExceptionType.receiveTimeout:
-        return ApiError("Response receive timed out!", statusCode: 408);
+        return ApiError("Response receive timed out", statusCode: 408);
       case DioExceptionType.badResponse:
-        return ApiError(
-          "Received an invalid response: ${error.response?.statusCode}",
-          statusCode: error.response?.statusCode,
-        );
+        return ApiError(message, statusCode: statusCode);
       case DioExceptionType.cancel:
-        return ApiError("Request was cancelled!");
+        return ApiError("Request was cancelled");
+      case DioExceptionType.connectionError:
+        return ApiError(
+          "Connection error. Please check your internet connection",
+        );
       case DioExceptionType.unknown:
       default:
-        return ApiError("Something went wrong!", statusCode: 500);
+        if (error.message?.contains('SocketException') == true) {
+          return ApiError("No internet connection");
+        }
+        return ApiError(message, statusCode: statusCode ?? 500);
     }
   }
 }

@@ -52,7 +52,7 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
               end: Alignment.bottomRight,
               colors: [
                 Theme.of(context).primaryColor,
-                Theme.of(context).primaryColor.withOpacity(0.8),
+                Theme.of(context).primaryColor.withOpacity(0.1),
               ],
             ),
           ),
@@ -255,8 +255,8 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Theme.of(context).primaryColor,
-                Theme.of(context).primaryColor.withOpacity(0.7),
+                Theme.of(context).primaryColor.withOpacity(0.1),
+                Colors.white,
               ],
             ),
             shape: BoxShape.circle,
@@ -415,7 +415,7 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
     return Row(
       children: [
         Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
           children: [
             Checkbox(
               value: _rememberMe,
