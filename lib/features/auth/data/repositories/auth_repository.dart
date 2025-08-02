@@ -5,12 +5,12 @@ import 'package:event_reg/core/error/failures.dart';
 import 'package:event_reg/core/network/network_info.dart';
 import 'package:event_reg/features/auth/data/datasource/auth_local_datasource.dart';
 import 'package:event_reg/features/auth/data/datasource/auth_remote_datasource.dart';
-import 'package:event_reg/features/auth/data/models/login_request.dart';
-import 'package:event_reg/features/auth/data/models/login_response.dart';
-import 'package:event_reg/features/auth/data/models/otp_verification_request.dart';
+import 'package:event_reg/features/auth/data/models/login/login_request.dart';
+import 'package:event_reg/features/auth/data/models/login/login_response.dart';
+import 'package:event_reg/features/auth/data/models/otp/otp_verification_request.dart';
 import 'package:event_reg/features/auth/data/models/user.dart';
-import 'package:event_reg/features/auth/data/models/user_registration_request.dart';
-import 'package:event_reg/features/auth/data/models/user_registration_response.dart';
+import 'package:event_reg/features/auth/data/models/registration/user_registration_request.dart';
+import 'package:event_reg/features/auth/data/models/registration/user_registration_response.dart';
 
 abstract class AuthRepository {
   Future<Either<Failure, User?>> getCurrentUser();

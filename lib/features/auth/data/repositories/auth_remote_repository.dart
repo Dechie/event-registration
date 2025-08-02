@@ -4,8 +4,8 @@ import 'package:event_reg/core/error/exceptions.dart';
 import 'package:event_reg/core/error/failures.dart';
 import 'package:event_reg/features/auth/data/datasource/auth_local_datasource.dart';
 import 'package:event_reg/features/auth/data/datasource/auth_remote_datasource.dart';
-import 'package:event_reg/features/auth/data/models/login_request.dart';
-import 'package:event_reg/features/auth/data/models/login_response.dart';
+import 'package:event_reg/features/auth/data/models/login/login_request.dart';
+import 'package:event_reg/features/auth/data/models/login/login_response.dart';
 import 'package:event_reg/features/auth/data/models/user.dart';
 
 abstract class AuthRepository {
