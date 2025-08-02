@@ -74,102 +74,6 @@ class AuthRepositoryImpl implements AuthRepository {
     required this.networkInfo,
   });
 
-@override
-Future<Either<Failure, LoginResponse>> login({
-  required String email,
-  required String password,
-  required String userType,
-  bool rememberMe = false,
-}) async {
-  try {
-    // Check network connectivity
-    if (!await networkInfo.isConnected) {
-      return const Left(
-        NetworkFailure(
-          message: "No internet connection",
-          code: "NETWORK_ERROR",
-        ),
-      );
-    }
-
-    debugPrint('🔐 Attempting login for: $email with userType: $userType');
-
-    final loginRequest = LoginRequest(
-      email: email,
-      password: password,
-      userType: userType,
-    );
-
-    // Call the remote datasource
-    final loginResponse = await remoteDatasource.login(loginRequest);
-    
-    debugPrint('✅ Login successful, caching user data...');
-
-    // Cache the user data locally
-    await localDataSource.cacheUserData(loginResponse);
-
-    debugPrint('✅ User data cached successfully');
-
-    return Right(loginResponse);
-  } on NetworkException catch (e) {
-    debugPrint('❌ Network error during login: ${e.message}');
-    return Left(NetworkFailure(message: e.message, code: e.code));
-  } on AuthenticationException catch (e) {
-    debugPrint('❌ Authentication error during login: ${e.message}');
-    return Left(AuthenticationFailure(message: e.message, code: e.code));
-  } on ValidationException catch (e) {
-    debugPrint('❌ Validation error during login: ${e.message}');
-    return Left(
-      ValidationFailure(message: e.message, code: e.code, errors: e.errors),
-    );
-  } on ServerException catch (e) {
-    debugPrint('❌ Server error during login: ${e.message}');
-    return Left(ServerFailure(message: e.message, code: e.code));
-  } on CacheException catch (e) {
-    debugPrint('❌ Cache error during login: ${e.message}');
-    // Login was successful but caching failed - still return success
-    // but maybe log this for monitoring
-    return Left(CacheFailure(message: e.message, code: e.code));
-  } catch (e) {
-    debugPrint('❌ Unexpected error during login: $e');
-    return const Left(UnknownFailure());
-  }
-}
-
-// Update the getCurrentUser method:
-@override
-Future<Either<Failure, User?>> getCurrentUser() async {
-  try {
-    // Get cached user data
-    final cachedData = await localDataSource.getCachedUserData();
-    if (cachedData != null) {
-      debugPrint('✅ Found cached user data for: ${cachedData.user.email}');
-      return Right(cachedData.user);
-    }
-    
-    debugPrint('⚠️ No cached user data found');
-    return const Right(null);
-  } on CacheException catch (e) {
-    debugPrint('❌ Cache error getting current user: ${e.message}');
-    return Left(CacheFailure(message: e.message, code: e.code));
-  } catch (e) {
-    debugPrint('❌ Unexpected error getting current user: $e');
-    return const Left(UnknownFailure());
-  }
-}
-
-// Update the isAuthenticated method:
-@override
-Future<Either<Failure, bool>> isAuthenticated() async {
-  try {
-    final isAuth = await localDataSource.isAuthenticated();
-    debugPrint('🔍 User authenticated: $isAuth');
-    return Right(isAuth);
-  } catch (e) {
-    debugPrint('❌ Error checking authentication: $e');
-    return const Right(false);
-  }
-}
   @override
   Future<Either<Failure, Map<String, dynamic>>> createProfile({
     required String fullName,
@@ -189,6 +93,7 @@ Future<Either<Failure, bool>> isAuthenticated() async {
         );
       }
 
+      debugPrint("🔐 Attempting create profile");
       // Get token from cached user data
       final cachedData = await localDataSource.getCachedUserData();
       if (cachedData?.token == null) {
@@ -214,13 +119,19 @@ Future<Either<Failure, bool>> isAuthenticated() async {
         profileData: profileData,
       );
 
+      debugPrint('✅ create profile successful');
+
       return Right(result);
     } on NetworkException catch (e) {
+      debugPrint('❌ Network error during create profile: ${e.message}');
       return Left(NetworkFailure(message: e.message, code: e.code));
     } on AuthenticationException catch (e) {
+      debugPrint('❌ Authentication error during create profile: ${e.message}');
       return Left(AuthenticationFailure(message: e.message, code: e.code));
     } on ValidationException catch (e) {
+      debugPrint('❌ Validation error during create profile: ${e.message}');
       if (e.code == "PROFILE_ALREADY_EXISTS") {
+        debugPrint('❌ Profile already exists.');
         return Left(
           ValidationFailure(
             message: "Profile already exists",
@@ -232,8 +143,108 @@ Future<Either<Failure, bool>> isAuthenticated() async {
         ValidationFailure(message: e.message, code: e.code, errors: e.errors),
       );
     } on ServerException catch (e) {
+      debugPrint('❌ Server error during Profile create: ${e.message}');
       return Left(ServerFailure(message: e.message, code: e.code));
     } catch (e) {
+
+      debugPrint('❌ Unexpected error during profile create: $e');
+      return const Left(UnknownFailure());
+    }
+  }
+
+  // Update the getCurrentUser method:
+  @override
+  Future<Either<Failure, User?>> getCurrentUser() async {
+    try {
+      // Get cached user data
+      final cachedData = await localDataSource.getCachedUserData();
+      if (cachedData != null) {
+        debugPrint('✅ Found cached user data for: ${cachedData.user.email}');
+        return Right(cachedData.user);
+      }
+
+      debugPrint('⚠️ No cached user data found');
+      return const Right(null);
+    } on CacheException catch (e) {
+      debugPrint('❌ Cache error getting current user: ${e.message}');
+      return Left(CacheFailure(message: e.message, code: e.code));
+    } catch (e) {
+      debugPrint('❌ Unexpected error getting current user: $e');
+      return const Left(UnknownFailure());
+    }
+  }
+
+  // Update the isAuthenticated method:
+  @override
+  Future<Either<Failure, bool>> isAuthenticated() async {
+    try {
+      final isAuth = await localDataSource.isAuthenticated();
+      debugPrint('🔍 User authenticated: $isAuth');
+      return Right(isAuth);
+    } catch (e) {
+      debugPrint('❌ Error checking authentication: $e');
+      return const Right(false);
+    }
+  }
+
+  @override
+  Future<Either<Failure, LoginResponse>> login({
+    required String email,
+    required String password,
+    required String userType,
+    bool rememberMe = false,
+  }) async {
+    try {
+      // Check network connectivity
+      if (!await networkInfo.isConnected) {
+        return const Left(
+          NetworkFailure(
+            message: "No internet connection",
+            code: "NETWORK_ERROR",
+          ),
+        );
+      }
+
+      debugPrint('🔐 Attempting login for: $email with userType: $userType');
+
+      final loginRequest = LoginRequest(
+        email: email,
+        password: password,
+        userType: userType,
+      );
+
+      // Call the remote datasource
+      final loginResponse = await remoteDatasource.login(loginRequest);
+
+      debugPrint('✅ Login successful, caching user data...');
+
+      // Cache the user data locally
+      await localDataSource.cacheUserData(loginResponse);
+
+      debugPrint('✅ User data cached successfully');
+
+      return Right(loginResponse);
+    } on NetworkException catch (e) {
+      debugPrint('❌ Network error during login: ${e.message}');
+      return Left(NetworkFailure(message: e.message, code: e.code));
+    } on AuthenticationException catch (e) {
+      debugPrint('❌ Authentication error during login: ${e.message}');
+      return Left(AuthenticationFailure(message: e.message, code: e.code));
+    } on ValidationException catch (e) {
+      debugPrint('❌ Validation error during login: ${e.message}');
+      return Left(
+        ValidationFailure(message: e.message, code: e.code, errors: e.errors),
+      );
+    } on ServerException catch (e) {
+      debugPrint('❌ Server error during login: ${e.message}');
+      return Left(ServerFailure(message: e.message, code: e.code));
+    } on CacheException catch (e) {
+      debugPrint('❌ Cache error during login: ${e.message}');
+      // Login was successful but caching failed - still return success
+      // but maybe log this for monitoring
+      return Left(CacheFailure(message: e.message, code: e.code));
+    } catch (e) {
+      debugPrint('❌ Unexpected error during login: $e');
       return const Left(UnknownFailure());
     }
   }

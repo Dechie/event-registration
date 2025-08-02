@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:event_reg/config/themes/app_colors.dart';
+import 'package:flutter/material.dart';
 
 class HeroSection extends StatelessWidget {
   const HeroSection({super.key});
@@ -7,7 +7,7 @@ class HeroSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 300,
+      height: 310,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,

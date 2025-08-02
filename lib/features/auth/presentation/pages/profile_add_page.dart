@@ -75,7 +75,8 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
                 backgroundColor: Theme.of(context).colorScheme.error,
               ),
             );
-          } else if (state is AuthenticatedState) {
+          } else if (state is AuthenticatedState ||
+              state is AuthProfileCreatedState) {
             if (widget.isEditMode) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -83,7 +84,9 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
                   backgroundColor: Colors.green,
                 ),
               );
-              Navigator.pop(context, true);
+              Navigator.of(
+                context,
+              ).pushReplacementNamed(RouteNames.landingPage);
             } else {
               // For new profile creation, navigate to event selection
               ScaffoldMessenger.of(context).showSnackBar(

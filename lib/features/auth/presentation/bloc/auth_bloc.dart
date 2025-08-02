@@ -2,6 +2,7 @@ import 'package:event_reg/core/error/failures.dart';
 import 'package:event_reg/features/auth/data/repositories/auth_repository.dart';
 import 'package:event_reg/features/auth/presentation/bloc/events/auth_event.dart';
 import 'package:event_reg/features/auth/presentation/bloc/states/auth_state.dart';
+import 'package:flutter/material.dart' show debugPrint;
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
@@ -140,6 +141,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         organization: event.organization,
         photoPath: event.photoPath,
       );
+      debugPrint("create profile success?");
 
       result.fold(
         (failure) {
@@ -151,6 +153,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           );
         },
         (profileData) {
+          debugPrint("create profile success?");
           emit(
             AuthProfileCreatedState(
               message: profileData['message'] ?? 'Profile created successfully',
@@ -306,23 +309,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthLoadingState());
 
     try {
-      final result = await authRepository.updateProfile(
+      final result = await authRepository.createProfile(
         fullName: event.fullName,
         gender: event.gender,
-        dateOfBirth: event.dateOfBirth,
-        nationality: event.nationality,
+        //dateOfBirth: event.dateOfBirth,
+        //nationality: event.nationality,
         phoneNumber: event.phoneNumber,
-        region: event.region,
-        city: event.city,
-        woreda: event.woreda,
-        idNumber: event.idNumber,
+        //region: event.region,
+        //city: event.city,
+        //woreda: event.woreda,
+        //idNumber: event.idNumber,
         occupation: event.occupation,
         organization: event.organization,
-        department: event.department,
-        industry: event.industry,
-        yearsOfExperience: event.yearsOfExperience,
+        //department: event.department,
+        //industry: event.industry,
+        //yearsOfExperience: event.yearsOfExperience,
         photoPath: event.photoPath,
       );
+      debugPrint("create profiel successful?");
 
       result.fold(
         (failure) {
@@ -334,12 +338,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           );
         },
         (updatedUser) {
+          debugPrint(
+            "sucessfully into authenticated state of update/create profile event",
+          );
           emit(
             AuthenticatedState(
-              userId: updatedUser.id,
-              email: updatedUser.email,
-              userType: updatedUser.userType,
-              userData: updatedUser.toJson(),
+              userId: updatedUser["user_id"],
+              email: "emailee",
+              userType: "participant",
+              userData: updatedUser,
             ),
           );
         },
