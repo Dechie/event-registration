@@ -1,3 +1,4 @@
+// lib/features/auth/presentation/pages/admin_login_page.dart
 import 'package:event_reg/config/routes/route_names.dart';
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:event_reg/features/auth/presentation/bloc/events/auth_event.dart';
@@ -5,14 +6,14 @@ import 'package:event_reg/features/auth/presentation/bloc/states/auth_state.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class ParticipantLoginPage extends StatefulWidget {
-  const ParticipantLoginPage({super.key});
+class AdminLoginPage extends StatefulWidget {
+  const AdminLoginPage({super.key});
 
   @override
-  State<ParticipantLoginPage> createState() => _ParticipantLoginPageState();
+  State<AdminLoginPage> createState() => _AdminLoginPageState();
 }
 
-class _ParticipantLoginPageState extends State<ParticipantLoginPage>
+class _AdminLoginPageState extends State<AdminLoginPage>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -37,12 +38,23 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
               ),
             );
           } else if (state is AuthenticatedState) {
-            // Navigate to participant dashboard
-            Navigator.pushReplacementNamed(
-              context,
-              RouteNames.participantDashboardPage,
-              arguments: {'email': _emailController.text},
-            );
+            // Verify it's an admin user
+            if (state.userType == 'admin') {
+              Navigator.pushReplacementNamed(
+                context,
+                RouteNames.adminDashboardPage,
+                arguments: {'email': _emailController.text},
+              );
+            } else {
+              // User is not an admin
+              context.read<AuthBloc>().add(const LogoutEvent());
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Access denied. Admin credentials required.'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
           }
         },
         child: Container(
@@ -50,10 +62,7 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Theme.of(context).primaryColor,
-                Theme.of(context).primaryColor.withOpacity(0.1),
-              ],
+              colors: [Colors.red.shade600, Colors.red.shade800],
             ),
           ),
           child: SafeArea(
@@ -109,54 +118,65 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
     _animationController.forward();
   }
 
+  Widget _buildAdminNotice() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.red.shade200),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.security, color: Colors.red.shade600, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Restricted Access: Admin credentials required',
+              style: TextStyle(
+                color: Colors.red.shade700,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAlternativeActions() {
     return Column(
       children: [
-        // Register Button
+        // Back to Landing
         SizedBox(
           width: double.infinity,
           height: 48,
           child: OutlinedButton(
             onPressed: () {
-              //Navigator.pushNamed(context, RouteNames.registrationPage);
-              Navigator.pushNamed(context, RouteNames.userRegistrationPage);
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                RouteNames.landingPage,
+                (route) => false,
+              );
             },
             style: OutlinedButton.styleFrom(
-              foregroundColor: Theme.of(context).primaryColor,
-              side: BorderSide(color: Theme.of(context).primaryColor),
+              foregroundColor: Colors.red.shade600,
+              side: BorderSide(color: Colors.red.shade600),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
             child: const Text(
-              'Create New Account',
+              'Back to Home',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-
-        // Back to Landing
-        TextButton(
-          onPressed: () {
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              RouteNames.landingPage,
-              (route) => false,
-            );
-          },
-          child: Text(
-            'Back to Home',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
             ),
           ),
         ),
 
         const SizedBox(height: 16),
 
-        // Admin Login Link
+        // Participant Login Link
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -166,24 +186,23 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.admin_panel_settings,
-                size: 16,
-                color: Colors.grey[600],
-              ),
+              Icon(Icons.person, size: 16, color: Colors.grey[600]),
               const SizedBox(width: 8),
               Text(
-                'Are you an admin? ',
+                'Are you a participant? ',
                 style: TextStyle(color: Colors.grey[600]),
               ),
               GestureDetector(
                 onTap: () {
-                  Navigator.pushNamed(context, RouteNames.adminLoginPage);
+                  Navigator.pushReplacementNamed(
+                    context,
+                    RouteNames.participantLoginPage,
+                  );
                 },
                 child: Text(
                   'Sign in here',
                   style: TextStyle(
-                    color: Theme.of(context).primaryColor,
+                    color: Colors.red.shade600,
                     fontWeight: FontWeight.w600,
                     decoration: TextDecoration.underline,
                   ),
@@ -191,6 +210,31 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
               ),
             ],
           ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Contact Support
+        TextButton.icon(
+          onPressed: _showContactSupportDialog,
+          icon: Icon(Icons.help_outline, size: 16, color: Colors.grey[600]),
+          label: Text(
+            'Need help accessing admin portal?',
+            style: TextStyle(color: Colors.grey[600], fontSize: 12),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContactInfo(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: Colors.grey[600]),
+        const SizedBox(width: 8),
+        Text('$label: ', style: const TextStyle(fontWeight: FontWeight.w500)),
+        Expanded(
+          child: Text(value, style: TextStyle(color: Colors.grey[700])),
         ),
       ],
     );
@@ -221,8 +265,8 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
       keyboardType: TextInputType.emailAddress,
       textInputAction: TextInputAction.next,
       decoration: InputDecoration(
-        labelText: 'Email Address',
-        hintText: 'Enter your email',
+        labelText: 'Admin Email',
+        hintText: 'Enter your admin email',
         prefixIcon: const Icon(Icons.email_outlined),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
@@ -231,12 +275,12 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+          borderSide: BorderSide(color: Colors.red.shade600),
         ),
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Please enter your email address';
+          return 'Please enter your admin email address';
         }
         if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
           return 'Please enter a valid email address';
@@ -254,18 +298,19 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
           height: 80,
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                Theme.of(context).primaryColor.withOpacity(0.1),
-                Colors.white,
-              ],
+              colors: [Colors.red.shade600, Colors.red.shade800],
             ),
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.person, size: 40, color: Colors.white),
+          child: const Icon(
+            Icons.admin_panel_settings,
+            size: 40,
+            color: Colors.white,
+          ),
         ),
         const SizedBox(height: 16),
         Text(
-          'Welcome Back!',
+          'Admin Portal',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.bold,
             color: Colors.grey[800],
@@ -273,7 +318,7 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
         ),
         const SizedBox(height: 8),
         Text(
-          'Sign in to access your event dashboard',
+          'Sign in to manage events and participants',
           style: Theme.of(
             context,
           ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
@@ -294,7 +339,7 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
           child: ElevatedButton(
             onPressed: isLoading ? null : _handleLogin,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
+              backgroundColor: Colors.red.shade600,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -311,7 +356,7 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
                     ),
                   )
                 : const Text(
-                    'Sign In',
+                    'Sign In as Admin',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
           ),
@@ -336,6 +381,10 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
                 // Header
                 _buildHeader(),
                 const SizedBox(height: 32),
+
+                // Admin Notice
+                _buildAdminNotice(),
+                const SizedBox(height: 24),
 
                 // Email Field
                 _buildEmailField(),
@@ -374,8 +423,8 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
       textInputAction: TextInputAction.done,
       onFieldSubmitted: (_) => _handleLogin(),
       decoration: InputDecoration(
-        labelText: 'Password',
-        hintText: 'Enter your password',
+        labelText: 'Admin Password',
+        hintText: 'Enter your admin password',
         prefixIcon: const Icon(Icons.lock_outlined),
         suffixIcon: IconButton(
           icon: Icon(
@@ -396,12 +445,12 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+          borderSide: BorderSide(color: Colors.red.shade600),
         ),
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Please enter your password';
+          return 'Please enter your admin password';
         }
         if (value.length < 6) {
           return 'Password must be at least 6 characters';
@@ -415,7 +464,7 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
     return Row(
       children: [
         Row(
-          mainAxisSize: MainAxisSize.max,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Checkbox(
               value: _rememberMe,
@@ -424,7 +473,7 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
                   _rememberMe = value ?? false;
                 });
               },
-              activeColor: Theme.of(context).primaryColor,
+              activeColor: Colors.red.shade600,
             ),
             Text('Remember me', style: Theme.of(context).textTheme.bodySmall),
           ],
@@ -435,7 +484,7 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
           child: Text(
             'Forgot Password?',
             style: TextStyle(
-              color: Theme.of(context).primaryColor,
+              color: Colors.red.shade600,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -449,16 +498,56 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
       // Hide keyboard
       FocusScope.of(context).unfocus();
 
-      // Dispatch login event
+      // Dispatch login event with admin user type
       context.read<AuthBloc>().add(
         LoginEvent(
           email: _emailController.text.trim(),
           password: _passwordController.text,
-          userType: 'participant',
-          rememberMe: _rememberMe,
+          userType: 'admin', // Explicitly set as admin
         ),
       );
     }
+  }
+
+  void _showContactSupportDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.support_agent, color: Colors.red.shade600),
+            const SizedBox(width: 8),
+            const Text('Contact Support'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Need help accessing the admin portal? Contact our support team:',
+            ),
+            const SizedBox(height: 16),
+            _buildContactInfo(
+              Icons.email,
+              'Email',
+              'admin-support@company.com',
+            ),
+            const SizedBox(height: 8),
+            _buildContactInfo(Icons.phone, 'Phone', '+1 (555) 123-4567'),
+            const SizedBox(height: 8),
+            _buildContactInfo(Icons.schedule, 'Hours', 'Mon-Fri 9AM-5PM'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showForgotPasswordDialog() {
@@ -468,12 +557,12 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Reset Password'),
+        title: const Text('Reset Admin Password'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Enter your email address and we\'ll send you a link to reset your password.',
+              'Enter your admin email address and we\'ll send you a secure link to reset your password.',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
@@ -481,8 +570,8 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
               controller: emailController,
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
-                labelText: 'Email Address',
-                hintText: 'Enter your email',
+                labelText: 'Admin Email Address',
+                hintText: 'Enter your admin email',
                 prefixIcon: const Icon(Icons.email_outlined),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -499,18 +588,15 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
           ElevatedButton(
             onPressed: () {
               if (emailController.text.trim().isNotEmpty) {
-                // TODO: Implement forgot password functionality
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Password reset link sent to your email!'),
-                    backgroundColor: Colors.green,
-                  ),
+                // Dispatch forgot password event
+                context.read<AuthBloc>().add(
+                  ForgotPasswordEvent(email: emailController.text.trim()),
                 );
+                Navigator.pop(context);
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
+              backgroundColor: Colors.red.shade600,
             ),
             child: const Text('Send Reset Link'),
           ),

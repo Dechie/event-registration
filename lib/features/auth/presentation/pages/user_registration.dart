@@ -281,51 +281,7 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
           borderSide: BorderSide(color: Theme.of(context).primaryColor),
         ),
       ),
-      validator: Validators.validatePassword,
-    );
-  }
-
-  Widget _buildPasswordRequirements() {
-    final password = _passwordController.text;
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Password Requirements:',
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[700],
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 8),
-          _buildRequirementItem('At least 8 characters', password.length >= 8),
-          _buildRequirementItem(
-            'Contains uppercase letter',
-            RegExp(r'[A-Z]').hasMatch(password),
-          ),
-          _buildRequirementItem(
-            'Contains lowercase letter',
-            RegExp(r'[a-z]').hasMatch(password),
-          ),
-          _buildRequirementItem(
-            'Contains number',
-            RegExp(r'[0-9]').hasMatch(password),
-          ),
-          _buildRequirementItem(
-            'Contains special character',
-            RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password),
-          ),
-        ],
-      ),
+      validator: Validators.validatePasswordWeak,
     );
   }
 
@@ -338,9 +294,7 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
           width: double.infinity,
           height: 48,
           child: ElevatedButton(
-            onPressed: (isLoading || !_acceptTerms)
-                ? null
-                : _handleRegistration,
+            onPressed: isLoading ? null : _handleRegistration,
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,
@@ -350,14 +304,7 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
               elevation: 2,
             ),
             child: isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
+                ? CircularProgressIndicator(strokeWidth: 4)
                 : const Text(
                     'Create Account',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
@@ -396,14 +343,6 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
                 // Confirm Password Field
                 _buildConfirmPasswordField(),
                 const SizedBox(height: 16),
-
-                // Password Requirements
-                _buildPasswordRequirements(),
-                const SizedBox(height: 16),
-
-                // Terms and Conditions
-                _buildTermsAndConditions(),
-                const SizedBox(height: 24),
 
                 // Register Button
                 _buildRegisterButton(),
@@ -524,20 +463,7 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
 
   Future<void> _handleRegistration() async {
     if (_formKey.currentState!.validate()) {
-      if (!_acceptTerms) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Please accept the Terms of Service and Privacy Policy',
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-
       FocusScope.of(context).unfocus();
-      //await Future.delayed(Duration(seconds: 2));
       // Hide keyboard
       if (mounted) {
         context.read<AuthBloc>().add(
@@ -548,8 +474,6 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
           ),
         );
       }
-
-      // Dispatch registration event
     }
   }
 }
