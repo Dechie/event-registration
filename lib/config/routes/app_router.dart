@@ -7,6 +7,7 @@ import 'package:event_reg/features/auth/presentation/bloc/states/auth_state.dart
 import 'package:event_reg/features/auth/presentation/pages/admin_login_page.dart'; // New admin login
 import 'package:event_reg/features/auth/presentation/pages/auth_otp_verification_page.dart';
 import 'package:event_reg/features/auth/presentation/pages/participant_login.dart';
+import 'package:event_reg/features/auth/presentation/pages/profile_add_page.dart';
 import 'package:event_reg/features/auth/presentation/pages/user_registration.dart';
 import 'package:event_reg/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:event_reg/features/dashboard/presentation/bloc/dashboard_event.dart';
@@ -43,15 +44,6 @@ class AppRouter {
           ),
         );
 
-      case RouteNames.registrationSuccessPage:
-        final args = settings.arguments as Map<String, dynamic>?;
-        return MaterialPageRoute(
-          builder: (_) => RegistrationSuccessPagePlaceholder(
-            participantData:
-                args?['participantData'] as Map<String, dynamic>? ?? {},
-          ),
-        );
-
       case RouteNames.userRegistrationPage:
         return MaterialPageRoute(
           builder: (_) => const UserRegistrationPage(),
@@ -67,6 +59,18 @@ class AppRouter {
             message: args?['message'],
           ),
           settings: settings,
+        );
+
+      case RouteNames.profileAddPage:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (context) => di.sl<AuthBloc>(),
+            child: ProfileAddPage(
+              isEditMode: args["isEditMode"] ?? false,
+              existingProfileData: {},
+            ),
+          ),
         );
 
       case RouteNames.participantLoginPage:
@@ -335,165 +339,6 @@ class NotFoundPage extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(200, 48),
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// // Placeholder pages (keeping your existing structure)
-// class OTPVerificationPagePlaceholder extends StatelessWidget {
-//   final String email;
-//   final Map<String, dynamic> registrationData;
-
-//   const OTPVerificationPagePlaceholder({
-//     super.key,
-//     required this.email,
-//     required this.registrationData,
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text('OTP Verification'), centerTitle: true),
-//       body: Center(
-//         child: Padding(
-//           padding: const EdgeInsets.all(24.0),
-//           child: Column(
-//             mainAxisAlignment: MainAxisAlignment.center,
-//             children: [
-//               Icon(
-//                 Icons.email_outlined,
-//                 size: 80,
-//                 color: Theme.of(context).primaryColor,
-//               ),
-//               const SizedBox(height: 24),
-//               Text(
-//                 'Verify Your Email',
-//                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-//                   fontWeight: FontWeight.bold,
-//                 ),
-//               ),
-//               const SizedBox(height: 16),
-//               Text(
-//                 'We sent a verification code to:',
-//                 style: Theme.of(context).textTheme.bodyMedium,
-//               ),
-//               Text(
-//                 email,
-//                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-//                   fontWeight: FontWeight.bold,
-//                   color: Theme.of(context).primaryColor,
-//                 ),
-//               ),
-//               const SizedBox(height: 32),
-//               Container(
-//                 padding: const EdgeInsets.all(16),
-//                 decoration: BoxDecoration(
-//                   color: Colors.orange.shade50,
-//                   borderRadius: BorderRadius.circular(8),
-//                   border: Border.all(color: Colors.orange.shade200),
-//                 ),
-//                 child: Row(
-//                   children: [
-//                     Icon(Icons.construction, color: Colors.orange.shade600),
-//                     const SizedBox(width: 8),
-//                     Expanded(
-//                       child: Text(
-//                         'OTP Verification - To be implemented',
-//                         style: TextStyle(color: Colors.orange.shade700),
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//               const SizedBox(height: 24),
-//               ElevatedButton(
-//                 onPressed: () => Navigator.pop(context),
-//                 child: const Text('Go Back'),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-class RegistrationSuccessPagePlaceholder extends StatelessWidget {
-  final Map<String, dynamic> participantData;
-
-  const RegistrationSuccessPagePlaceholder({
-    super.key,
-    required this.participantData,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Registration Success'),
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.check_circle_outline,
-                size: 100,
-                color: Colors.green.shade600,
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Registration Successful!',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green.shade600,
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Thank you for registering for our event.',
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange.shade200),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.construction, color: Colors.orange.shade600),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Registration Success features - To be implemented',
-                        style: TextStyle(color: Colors.orange.shade700),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    RouteNames.landingPage,
-                    (route) => false,
-                  );
-                },
-                child: const Text('Go to Home'),
               ),
             ],
           ),

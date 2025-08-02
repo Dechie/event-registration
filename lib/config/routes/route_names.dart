@@ -9,6 +9,9 @@ class RouteNames {
   static const String registrationPage = '/registration';
   static const String registrationSuccessPage = '/registration-success';
 
+  // profile routes:
+  static const String profileAddPage = "/profile-add";
+
   // Dashboard routes
   static const String adminDashboardPage = '/admin-dashboard';
   static const String participantDashboardPage = '/participant-dashboard';
@@ -19,5 +22,4 @@ class RouteNames {
   static const String contactPage = '/contact';
   static const String faqPage = '/faq';
   static const String eventAgendaPage = '/event-agenda';
-
 }

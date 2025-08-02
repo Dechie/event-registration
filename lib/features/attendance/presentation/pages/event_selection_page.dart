@@ -74,7 +74,13 @@ class _EventSelectionPageState extends State<EventSelectionPage> {
             if (state is AvailableSessionsLoadedState) {
               _availableSessions = state.sessions;
             }
-            return Column(children: []);
+            return Column(
+              children: [
+                _buildHeader(),
+                Expanded(child: _buildSessionsList()),
+                _buildBottomActions(state),
+              ],
+            );
           },
         ),
       ),
@@ -123,7 +129,54 @@ class _EventSelectionPageState extends State<EventSelectionPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 12),
           ],
+          Row(
+            children: [
+              if (widget.isEditMode) ...[
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: state is AttendanceLoadingState
+                        ? null
+                        : () => Navigator.pop(context),
+                    child: const Text("Cancel"),
+                  ),
+                ),
+                const SizedBox(width: 12),
+              ],
+              Expanded(
+                child: ElevatedButton(
+                  onPressed:
+                      state is AttendanceLoadingState ||
+                          _selectedSessions.isEmpty
+                      ? null
+                      : _handleConfirmSelection,
+                  child: state is AttendanceLoadingState
+                      ? CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                        )
+                      : Text(
+                          widget.isEditMode
+                              ? "Update Selection"
+                              : "Confirm Selection",
+                        ),
+                ),
+              ),
+            ],
+          ),
+          if (_selectedSessions.isEmpty)
+            Padding(
+              padding: EdgeInsets.only(top: 8),
+              child: Text(
+                "Please select at least one session to continue",
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+              ),
+            ),
         ],
       ),
     );
@@ -325,4 +378,49 @@ class _EventSelectionPageState extends State<EventSelectionPage> {
     );
   }
 
+  String _formatTime(DateTime dateTime) {
+    return "${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}";
+  }
+
+  void _handleConfirmSelection() {
+    if (_selectedSessions.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please select at least one sessoin"),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    if (widget.isEditMode) {
+      // update session selection
+      context.read<AttendanceBloc>().add(
+        UpdateSessionSelectionEvent(selectedSessions: _selectedSessions),
+      );
+    } else {
+      // register for sessions
+      context.read<AttendanceBloc>().add(
+        RegisterForSessionsEvent(
+          selectedSessions: _availableSessions,
+          profileData: widget.profileData ?? {},
+        ),
+      );
+    }
+  }
+
+  void _toggleSession(Session session) {
+    setState(() {
+      final existingIndex = _selectedSessions.indexWhere(
+        (s) => s.id == session.id,
+      );
+      if (existingIndex >= 0) {
+        // means it exists in list
+        _selectedSessions.removeAt(existingIndex);
+      } else {
+        // likely -1, means it doesn't exist in list
+        _selectedSessions.add(session);
+      }
+    });
+  }
 }

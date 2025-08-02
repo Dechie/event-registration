@@ -1,6 +1,11 @@
 import 'package:equatable/equatable.dart';
 import 'package:event_reg/features/dashboard/data/models/session.dart';
+abstract class AttendanceState extends Equatable {
+  const AttendanceState();
 
+  @override
+  List<Object?> get props => [];
+}
 class AttendanceErrorState extends AttendanceState {
   final String message;
   const AttendanceErrorState({required this.message});
@@ -18,12 +23,7 @@ class AttendanceLoadingState extends AttendanceState {
   List<Object?> get props => [];
 }
 
-abstract class AttendanceState extends Equatable {
-  const AttendanceState();
 
-  @override
-  List<Object?> get props => [];
-}
 
 class AvailableSessionsLoadedState extends AttendanceState {
   final List<Session> sessions;

@@ -1,31 +1,28 @@
-
 import 'dart:io';
 
+import 'package:event_reg/config/routes/route_names.dart';
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:event_reg/features/auth/presentation/bloc/events/auth_event.dart';
 import 'package:event_reg/features/auth/presentation/bloc/states/auth_state.dart';
-import 'package:event_reg/features/registration/presentation/bloc/registration_bloc.dart';
-import 'package:event_reg/features/registration/presentation/bloc/registration_event.dart';
-import 'package:event_reg/features/registration/presentation/bloc/registration_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
-class ProfilePage extends StatefulWidget {
+class ProfileAddPage extends StatefulWidget {
   final bool isEditMode;
   final Map<String, dynamic>? existingProfileData;
 
-  const ProfilePage({
+  const ProfileAddPage({
     super.key,
     this.isEditMode = false,
     this.existingProfileData,
   });
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  State<ProfileAddPage> createState() => _ProfileAddPageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfileAddPageState extends State<ProfileAddPage> {
   final _formKey = GlobalKey<FormState>();
   final _pageController = PageController();
   int _currentStep = 0;
@@ -33,7 +30,6 @@ class _ProfilePageState extends State<ProfilePage> {
   // Controllers for form fields
   final _fullNameController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _emailController = TextEditingController();
   final _regionController = TextEditingController();
   final _cityController = TextEditingController();
   final _woredaController = TextEditingController();
@@ -41,7 +37,6 @@ class _ProfilePageState extends State<ProfilePage> {
   final _occupationController = TextEditingController();
   final _organizationController = TextEditingController();
   final _departmentController = TextEditingController();
-  final _otpController = TextEditingController();
 
   // Form values
   String? _selectedGender;
@@ -65,97 +60,48 @@ class _ProfilePageState extends State<ProfilePage> {
   ];
 
   @override
-  void initState() {
-    super.initState();
-    if (widget.isEditMode && widget.existingProfileData != null) {
-      _populateExistingData();
-    }
-  }
-
-  void _populateExistingData() {
-    final data = widget.existingProfileData!;
-    _fullNameController.text = data['fullName'] ?? '';
-    _phoneController.text = data['phoneNumber'] ?? '';
-    _emailController.text = data['email'] ?? '';
-    _regionController.text = data['region'] ?? '';
-    _cityController.text = data['city'] ?? '';
-    _woredaController.text = data['woreda'] ?? '';
-    _idNumberController.text = data['idNumber'] ?? '';
-    _occupationController.text = data['occupation'] ?? '';
-    _organizationController.text = data['organization'] ?? '';
-    _departmentController.text = data['department'] ?? '';
-
-    _selectedGender = data['gender'];
-    _selectedNationality = data['nationality'];
-    _selectedIndustry = data['industry'];
-    _yearsOfExperience = data['yearsOfExperience'];
-
-    if (data['dateOfBirth'] != null) {
-      _dateOfBirth = DateTime.parse(data['dateOfBirth']);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isEditMode ? 'Edit Profile' : 'Create Profile'),
         backgroundColor: Theme.of(context).primaryColor,
       ),
-      body: MultiBlocListener(
-        listeners: [
-          // Listen to Registration Bloc for new profile creation
-          BlocListener<RegistrationBloc, RegistrationState>(
-            listener: (context, state) {
-              if (state is RegistrationErrorState) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.message),
-                    backgroundColor: Theme.of(context).colorScheme.error,
-                  ),
-                );
-              } else if (state is OTPSentState) {
-                _nextStep();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('OTP sent to your email!'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              } else if (state is RegistrationSuccessState) {
-                if (!widget.isEditMode) {
-                  // Navigate to event selection page for new registrations
-                  Navigator.pushReplacementNamed(
-                    context,
-                    '/event-selection',
-                    arguments: {'profileData': state},
-                  );
-                }
-              }
-            },
-          ),
-          // Listen to Auth Bloc for profile updates
-          BlocListener<AuthBloc, AuthState>(
-            listener: (context, state) {
-              if (state is AuthErrorState) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.message),
-                    backgroundColor: Theme.of(context).colorScheme.error,
-                  ),
-                );
-              } else if (state is AuthenticatedState && widget.isEditMode) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Profile updated successfully!'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-                Navigator.pop(context, true); // Return success flag
-              }
-            },
-          ),
-        ],
+      body: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthErrorState) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Theme.of(context).colorScheme.error,
+              ),
+            );
+          } else if (state is AuthenticatedState) {
+            if (widget.isEditMode) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Profile updated successfully!'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              Navigator.pop(context, true);
+            } else {
+              // For new profile creation, navigate to event selection
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Profile created successfully!'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              Navigator.pushReplacementNamed(
+                context,
+                RouteNames.landingPage,
+
+                //RouteNames.participantDashboardPage,
+                //arguments: {'profileData': state.userData},
+              );
+            }
+          }
+        },
         child: Column(
           children: [
             if (!widget.isEditMode) _buildProgressIndicator(),
@@ -166,7 +112,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   _buildPersonalInfoStep(),
                   _buildProfessionalInfoStep(),
-                  if (!widget.isEditMode) _buildOTPVerificationStep(),
+                  if (!widget.isEditMode) _buildPreviewAndConfirmStep(),
                 ],
               ),
             ),
@@ -181,7 +127,6 @@ class _ProfilePageState extends State<ProfilePage> {
   void dispose() {
     _fullNameController.dispose();
     _phoneController.dispose();
-    _emailController.dispose();
     _regionController.dispose();
     _cityController.dispose();
     _woredaController.dispose();
@@ -189,111 +134,88 @@ class _ProfilePageState extends State<ProfilePage> {
     _occupationController.dispose();
     _organizationController.dispose();
     _departmentController.dispose();
-    _otpController.dispose();
     _pageController.dispose();
     super.dispose();
   }
 
-  Widget _buildNavigationButtons() {
-    return BlocBuilder<RegistrationBloc, RegistrationState>(
-      builder: (context, registrationState) {
-        return BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, authState) {
-            final isLoading =
-                registrationState is RegistrationLoading ||
-                authState is AuthLoadingState;
+  @override
+  void initState() {
+    super.initState();
+    if (widget.isEditMode && widget.existingProfileData != null) {
+      _populateExistingData();
+    }
+  }
 
-            return Container(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  if (_currentStep > 0)
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: isLoading ? null : _previousStep,
-                        child: const Text('Previous'),
-                      ),
-                    ),
-                  if (_currentStep > 0) const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: isLoading ? null : _handleNextButton,
-                      child: isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
-                                ),
-                              ),
-                            )
-                          : Text(_getButtonText()),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
+  Widget _buildInfoCard(List<Widget> children) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(children: children),
+      ),
     );
   }
 
-  Widget _buildOTPVerificationStep() {
-    return BlocBuilder<RegistrationBloc, RegistrationState>(
-      builder: (context, state) {
-        return Padding(
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[600],
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavigationButtons() {
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, authState) {
+        final isLoading = authState is AuthLoadingState;
+
+        return Container(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Text(
-                'Email Verification',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'We sent a verification code to ${_emailController.text}',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 32),
-
-              TextFormField(
-                controller: _otpController,
-                decoration: const InputDecoration(
-                  labelText: 'Enter Verification Code',
-                  prefixIcon: Icon(Icons.security),
-                ),
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 18, letterSpacing: 4),
-              ),
-              const SizedBox(height: 16),
-
-              Center(
-                child: TextButton(
-                  onPressed: state is RegistrationLoading
-                      ? null
-                      : () {
-                          context.read<RegistrationBloc>().add(
-                            SendOTPEvent(email: _emailController.text),
-                          );
-                        },
-                  child: Text(
-                    state is RegistrationLoading ? 'Sending...' : 'Resend Code',
+              if (_currentStep > 0)
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: isLoading ? null : _previousStep,
+                    child: const Text('Previous'),
                   ),
                 ),
-              ),
-
-              if (state is RegistrationLoading)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: CircularProgressIndicator(),
-                  ),
+              if (_currentStep > 0) const SizedBox(width: 16),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: isLoading ? null : _handleNextButton,
+                  child: isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        )
+                      : Text(_getButtonText()),
                 ),
+              ),
             ],
           ),
         );
@@ -401,29 +323,6 @@ class _ProfilePageState extends State<ProfilePage> {
               },
             ),
             const SizedBox(height: 16),
-
-            TextFormField(
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email Address *',
-                prefixIcon: Icon(Icons.email),
-              ),
-              keyboardType: TextInputType.emailAddress,
-              enabled: !widget.isEditMode, // Disable email editing in edit mode
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your email';
-                }
-                if (!RegExp(
-                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                ).hasMatch(value)) {
-                  return 'Please enter a valid email';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-
             Row(
               children: [
                 Expanded(
@@ -464,6 +363,115 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPreviewAndConfirmStep() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Review Your Information',
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Please review your information before submitting',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+          ),
+          const SizedBox(height: 24),
+
+          // Profile Image Preview
+          if (_profileImage != null)
+            Center(
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundImage: FileImage(_profileImage!),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+
+          // Personal Information Section
+          _buildSectionHeader('Personal Information'),
+          _buildInfoCard([
+            _buildInfoRow('Full Name', _fullNameController.text),
+            if (_selectedGender != null)
+              _buildInfoRow('Gender', _selectedGender!),
+            if (_dateOfBirth != null)
+              _buildInfoRow(
+                'Date of Birth',
+                '${_dateOfBirth!.day}/${_dateOfBirth!.month}/${_dateOfBirth!.year}',
+              ),
+            if (_selectedNationality != null)
+              _buildInfoRow('Nationality', _selectedNationality!),
+            _buildInfoRow('Phone Number', _phoneController.text),
+            if (_regionController.text.isNotEmpty)
+              _buildInfoRow('Region', _regionController.text),
+            if (_cityController.text.isNotEmpty)
+              _buildInfoRow('City', _cityController.text),
+            if (_woredaController.text.isNotEmpty)
+              _buildInfoRow('Woreda', _woredaController.text),
+            if (_idNumberController.text.isNotEmpty)
+              _buildInfoRow('ID/Passport Number', _idNumberController.text),
+          ]),
+
+          const SizedBox(height: 24),
+
+          // Professional Information Section
+          _buildSectionHeader('Professional Information'),
+          _buildInfoCard([
+            _buildInfoRow('Occupation', _occupationController.text),
+            _buildInfoRow('Organization', _organizationController.text),
+            if (_departmentController.text.isNotEmpty)
+              _buildInfoRow('Department', _departmentController.text),
+            if (_selectedIndustry != null)
+              _buildInfoRow('Industry', _selectedIndustry!),
+            if (_yearsOfExperience != null)
+              _buildInfoRow(
+                'Years of Experience',
+                _yearsOfExperience.toString(),
+              ),
+          ]),
+
+          const SizedBox(height: 24),
+
+          // Confirmation message
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: Theme.of(context).primaryColor.withOpacity(0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, color: Theme.of(context).primaryColor),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'By clicking "Create Profile", you confirm that the information provided is accurate and complete.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -619,6 +627,45 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: Theme.of(context).primaryColor,
+        ),
+      ),
+    );
+  }
+
+  void _createProfile() {
+    context.read<AuthBloc>().add(
+      UpdateProfileEvent(
+        fullName: _fullNameController.text,
+        gender: _selectedGender,
+        dateOfBirth: _dateOfBirth,
+        nationality: _selectedNationality,
+        phoneNumber: _phoneController.text,
+        region: _regionController.text.isEmpty ? null : _regionController.text,
+        city: _cityController.text.isEmpty ? null : _cityController.text,
+        woreda: _woredaController.text.isEmpty ? null : _woredaController.text,
+        idNumber: _idNumberController.text.isEmpty
+            ? null
+            : _idNumberController.text,
+        occupation: _occupationController.text,
+        organization: _organizationController.text,
+        department: _departmentController.text.isEmpty
+            ? null
+            : _departmentController.text,
+        industry: _selectedIndustry!,
+        yearsOfExperience: _yearsOfExperience,
+        photoPath: _profileImage?.path,
+      ),
+    );
+  }
+
   String _getButtonText() {
     if (widget.isEditMode) {
       return _currentStep == 0 ? 'Next' : 'Update Profile';
@@ -628,9 +675,9 @@ class _ProfilePageState extends State<ProfilePage> {
       case 0:
         return 'Next';
       case 1:
-        return 'Send OTP';
+        return 'Preview';
       case 2:
-        return 'Complete Profile';
+        return 'Create Profile';
       default:
         return 'Next';
     }
@@ -659,90 +706,15 @@ class _ProfilePageState extends State<ProfilePage> {
           break;
         case 1:
           if (_validateProfessionalInfo()) {
-            // Send OTP
-            context.read<RegistrationBloc>().add(
-              SendOTPEvent(email: _emailController.text),
-            );
+            _nextStep();
           }
           break;
         case 2:
-          // Verify OTP and complete profile creation
-          if (_otpController.text.isEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Please enter the verification code'),
-              ),
-            );
-            return;
-          }
-
-          context.read<RegistrationBloc>().add(
-            VerifyOTPEvent(
-              email: _emailController.text,
-              otp: _otpController.text,
-            ),
-          );
-
-          // Create profile
-          context.read<RegistrationBloc>().add(
-            RegisterParticipantEvent(
-              fullName: _fullNameController.text,
-              gender: _selectedGender,
-              dateOfBirth: _dateOfBirth,
-              nationality: _selectedNationality,
-              phoneNumber: _phoneController.text,
-              email: _emailController.text,
-              region: _regionController.text.isEmpty
-                  ? null
-                  : _regionController.text,
-              city: _cityController.text.isEmpty ? null : _cityController.text,
-              woreda: _woredaController.text.isEmpty
-                  ? null
-                  : _woredaController.text,
-              idNumber: _idNumberController.text.isEmpty
-                  ? null
-                  : _idNumberController.text,
-              occupation: _occupationController.text,
-              organization: _organizationController.text,
-              department: _departmentController.text.isEmpty
-                  ? null
-                  : _departmentController.text,
-              industry: _selectedIndustry!,
-              yearsOfExperience: _yearsOfExperience,
-              photoPath: _profileImage?.path,
-              selectedSessions: [], // Empty since we moved this to attendance
-            ),
-          );
+          // Create profile directly through UpdateProfileEvent
+          _createProfile();
           break;
       }
     }
-  }
-
-  void _updateProfile() {
-    // Use Auth Bloc for profile updates
-    context.read<AuthBloc>().add(
-      UpdateProfileEvent(
-        fullName: _fullNameController.text,
-        gender: _selectedGender,
-        dateOfBirth: _dateOfBirth,
-        nationality: _selectedNationality,
-        phoneNumber: _phoneController.text,
-        region: _regionController.text.isEmpty ? null : _regionController.text,
-        city: _cityController.text.isEmpty ? null : _cityController.text,
-        woreda: _woredaController.text.isEmpty ? null : _woredaController.text,
-        idNumber: _idNumberController.text.isEmpty
-            ? null
-            : _idNumberController.text,
-        occupation: _occupationController.text,
-        organization: _organizationController.text,
-        department: _departmentController.text.isEmpty
-            ? null
-            : _departmentController.text,
-        industry: _selectedIndustry!,
-        yearsOfExperience: _yearsOfExperience,
-        photoPath: _profileImage?.path,
-      ),
-    );
   }
 
   void _nextStep() {
@@ -774,6 +746,28 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  void _populateExistingData() {
+    final data = widget.existingProfileData!;
+    _fullNameController.text = data['fullName'] ?? '';
+    _phoneController.text = data['phoneNumber'] ?? '';
+    _regionController.text = data['region'] ?? '';
+    _cityController.text = data['city'] ?? '';
+    _woredaController.text = data['woreda'] ?? '';
+    _idNumberController.text = data['idNumber'] ?? '';
+    _occupationController.text = data['occupation'] ?? '';
+    _organizationController.text = data['organization'] ?? '';
+    _departmentController.text = data['department'] ?? '';
+
+    _selectedGender = data['gender'];
+    _selectedNationality = data['nationality'];
+    _selectedIndustry = data['industry'];
+    _yearsOfExperience = data['yearsOfExperience'];
+
+    if (data['dateOfBirth'] != null) {
+      _dateOfBirth = DateTime.parse(data['dateOfBirth']);
+    }
+  }
+
   void _previousStep() {
     if (_currentStep > 0) {
       setState(() {
@@ -800,6 +794,32 @@ class _ProfilePageState extends State<ProfilePage> {
         _dateOfBirth = picked;
       });
     }
+  }
+
+  void _updateProfile() {
+    context.read<AuthBloc>().add(
+      UpdateProfileEvent(
+        fullName: _fullNameController.text,
+        gender: _selectedGender,
+        dateOfBirth: _dateOfBirth,
+        nationality: _selectedNationality,
+        phoneNumber: _phoneController.text,
+        region: _regionController.text.isEmpty ? null : _regionController.text,
+        city: _cityController.text.isEmpty ? null : _cityController.text,
+        woreda: _woredaController.text.isEmpty ? null : _woredaController.text,
+        idNumber: _idNumberController.text.isEmpty
+            ? null
+            : _idNumberController.text,
+        occupation: _occupationController.text,
+        organization: _organizationController.text,
+        department: _departmentController.text.isEmpty
+            ? null
+            : _departmentController.text,
+        industry: _selectedIndustry!,
+        yearsOfExperience: _yearsOfExperience,
+        photoPath: _profileImage?.path,
+      ),
+    );
   }
 
   bool _validateProfessionalInfo() {

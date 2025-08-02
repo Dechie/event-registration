@@ -130,9 +130,9 @@ class _AuthOTPVerificationPageState extends State<AuthOTPVerificationPage>
               ),
             );
             // Navigate to login page after successful verification
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              RouteNames.participantLoginPage,
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              RouteNames.profileAddPage,
+              arguments: {"isEditMode": true},
               (route) => false,
             );
           } else if (state is AuthOTPSentState) {

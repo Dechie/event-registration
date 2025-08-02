@@ -14,6 +14,61 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<RegisterUserEvent>(_onRegisterUser);
     on<VerifyOTPEvent>(_onVerifyOTP);
     on<ResendOTPEvent>(_onResendOTP);
+    on<UpdateProfileEvent>(_onUpdateProfile);
+  }
+  Future<void> _onUpdateProfile(
+    UpdateProfileEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoadingState());
+
+    try {
+      final result = await authRepository.updateProfile(
+        fullName: event.fullName,
+        gender: event.gender,
+        dateOfBirth: event.dateOfBirth,
+        nationality: event.nationality,
+        phoneNumber: event.phoneNumber,
+        region: event.region,
+        city: event.city,
+        woreda: event.woreda,
+        idNumber: event.idNumber,
+        occupation: event.occupation,
+        organization: event.organization,
+        department: event.department,
+        industry: event.industry,
+        yearsOfExperience: event.yearsOfExperience,
+        photoPath: event.photoPath,
+      );
+
+      result.fold(
+        (failure) {
+          emit(
+            AuthErrorState(
+              message: _mapFailureToMessage(failure),
+              errorCode: failure.codel,
+            ),
+          );
+        },
+        (updatedUser) {
+          emit(
+            AuthenticatedState(
+              userId: updatedUser.id,
+              email: updatedUser.email,
+              userType: updatedUser.userType,
+              userData: updatedUser.toJson(),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      emit(
+        const AuthErrorState(
+          message: "Failed to update profile. Please try again",
+          errorCode: "UPDATE_PROFILE_ERROR",
+        ),
+      );
+    }
   }
 
   String _mapFailureToMessage(Failure failure) {
