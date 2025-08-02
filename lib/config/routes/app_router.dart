@@ -2,8 +2,8 @@
 import 'package:event_reg/config/routes/route_names.dart';
 // Import BLoCs
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:event_reg/features/auth/presentation/bloc/auth_event.dart';
-import 'package:event_reg/features/auth/presentation/bloc/auth_state.dart';
+import 'package:event_reg/features/auth/presentation/bloc/events/auth_event.dart';
+import 'package:event_reg/features/auth/presentation/bloc/states/auth_state.dart';
 import 'package:event_reg/features/auth/presentation/pages/admin_login_page.dart'; // New admin login
 import 'package:event_reg/features/auth/presentation/pages/auth_otp_verification_page.dart';
 import 'package:event_reg/features/auth/presentation/pages/participant_login.dart';
@@ -43,19 +43,6 @@ class AppRouter {
           ),
         );
 
-      case RouteNames.otpVerificationPage:
-        final args = settings.arguments as Map<String, dynamic>?;
-        return MaterialPageRoute(
-          builder: (_) => BlocProvider(
-            create: (context) => di.sl<RegistrationBloc>(),
-            child: OTPVerificationPagePlaceholder(
-              email: args?['email'] as String? ?? '',
-              registrationData:
-                  args?['registrationData'] as Map<String, dynamic>? ?? {},
-            ),
-          ),
-        );
-
       case RouteNames.registrationSuccessPage:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
@@ -65,7 +52,6 @@ class AppRouter {
           ),
         );
 
-     
       case RouteNames.userRegistrationPage:
         return MaterialPageRoute(
           builder: (_) => const UserRegistrationPage(),
@@ -81,7 +67,7 @@ class AppRouter {
             message: args?['message'],
           ),
           settings: settings,
-        ); 
+        );
 
       case RouteNames.participantLoginPage:
         return MaterialPageRoute(
@@ -358,84 +344,84 @@ class NotFoundPage extends StatelessWidget {
   }
 }
 
-// Placeholder pages (keeping your existing structure)
-class OTPVerificationPagePlaceholder extends StatelessWidget {
-  final String email;
-  final Map<String, dynamic> registrationData;
+// // Placeholder pages (keeping your existing structure)
+// class OTPVerificationPagePlaceholder extends StatelessWidget {
+//   final String email;
+//   final Map<String, dynamic> registrationData;
 
-  const OTPVerificationPagePlaceholder({
-    super.key,
-    required this.email,
-    required this.registrationData,
-  });
+//   const OTPVerificationPagePlaceholder({
+//     super.key,
+//     required this.email,
+//     required this.registrationData,
+//   });
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('OTP Verification'), centerTitle: true),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.email_outlined,
-                size: 80,
-                color: Theme.of(context).primaryColor,
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Verify Your Email',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'We sent a verification code to:',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              Text(
-                email,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor,
-                ),
-              ),
-              const SizedBox(height: 32),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange.shade200),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.construction, color: Colors.orange.shade600),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'OTP Verification - To be implemented',
-                        style: TextStyle(color: Colors.orange.shade700),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Go Back'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: const Text('OTP Verification'), centerTitle: true),
+//       body: Center(
+//         child: Padding(
+//           padding: const EdgeInsets.all(24.0),
+//           child: Column(
+//             mainAxisAlignment: MainAxisAlignment.center,
+//             children: [
+//               Icon(
+//                 Icons.email_outlined,
+//                 size: 80,
+//                 color: Theme.of(context).primaryColor,
+//               ),
+//               const SizedBox(height: 24),
+//               Text(
+//                 'Verify Your Email',
+//                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+//                   fontWeight: FontWeight.bold,
+//                 ),
+//               ),
+//               const SizedBox(height: 16),
+//               Text(
+//                 'We sent a verification code to:',
+//                 style: Theme.of(context).textTheme.bodyMedium,
+//               ),
+//               Text(
+//                 email,
+//                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+//                   fontWeight: FontWeight.bold,
+//                   color: Theme.of(context).primaryColor,
+//                 ),
+//               ),
+//               const SizedBox(height: 32),
+//               Container(
+//                 padding: const EdgeInsets.all(16),
+//                 decoration: BoxDecoration(
+//                   color: Colors.orange.shade50,
+//                   borderRadius: BorderRadius.circular(8),
+//                   border: Border.all(color: Colors.orange.shade200),
+//                 ),
+//                 child: Row(
+//                   children: [
+//                     Icon(Icons.construction, color: Colors.orange.shade600),
+//                     const SizedBox(width: 8),
+//                     Expanded(
+//                       child: Text(
+//                         'OTP Verification - To be implemented',
+//                         style: TextStyle(color: Colors.orange.shade700),
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//               const SizedBox(height: 24),
+//               ElevatedButton(
+//                 onPressed: () => Navigator.pop(context),
+//                 child: const Text('Go Back'),
+//               ),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
 
 class RegistrationSuccessPagePlaceholder extends StatelessWidget {
   final Map<String, dynamic> participantData;

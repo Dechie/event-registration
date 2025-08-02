@@ -34,6 +34,9 @@ class DioClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          debugPrint(
+            "request: ${options.uri.toString()}, data: ${options.data}",
+          );
           if (options.extra["token"] != null) {
             final token = options.extra["token"];
             options.headers["Authorization"] = "Bearer $token";

@@ -1,6 +1,6 @@
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:event_reg/features/auth/presentation/bloc/auth_event.dart';
-import 'package:event_reg/features/auth/presentation/bloc/auth_state.dart';
+import 'package:event_reg/features/auth/presentation/bloc/events/auth_event.dart';
+import 'package:event_reg/features/auth/presentation/bloc/states/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

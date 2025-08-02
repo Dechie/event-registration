@@ -38,6 +38,45 @@ class AuthLoadingState extends AuthState {
   const AuthLoadingState();
 }
 
+class AuthOTPSentState extends AuthState {
+  final String message;
+  final String email;
+
+  const AuthOTPSentState({required this.message, required this.email});
+
+  @override
+  List<Object?> get props => [message, email];
+}
+
+class AuthOTPVerifiedState extends AuthState {
+  final String message;
+  final String email;
+
+  const AuthOTPVerifiedState({required this.message, required this.email});
+
+  @override
+  List<Object?> get props => [message, email];
+}
+
+class AuthRegistrationSuccessState extends AuthState {
+  final String message;
+  final String userId;
+  final String email;
+  final bool otpSent;
+  final String? otpToken;
+
+  const AuthRegistrationSuccessState({
+    required this.message,
+    required this.userId,
+    required this.email,
+    required this.otpSent,
+    required this.otpToken,
+  });
+
+  @override
+  List<Object?> get props => [message, userId, email, otpSent, otpToken];
+}
+
 abstract class AuthState extends Equatable {
   const AuthState();
 
@@ -62,43 +101,4 @@ class PasswordResetSuccessState extends AuthState {
 
 class UnauthenticatedState extends AuthState {
   const UnauthenticatedState();
-}
-
-class AuthRegistrationSuccessState extends AuthState {
-  final String message;
-  final String userId;
-  final String email;
-  final bool otpSent;
-  final String? otpToken;
-
-  const AuthRegistrationSuccessState({
-    required this.message,
-    required this.userId,
-    required this.email,
-    required this.otpSent,
-    required this.otpToken,
-  });
-
-  @override
-  List<Object?> get props => [message, userId, email, otpSent, otpToken];
-}
-
-class AuthOTPVerifiedState extends AuthState {
-  final String message;
-  final String email;
-
-  const AuthOTPVerifiedState({required this.message, required this.email});
-
-  @override
-  List<Object?> get props => [message, email];
-}
-
-class AuthOTPSentState extends AuthState {
-  final String message;
-  final String email;
-
-  const AuthOTPSentState({required this.message, required this.email});
-
-  @override
-  List<Object?> get props => [message, email];
 }

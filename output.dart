@@ -287,13 +287,13 @@ class _AuthOTPVerificationPageState extends State<AuthOTPVerificationPage>
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: List.generate(6, (index) {
         return SizedBox(
-          width: 35,
-          height: 45,
+          width: 45,
+          height: 55,
           child: TextFormField(
             controller: _otpControllers[index],
             focusNode: _focusNodes[index],
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
             ),
             keyboardType: TextInputType.number,

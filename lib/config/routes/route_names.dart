@@ -7,7 +7,6 @@ class RouteNames {
   static const String userRegistrationPage = '/user-registration';
   static const String authOtpVerificationPage = '/auth-otp-verification';
   static const String registrationPage = '/registration';
-  static const String otpVerificationPage = '/otp-verification';
   static const String registrationSuccessPage = '/registration-success';
 
   // Dashboard routes

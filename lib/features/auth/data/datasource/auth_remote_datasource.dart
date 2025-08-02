@@ -351,7 +351,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       if (e is ServerException || e is ValidationException) rethrow;
       throw ServerException(
         message: "Registration failed. Please try again",
-        code: "REGISTRATOIN_ERROR",
+        code: "REGISTRATION_ERROR",
       );
     }
   }
