@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:event_reg/features/auth/data/datasource/auth_local_datasource.dart';
 import 'package:event_reg/features/auth/data/datasource/auth_remote_datasource.dart';
+import 'package:event_reg/features/auth/data/datasource/profile_remote_datasource.dart';
 // Fix: Import from the correct file
 import 'package:event_reg/features/auth/data/repositories/auth_repository.dart';
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
@@ -17,6 +18,7 @@ import 'package:flutter/material.dart' show debugPrint;
 import 'package:get_it/get_it.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'core/network/dio_client.dart';
 import 'core/network/network_info.dart';
 import 'features/registration/data/datasources/registration_remote_datasource.dart';
@@ -33,7 +35,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => Dio());
   sl.registerLazySingleton(() => InternetConnectionChecker.createInstance());
 
-  // Shared Preferences
+  // Shared jPreferences
   final sharedPrefs = await SharedPreferences.getInstance();
   sl.registerLazySingleton(() => sharedPrefs);
 
@@ -42,6 +44,10 @@ Future<void> init() async {
   debugPrint("registering authremotedatasource");
   sl.registerLazySingleton<AuthRemoteDatasource>(
     () => AuthRemoteDatasourceImpl(dioClient: sl()),
+  );
+  debugPrint("registering profileremotedatasource");
+  sl.registerLazySingleton<ProfileRemoteDatasource>(
+    () => ProfileRemoteDatasourceImpl(dioClient: sl()),
   );
 
   debugPrint("registering authlocaldatasource");
@@ -53,6 +59,7 @@ Future<void> init() async {
   debugPrint("registering authrepository");
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(
+      profileRemoteDatasource: sl<ProfileRemoteDatasource>(),
       remoteDatasource: sl<AuthRemoteDatasource>(),
       localDataSource: sl<AuthLocalDataSource>(),
       networkInfo: sl<NetworkInfo>(), // Fix: Add missing NetworkInfo

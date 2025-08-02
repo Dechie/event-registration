@@ -5,11 +5,13 @@ class LoginResponse extends Equatable {
   final String token;
   final String? refreshToken;
   final User user;
+  final String message;
   final DateTime expiresAt;
 
   const LoginResponse({
     required this.token,
     this.refreshToken,
+    required this.message,
     required this.user,
     required this.expiresAt,
   });
@@ -18,6 +20,7 @@ class LoginResponse extends Equatable {
     return LoginResponse(
       token: json['token'] as String,
       refreshToken: json['refresh_token'] as String?,
+      message: json["message"] as String,
       user: User.fromJson(json['user'] as Map<String, dynamic>),
       expiresAt: DateTime.parse(json['expires_at'] as String),
     );

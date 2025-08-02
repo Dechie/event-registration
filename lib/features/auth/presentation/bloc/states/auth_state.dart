@@ -58,6 +58,15 @@ class AuthOTPVerifiedState extends AuthState {
   List<Object?> get props => [message, email];
 }
 
+class AuthProfileCreatedState extends AuthState {
+  final String message;
+  final Map<String, dynamic> participant;
+  const AuthProfileCreatedState({
+    required this.message,
+    required this.participant,
+  });
+}
+
 class AuthRegistrationSuccessState extends AuthState {
   final String message;
   final String userId;

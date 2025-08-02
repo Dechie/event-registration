@@ -14,61 +14,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<RegisterUserEvent>(_onRegisterUser);
     on<VerifyOTPEvent>(_onVerifyOTP);
     on<ResendOTPEvent>(_onResendOTP);
+    on<CreateProfileEvent>(_onCreateProfile);
     on<UpdateProfileEvent>(_onUpdateProfile);
-  }
-  Future<void> _onUpdateProfile(
-    UpdateProfileEvent event,
-    Emitter<AuthState> emit,
-  ) async {
-    emit(const AuthLoadingState());
-
-    try {
-      final result = await authRepository.updateProfile(
-        fullName: event.fullName,
-        gender: event.gender,
-        dateOfBirth: event.dateOfBirth,
-        nationality: event.nationality,
-        phoneNumber: event.phoneNumber,
-        region: event.region,
-        city: event.city,
-        woreda: event.woreda,
-        idNumber: event.idNumber,
-        occupation: event.occupation,
-        organization: event.organization,
-        department: event.department,
-        industry: event.industry,
-        yearsOfExperience: event.yearsOfExperience,
-        photoPath: event.photoPath,
-      );
-
-      result.fold(
-        (failure) {
-          emit(
-            AuthErrorState(
-              message: _mapFailureToMessage(failure),
-              errorCode: failure.codel,
-            ),
-          );
-        },
-        (updatedUser) {
-          emit(
-            AuthenticatedState(
-              userId: updatedUser.id,
-              email: updatedUser.email,
-              userType: updatedUser.userType,
-              userData: updatedUser.toJson(),
-            ),
-          );
-        },
-      );
-    } catch (e) {
-      emit(
-        const AuthErrorState(
-          message: "Failed to update profile. Please try again",
-          errorCode: "UPDATE_PROFILE_ERROR",
-        ),
-      );
-    }
   }
 
   String _mapFailureToMessage(Failure failure) {
@@ -93,6 +40,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       case "REGISTRATION_ERROR":
         return "Registration failed. Please check your details and try again.";
 
+      // Profile errors:
+      case "PROFILE_ALREADY_EXISTS":
+        return "Profile already exists. You can update your existing profile instead.";
+      case "CREATE_PROFILE_ERROR":
+        return "Failed to create profile. Please check your details and try again.";
+      case "UPDATE_PROFILE_ERROR":
+        return "Failed to update profile. Please try again.";
+      case "TOKEN_REQUIRED":
+        return "Authentication required. Please sign in again.";
+
       // OTP errors:
       case "INVALID_OTP":
         return "Invalid OTP code. Please check and try again";
@@ -100,7 +57,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         return "OTP code has expired. Please request a new one.";
       case "OTP_RATE_LIMIT_EXCEEDED":
       case "RATE_LIMIT_EXCEEDED":
-        return "Too many requests. Please wait before tring again";
+        return "Too many requests. Please wait before trying again";
 
       // Network errors:
       case "NETWORK_ERROR":
@@ -131,7 +88,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       default:
         return failure.message.isNotEmpty
             ? failure.message
-            : "An error occured. Please try again.";
+            : "An error occurred. Please try again.";
     }
   }
 
@@ -165,6 +122,50 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
     } catch (e) {
       emit(const UnauthenticatedState());
+    }
+  }
+
+  Future<void> _onCreateProfile(
+    CreateProfileEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoadingState());
+
+    try {
+      final result = await authRepository.createProfile(
+        fullName: event.fullName,
+        gender: event.gender,
+        phoneNumber: event.phoneNumber,
+        occupation: event.occupation,
+        organization: event.organization,
+        photoPath: event.photoPath,
+      );
+
+      result.fold(
+        (failure) {
+          emit(
+            AuthErrorState(
+              message: _mapFailureToMessage(failure),
+              errorCode: failure.code,
+            ),
+          );
+        },
+        (profileData) {
+          emit(
+            AuthProfileCreatedState(
+              message: profileData['message'] ?? 'Profile created successfully',
+              participant: profileData['participant'] ?? {},
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      emit(
+        const AuthErrorState(
+          message: "Failed to create profile. Please try again",
+          errorCode: "CREATE_PROFILE_ERROR",
+        ),
+      );
     }
   }
 
@@ -294,6 +295,61 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         const AuthErrorState(
           message: "Failed to send OTP. Please try again",
           errorCode: "RESEND_OTP_ERROR",
+        ),
+      );
+    }
+  }
+
+  Future<void> _onUpdateProfile(
+    UpdateProfileEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoadingState());
+
+    try {
+      final result = await authRepository.updateProfile(
+        fullName: event.fullName,
+        gender: event.gender,
+        dateOfBirth: event.dateOfBirth,
+        nationality: event.nationality,
+        phoneNumber: event.phoneNumber,
+        region: event.region,
+        city: event.city,
+        woreda: event.woreda,
+        idNumber: event.idNumber,
+        occupation: event.occupation,
+        organization: event.organization,
+        department: event.department,
+        industry: event.industry,
+        yearsOfExperience: event.yearsOfExperience,
+        photoPath: event.photoPath,
+      );
+
+      result.fold(
+        (failure) {
+          emit(
+            AuthErrorState(
+              message: _mapFailureToMessage(failure),
+              errorCode: failure.code,
+            ),
+          );
+        },
+        (updatedUser) {
+          emit(
+            AuthenticatedState(
+              userId: updatedUser.id,
+              email: updatedUser.email,
+              userType: updatedUser.userType,
+              userData: updatedUser.toJson(),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      emit(
+        const AuthErrorState(
+          message: "Failed to update profile. Please try again",
+          errorCode: "UPDATE_PROFILE_ERROR",
         ),
       );
     }

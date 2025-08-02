@@ -798,7 +798,7 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
 
   void _updateProfile() {
     context.read<AuthBloc>().add(
-      UpdateProfileEvent(
+      CreateProfileEvent(
         fullName: _fullNameController.text,
         gender: _selectedGender,
         dateOfBirth: _dateOfBirth,
