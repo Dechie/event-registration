@@ -14,6 +14,7 @@ import 'package:event_reg/features/dashboard/presentation/bloc/dashboard_bloc.da
 import 'package:event_reg/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:event_reg/features/dashboard/presentation/pages/admin_dashboard_page.dart';
 import 'package:event_reg/features/dashboard/presentation/pages/participant_dashboard_page.dart';
+import 'package:event_reg/features/event_registration/presentation/pages/my_events_page.dart';
 import 'package:event_reg/features/landing/presentation/pages/landing_page.dart';
 import 'package:event_reg/features/registration/presentation/bloc/registration_bloc.dart';
 import 'package:event_reg/features/registration/presentation/pages/registration_page.dart';
@@ -35,7 +36,10 @@ class AppRouter {
         );
 
       case RouteNames.landingPage:
-        return MaterialPageRoute(builder: (_) => const LandingPage());
+        return MaterialPageRoute(builder: (_) => const UpdatedLandingPage());
+
+      case RouteNames.myEventsPage:
+        return MaterialPageRoute(builder: (_) => const MyEventsPage());
 
       case RouteNames.badgePage:
         final args = settings.arguments as Map<String, dynamic>;

@@ -24,4 +24,5 @@ class RouteNames {
   static const String contactPage = '/contact';
   static const String faqPage = '/faq';
   static const String eventAgendaPage = '/event-agenda';
+  static const String myEventsPage = "/my-events";
 }
