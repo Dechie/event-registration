@@ -2,11 +2,13 @@ import 'package:event_reg/features/auth/data/models/user.dart';
 import 'package:flutter/material.dart' show debugPrint;
 
 class LoginResponse {
+  final String id;
   final String token;
   final User user;
   final String message;
 
   LoginResponse({
+    required this.id,
     required this.token,
     required this.user,
     required this.message,
@@ -16,6 +18,7 @@ class LoginResponse {
     try {
       debugPrint('🔍 Parsing LoginResponse from: $json');
 
+      final id = "${json["id"]}";
       final token = json['token'];
       final userData = json['user'];
 
@@ -34,6 +37,7 @@ class LoginResponse {
       debugPrint('✅ Successfully parsed User: ${user.toString()}');
 
       return LoginResponse(
+        id: id,
         token: token,
         user: user,
         message: json['message'] ?? 'Login successful',
@@ -52,8 +56,10 @@ class LoginResponse {
     String? message,
     DateTime? expiresAt,
     String? refreshToken,
+    String? id,
   }) {
     return LoginResponse(
+      id: id ?? this.id,
       token: token ?? this.token,
       user: user ?? this.user,
       message: message ?? this.message,

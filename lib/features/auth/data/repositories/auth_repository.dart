@@ -146,7 +146,6 @@ class AuthRepositoryImpl implements AuthRepository {
       debugPrint('❌ Server error during Profile create: ${e.message}');
       return Left(ServerFailure(message: e.message, code: e.code));
     } catch (e) {
-
       debugPrint('❌ Unexpected error during profile create: $e');
       return const Left(UnknownFailure());
     }
@@ -391,6 +390,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
       // Update cached user data
       final updatedLoginResponse = LoginResponse(
+        id: updatedUser.id,
         user: updatedUser,
         token: cachedData.token,
         message: "Profile updated successfully",

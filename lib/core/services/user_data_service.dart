@@ -8,7 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class UserDataService {
   static const String _userDataKey = "USER_DATA";
-
   static const String _tokenKey = "AUTH_TOKEN";
   static const String _userIdKey = "USER_ID";
   static const String _userEmailKey = "USER_EMAIL";
@@ -63,6 +62,7 @@ class UserDataService {
       debugPrint("the found userDataJson: $userDataJson");
 
       if (userDataJson != null) {
+        debugPrint(userDataJson);
         final userDataMap = jsonDecode(userDataJson) as Map<String, dynamic>;
         debugPrint("userDatamap parsed: ");
         for (var entry in userDataMap.entries) {
@@ -144,6 +144,7 @@ class UserDataService {
       debugPrint("SAVING USER DATA: $userDataJson");
 
       await Future.wait([
+        _sharedPreferences.setString(_userIdKey, loginResponse.id),
         _sharedPreferences.setString(_userDataKey, userDataJson),
         _sharedPreferences.setString(_tokenKey, loginResponse.token),
         _sharedPreferences.setString(_userIdKey, loginResponse.user.id),
