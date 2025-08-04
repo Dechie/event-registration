@@ -10,6 +10,8 @@ import 'package:event_reg/features/dashboard/data/datasource/dashboard_datasourc
 import 'package:event_reg/features/dashboard/data/datasource/dashboard_local_datasource.dart';
 import 'package:event_reg/features/dashboard/data/repositories/dashboard_repository.dart';
 import 'package:event_reg/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:event_reg/features/event_registration/data/datasource/event_registration_datasource.dart';
+import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_bloc.dart';
 import 'package:event_reg/features/registration/data/datasources/registratoin_local_datasource.dart';
 import 'package:event_reg/features/registration/data/repositories/registration_repository.dart';
 import 'package:event_reg/features/splash/data/datasource/splash_datasource.dart';
@@ -19,6 +21,7 @@ import 'package:flutter/material.dart' show debugPrint;
 import 'package:get_it/get_it.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'core/network/dio_client.dart';
 import 'core/network/network_info.dart';
 import 'features/registration/data/datasources/registration_remote_datasource.dart';
@@ -78,6 +81,12 @@ Future<void> init() async {
   debugPrint("registering authbloc");
   sl.registerFactory(() => AuthBloc(authRepository: sl()));
 
+  debugPrint("registering event registration datasource");
+  sl.registerLazySingleton<EventRegistrationDataSource>(
+    () =>
+        EventRegistrationDataSourceImpl(dioClient: sl(), userDataService: sl()),
+  );
+
   // ! Features - Splash
   // DataSources
   sl.registerLazySingleton<SplashLocalDataSource>(
@@ -91,6 +100,10 @@ Future<void> init() async {
 
   // Bloc
   sl.registerFactory(() => SplashBloc(repository: sl()));
+
+  sl.registerFactory(
+    () => EventRegistrationBloc(dataSource: sl(), userDataService: sl()),
+  );
 
   // ! Features - Dashboard
   // DataSources

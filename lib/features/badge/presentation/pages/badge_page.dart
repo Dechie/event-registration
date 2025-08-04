@@ -12,7 +12,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:share_plus/share_plus.dart';
+//import 'package:share_plus/share_plus.dart';
 
 class BadgePage extends StatefulWidget {
   final Event event;
@@ -180,8 +180,8 @@ class _BadgePageState extends State<BadgePage> {
               color: AppColors.primary,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Text(
-              'EVENT BADGE',
+            child: Text(
+              widget.event.title,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white,
@@ -191,100 +191,85 @@ class _BadgePageState extends State<BadgePage> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
-
-          // Profile Photo Placeholder
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              color: AppColors.background,
-              borderRadius: BorderRadius.circular(50),
-              border: Border.all(color: AppColors.primary, width: 2),
-            ),
-            child: participant?['photo'] != null
-                ? ClipRRect(
+          Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
                     borderRadius: BorderRadius.circular(50),
-                    child: Image.network(
-                      participant['photo'],
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildAvatarPlaceholder(),
-                    ),
-                  )
-                : _buildAvatarPlaceholder(),
-          ),
-          const SizedBox(height: 16),
-
-          // Participant Name
-          Text(
-            participant?['name'] ?? _userData?['name'] ?? 'Participant',
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 4),
-
-          // Email
-          Text(
-            _userData?['email'] ?? '',
-            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-
-          // Organization/Company
-          if (participant?['company'] != null) ...[
-            Text(
-              participant['company'],
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-                fontStyle: FontStyle.italic,
+                    border: Border.all(color: AppColors.primary, width: 2),
+                  ),
+                  child: participant?['photo'] != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(50),
+                          child: Image.network(
+                            participant['photo'],
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) =>
+                                _buildAvatarPlaceholder(),
+                          ),
+                        )
+                      : _buildAvatarPlaceholder(),
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-          ],
-
-          // Event Name
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.background,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              widget.event.title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // Date
-          Text(
-            _formatDate(widget.event.startTime),
-            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: 16),
-
-          // QR Code
-          QrImageView(
-            data: badgeId,
-            version: QrVersions.auto,
-            size: 80,
-            backgroundColor: Colors.white,
-          ),
-          const SizedBox(height: 8),
-
-          // Badge ID
-          Text(
-            'ID: ${badgeId.substring(0, 12)}...',
-            style: TextStyle(
-              fontSize: 10,
-              color: AppColors.textSecondary,
-              fontFamily: 'monospace',
-            ),
+              Expanded(
+                flex: 5,
+                child: Column(
+                  spacing: 10,
+                  children: [
+                    // Participant Name
+                    Text(
+                      participant?['name'] ??
+                          _userData?['name'] ??
+                          'Participant',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    // Badge ID
+                    Text(
+                      'ID: ${badgeId.substring(0, 12)}...',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: AppColors.textSecondary,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                    // Event Name
+                    Text(
+                      widget.event.organization?.name ?? "Organization",
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    Text(
+                      _formatDate(widget.event.startTime),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                flex: 2,
+                child: QrImageView(
+                  data: badgeId,
+                  version: QrVersions.auto,
+                  size: 80,
+                  backgroundColor: Colors.white,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -402,7 +387,7 @@ class _BadgePageState extends State<BadgePage> {
             backgroundColor: Colors.green,
             action: SnackBarAction(
               label: 'Share',
-              onPressed: () => Share.shareXFiles([XFile(file.path)]),
+              onPressed: () {}, // => Share.shareXFiles([XFile(file.path)]),
             ),
           ),
         );
@@ -452,9 +437,9 @@ class _BadgePageState extends State<BadgePage> {
       await file.writeAsBytes(pngBytes);
 
       // Share image
-      await Share.shareXFiles([
-        XFile(file.path),
-      ], text: 'My badge for ${widget.event.title}');
+      // await Share.shareXFiles([
+      //   XFile(file.path),
+      // ], text: 'My badge for ${widget.event.title}');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

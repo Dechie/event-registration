@@ -2,8 +2,10 @@ import 'package:event_reg/config/themes/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class HeroSection extends StatelessWidget {
-  const HeroSection({super.key});
+  String? title;
 
+  String? description;
+  HeroSection({super.key, this.title, this.description});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -30,7 +32,7 @@ class HeroSection extends StatelessWidget {
                   const Icon(Icons.event, color: Colors.white, size: 32),
                   const SizedBox(width: 12),
                   const Text(
-                    'Event Registration',
+                    'Event Details',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -55,8 +57,8 @@ class HeroSection extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      'Professional Development Conference 2025',
+                    Text(
+                      title ?? 'Professional Development Conference 2025',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white,
@@ -67,7 +69,8 @@ class HeroSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Join industry leaders and professionals for a transformative learning experience',
+                      description ??
+                          'Join industry leaders and professionals for a transformative learning experience',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.9),

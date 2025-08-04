@@ -30,6 +30,14 @@ class Event {
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
+    bool isActive = false;
+    if (json["isActive"] is int) {
+      if (json["is_active"] == 1) {
+        isActive = false;
+      } else if (json["is_active"] == 0) {
+        isActive = true;
+      }
+    }
     return Event(
       id: json['id'].toString(),
       title: json['title'] ?? '',
@@ -37,16 +45,16 @@ class Event {
       location: json['location'] ?? '',
       startTime: DateTime.parse(json['start_time']),
       endTime: DateTime.parse(json['end_time']),
-      isActive: json['is_active'] ?? false,
+      isActive: isActive, 
       banner: json['banner'],
       organizationId: json['organization_id'].toString(),
-      organization: json['organization'] != null 
-          ? Organization.fromJson(json['organization']) 
+      organization: json['organization'] != null
+          ? Organization.fromJson(json['organization'])
           : null,
-      sessions: json['sessions'] != null 
+      sessions: json['sessions'] != null
           ? (json['sessions'] as List)
-              .map((session) => EventSession.fromJson(session))
-              .toList()
+                .map((session) => EventSession.fromJson(session))
+                .toList()
           : null,
     );
   }

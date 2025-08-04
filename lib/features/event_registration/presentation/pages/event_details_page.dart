@@ -3,6 +3,8 @@ import 'package:event_reg/config/routes/route_names.dart';
 import 'package:event_reg/config/themes/app_colors.dart';
 import 'package:event_reg/core/shared/widgets/custom_button.dart';
 import 'package:event_reg/features/landing/data/models/event.dart';
+import 'package:event_reg/features/landing/presentation/widgets/event_info.dart';
+import 'package:event_reg/features/landing/presentation/widgets/hero_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -49,7 +51,6 @@ class EventDetailsPage extends StatelessWidget {
         },
         builder: (context, state) {
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -66,56 +67,58 @@ class EventDetailsPage extends StatelessWidget {
                       ),
                     ),
                   ),
+                HeroSection(title: event.title, description: event.description),
                 const SizedBox(height: 16),
+                EventInfoSection(event: event),
 
-                // Event Title
-                Text(
-                  event.title,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
+                // // Event Title
+                // Text(
+                //   event.title,
+                //   style: const TextStyle(
+                //     fontSize: 24,
+                //     fontWeight: FontWeight.bold,
+                //   ),
+                // ),
+                // const SizedBox(height: 8),
 
-                // Organization
-                if (event.organization != null)
-                  Text(
-                    'By ${event.organization!.name}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                const SizedBox(height: 16),
+                // // Organization
+                // if (event.organization != null)
+                //   Text(
+                //     'By ${event.organization!.name}',
+                //     style: TextStyle(
+                //       fontSize: 16,
+                //       color: AppColors.textSecondary,
+                //     ),
+                //   ),
+                // const SizedBox(height: 16),
 
-                // Event Details
-                _buildDetailItem(Icons.location_on, 'Location', event.location),
-                const SizedBox(height: 12),
-                _buildDetailItem(
-                  Icons.access_time,
-                  'Start Time',
-                  _formatDateTime(event.startTime),
-                ),
-                const SizedBox(height: 12),
-                _buildDetailItem(
-                  Icons.access_time_filled,
-                  'End Time',
-                  _formatDateTime(event.endTime),
-                ),
-                const SizedBox(height: 16),
+                // // Event Details
+                // _buildDetailItem(Icons.location_on, 'Location', event.location),
+                // const SizedBox(height: 12),
+                // _buildDetailItem(
+                //   Icons.access_time,
+                //   'Start Time',
+                //   _formatDateTime(event.startTime),
+                // ),
+                // const SizedBox(height: 12),
+                // _buildDetailItem(
+                //   Icons.access_time_filled,
+                //   'End Time',
+                //   _formatDateTime(event.endTime),
+                // ),
+                // const SizedBox(height: 16),
 
-                // Description
-                const Text(
-                  'Description',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  event.description,
-                  style: const TextStyle(fontSize: 16, height: 1.5),
-                ),
-                const SizedBox(height: 16),
+                // // Description
+                // const Text(
+                //   'Description',
+                //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                // ),
+                // const SizedBox(height: 8),
+                // Text(
+                //   event.description,
+                //   style: const TextStyle(fontSize: 16, height: 1.5),
+                // ),
+                // const SizedBox(height: 16),
 
                 // Sessions
                 if (event.sessions != null && event.sessions!.isNotEmpty) ...[
@@ -161,19 +164,22 @@ class EventDetailsPage extends StatelessWidget {
                 ],
 
                 // Registration Button
-                SizedBox(
-                  width: double.infinity,
-                  child: CustomButton(
-                    text: state is EventRegistrationLoading
-                        ? 'Registering...'
-                        : 'Register for Event',
-                    onPressed: () {
-                      if (state is EventRegistrationLoading) {
-                        _registerForEvent(context);
-                      }
-                    },
-                    backgroundColor: AppColors.primary,
-                    textColor: Colors.white,
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: CustomButton(
+                      text: state is EventRegistrationLoading
+                          ? 'Registering...'
+                          : 'Register for Event',
+                      onPressed: () {
+                        if (state is EventRegistrationLoading) {
+                          _registerForEvent(context);
+                        }
+                      },
+                      backgroundColor: AppColors.primary,
+                      textColor: Colors.white,
+                    ),
                   ),
                 ),
               ],

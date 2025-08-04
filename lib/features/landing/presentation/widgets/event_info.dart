@@ -1,9 +1,10 @@
 import 'package:event_reg/config/themes/app_colors.dart';
+import 'package:event_reg/features/landing/data/models/event.dart';
 import 'package:flutter/material.dart';
 
 class EventInfoSection extends StatelessWidget {
-  const EventInfoSection({super.key});
-
+  final Event event;
+  const EventInfoSection({super.key, required this.event});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -28,7 +29,7 @@ class EventInfoSection extends StatelessWidget {
                 child: _buildInfoCard(
                   icon: Icons.calendar_today,
                   title: 'Date',
-                  subtitle: 'March 15-16, 2025',
+                  subtitle: _formatDateTime(event.startTime),
                 ),
               ),
               const SizedBox(width: 16),
@@ -36,7 +37,7 @@ class EventInfoSection extends StatelessWidget {
                 child: _buildInfoCard(
                   icon: Icons.location_on,
                   title: 'Venue',
-                  subtitle: 'Convention Center\nAddis Ababa',
+                  subtitle: event.location,
                 ),
               ),
             ],
@@ -57,7 +58,7 @@ class EventInfoSection extends StatelessWidget {
                 child: _buildInfoCard(
                   icon: Icons.people,
                   title: 'Capacity',
-                  subtitle: '500 Participants',
+                  subtitle: '100 Participants',
                 ),
               ),
             ],
@@ -104,5 +105,23 @@ class EventInfoSection extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${dateTime.day} ${months[dateTime.month - 1]} ${dateTime.year}';
   }
 }
