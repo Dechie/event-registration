@@ -12,6 +12,7 @@ class HeroSection extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
+          // ignore: deprecated_member_use
           colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
         ),
       ),

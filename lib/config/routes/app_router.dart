@@ -4,11 +4,12 @@ import 'package:event_reg/config/routes/route_names.dart';
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:event_reg/features/auth/presentation/bloc/events/auth_event.dart';
 import 'package:event_reg/features/auth/presentation/bloc/states/auth_state.dart';
-import 'package:event_reg/features/auth/presentation/pages/login/admin_login_page.dart'; // New admin login
 import 'package:event_reg/features/auth/presentation/pages/auth_otp_verification_page.dart';
+import 'package:event_reg/features/auth/presentation/pages/login/admin_login_page.dart'; // New admin login
 import 'package:event_reg/features/auth/presentation/pages/login/participant_login.dart';
 import 'package:event_reg/features/auth/presentation/pages/profile_add_page.dart';
 import 'package:event_reg/features/auth/presentation/pages/user_registration.dart';
+import 'package:event_reg/features/badge/presentation/pages/badge_page.dart';
 import 'package:event_reg/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:event_reg/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:event_reg/features/dashboard/presentation/pages/admin_dashboard_page.dart';
@@ -35,6 +36,15 @@ class AppRouter {
 
       case RouteNames.landingPage:
         return MaterialPageRoute(builder: (_) => const LandingPage());
+
+      case RouteNames.badgePage:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => BadgePage(
+            event: args["event"],
+            registrationData: args["registrationData"],
+          ),
+        );
 
       case RouteNames.registrationPage:
         return MaterialPageRoute(
