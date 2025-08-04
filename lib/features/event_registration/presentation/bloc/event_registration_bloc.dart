@@ -1,6 +1,7 @@
 import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:event_reg/features/event_registration/data/datasource/event_registration_datasource.dart';
 import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_event.dart';
+import 'package:event_reg/injection_container.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../data/models/event_reg_request.dart';
@@ -120,7 +121,9 @@ class EventRegistrationBloc
     emit(EventRegistrationLoading());
 
     try {
-      final user = await userDataService.getCurrentUser();
+
+    final userDataService = sl<UserDataService>();
+      final user = await userDataService.getCachedUser();
       if (user == null) {
         emit(EventRegistrationError(message: 'User not authenticated'));
         return;

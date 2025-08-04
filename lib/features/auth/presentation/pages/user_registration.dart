@@ -53,7 +53,7 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
             // Navigate to OTP verification page
             Navigator.pushReplacementNamed(
               context,
-              RouteNames.authOtpVerificationPage,
+              RouteNames.otpVerificationPage,
               arguments: {
                 'email': state.email,
                 'otpToken': state.otpToken,

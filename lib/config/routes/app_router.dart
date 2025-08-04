@@ -58,7 +58,7 @@ class AppRouter {
           settings: settings,
         );
 
-      case RouteNames.authOtpVerificationPage:
+      case RouteNames.otpVerificationPage:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (_) => AuthOTPVerificationPage(

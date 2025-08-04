@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:event_reg/config/routes/route_names.dart';
+import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:event_reg/features/auth/presentation/bloc/events/auth_event.dart';
 import 'package:event_reg/features/auth/presentation/bloc/states/auth_state.dart';
@@ -76,7 +77,8 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
               ),
             );
           } else if (state is AuthenticatedState ||
-              state is AuthProfileCreatedState) {
+              state is AuthProfileCreatedState ||
+              state is AuthProfileUpdatedState) {
             if (widget.isEditMode) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -84,23 +86,20 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
                   backgroundColor: Colors.green,
                 ),
               );
-              Navigator.of(
-                context,
-              ).pushReplacementNamed(RouteNames.landingPage);
+              Navigator.of(context).pushReplacementNamed(RouteNames.landingPage);
             } else {
-              // For new profile creation, navigate to event selection
+              // Profile creation completed successfully
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Profile created successfully!'),
                   backgroundColor: Colors.green,
                 ),
               );
+              
+              // Navigate to landing page since profile is now complete
               Navigator.pushReplacementNamed(
                 context,
                 RouteNames.landingPage,
-
-                //RouteNames.participantDashboardPage,
-                //arguments: {'profileData': state.userData},
               );
             }
           }
@@ -645,7 +644,7 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
 
   void _createProfile() {
     context.read<AuthBloc>().add(
-      UpdateProfileEvent(
+      CreateProfileEvent(
         fullName: _fullNameController.text,
         gender: _selectedGender,
         dateOfBirth: _dateOfBirth,
@@ -713,7 +712,7 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
           }
           break;
         case 2:
-          // Create profile directly through UpdateProfileEvent
+          // Create profile using CreateProfileEvent
           _createProfile();
           break;
       }
@@ -801,7 +800,7 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
 
   void _updateProfile() {
     context.read<AuthBloc>().add(
-      CreateProfileEvent(
+      UpdateProfileEvent(
         fullName: _fullNameController.text,
         gender: _selectedGender,
         dateOfBirth: _dateOfBirth,

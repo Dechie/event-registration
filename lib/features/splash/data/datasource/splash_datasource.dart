@@ -15,37 +15,85 @@ class SplashLocalDataSourceImpl implements SplashLocalDataSource {
 
   @override
   Future<void> clearAuthData() async {
+    debugPrint("🧹 Clearing auth data from splash datasource");
     await userDataService.clearAllData();
   }
 
   @override
   Future<AuthStatus> getAuthStatus() async {
-    debugPrint("splash local datasource: came here to see this");
-    final token = await userDataService.getAuthToken();
-    final userTypeString = await userDataService.getUserType();
-    final email = await userDataService.getUserEmail() ?? "no email";
-    debugPrint("token: $token, user type: $userTypeString, email: $email");
+    debugPrint("🔍 Getting auth status from splash datasource");
+    
+    try {
+      final authStatus = await userDataService.getAuthenticationStatus();
+      debugPrint("📱 Authentication status retrieved: $authStatus");
 
-    if (token == null || userTypeString == null) {
+      // If not authenticated at all
+      if (!authStatus.isAuthenticated) {
+        debugPrint("❌ User not authenticated");
+        return AuthStatus(userType: UserType.none);
+      }
+
+      // Determine user type
+      UserType userType = UserType.none;
+      if (authStatus.userType != null) {
+        switch (authStatus.userType!.toLowerCase()) {
+          case 'participant':
+            userType = UserType.participant;
+            break;
+          case 'admin':
+            userType = UserType.admin;
+            break;
+          default:
+            userType = UserType.none;
+        }
+      }
+
+      // Create enhanced AuthStatus with additional flags
+      return AuthStatus(
+        userType: userType,
+        token: authStatus.token,
+        email: authStatus.email,
+        userId: authStatus.userId,
+        // Additional flags for routing decisions
+        isEmailVerified: authStatus.isEmailVerified,
+        hasProfile: authStatus.hasProfile,
+        isProfileCompleted: authStatus.isProfileCompleted,
+      );
+    } catch (e) {
+      debugPrint("❌ Error getting auth status: $e");
       return AuthStatus(userType: UserType.none);
     }
-
-    final userType = UserType.values.firstWhere(
-      (type) => type.toString() == userTypeString,
-      orElse: () => UserType.none,
-    );
-
-    return AuthStatus(userType: userType, token: token, email: email);
   }
 
   @override
   Future<void> saveAuthStatus(AuthStatus authStatus) async {
-    if (authStatus.token != null) {
-      await userDataService.setAuthToken(authStatus.token!);
-    }
-    await userDataService.setUserType(authStatus.userType.toString());
-    if (authStatus.email != null) {
-      await userDataService.setUserEmail(authStatus.email!);
+    debugPrint("💾 Saving auth status from splash datasource");
+    
+    try {
+      if (authStatus.token != null) {
+        await userDataService.setAuthToken(authStatus.token!);
+      }
+      
+      if (authStatus.userType != UserType.none) {
+        await userDataService.setUserType(authStatus.userType.toString().split('.').last);
+      }
+      
+      if (authStatus.email != null) {
+        await userDataService.setUserEmail(authStatus.email!);
+      }
+
+      if (authStatus.userId != null) {
+        await userDataService.setUserEmail(authStatus.userId!);
+      }
+
+      // Save additional status flags
+      await userDataService.setEmailVerified(authStatus.isEmailVerified);
+      await userDataService.setHasProfile(authStatus.hasProfile);
+      await userDataService.setProfileCompleted(authStatus.isProfileCompleted);
+      
+      debugPrint("✅ Auth status saved successfully");
+    } catch (e) {
+      debugPrint("❌ Failed to save auth status: $e");
     }
   }
 }

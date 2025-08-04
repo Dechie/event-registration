@@ -6,6 +6,7 @@ import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:event_reg/core/shared/widgets/custom_button.dart';
 import 'package:event_reg/features/landing/data/models/event.dart';
 import 'package:event_reg/injection_container.dart' as di;
+import 'package:event_reg/injection_container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
@@ -410,7 +411,9 @@ class _BadgePageState extends State<BadgePage> {
 
   Future<void> _loadUserData() async {
     try {
-      final user = await _userDataService.getCurrentUser();
+      final userDataService = sl<UserDataService>();
+      final user = await userDataService.getCachedUser();
+
       setState(() {
         _userData = user?.toJson();
         _isLoading = false;

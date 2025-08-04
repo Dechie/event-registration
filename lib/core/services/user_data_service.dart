@@ -1,229 +1,448 @@
-import 'dart:convert';
+// core/services/user_data_service.dart
 
-import 'package:event_reg/core/error/exceptions.dart';
-import 'package:event_reg/features/auth/data/models/login/login_response.dart';
 import 'package:event_reg/features/auth/data/models/user.dart';
-import 'package:flutter/material.dart' show debugPrint;
 import 'package:shared_preferences/shared_preferences.dart';
 
-class UserDataService {
-  static const String _userDataKey = "USER_DATA";
-  static const String _tokenKey = "AUTH_TOKEN";
-  static const String _userIdKey = "USER_ID";
-  static const String _userEmailKey = "USER_EMAIL";
-  static const String _isLoggedInKey = "IS_LOGGED_IN";
-  static const String _hasProfileKey = "IS_LOGGED_IN";
-  static const String _userTypeKey = 'USER_TYPE';
-  final SharedPreferences _sharedPreferences;
+// Authentication Status Model
+class AuthenticationStatus {
+  final bool isAuthenticated;
+  final String? token;
+  final String? userType;
+  final String? email;
+  final String? userId;
+  final bool isEmailVerified;
+  final bool hasProfile;
+  final bool isProfileCompleted;
 
-  UserDataService(this._sharedPreferences);
+  const AuthenticationStatus({
+    required this.isAuthenticated,
+    this.token,
+    this.userType,
+    this.email,
+    this.userId,
+    this.isEmailVerified = false,
+    this.hasProfile = false,
+    this.isProfileCompleted = false,
+  });
 
-  // clear all user data (logout)
+  @override
+  String toString() {
+    return 'AuthStatus(isAuth: $isAuthenticated, userType: $userType, emailVerified: $isEmailVerified, hasProfile: $hasProfile, profileCompleted: $isProfileCompleted)';
+  }
+}
+
+abstract class UserDataService {
+  Future<void> clearAllData();
+  // Enhanced authentication status
+  Future<AuthenticationStatus> getAuthenticationStatus();
+  // Existing methods...
+  Future<String?> getAuthToken();
+  Future<User?> getCachedUser();
+  Future<String?> getCity();
+  Future<String?> getDepartment();
+  // Profile status methods
+  Future<bool> getEmailVerified();
+  // Profile getters
+  Future<String?> getFullName();
+  Future<String?> getGender();
+  Future<bool> getHasProfile();
+
+  Future<String?> getIdNumber();
+  Future<String?> getIndustry();
+  Future<String?> getNationality();
+  Future<String?> getOccupation();
+  Future<String?> getOrganization();
+  Future<String?> getPhoneNumber();
+
+  Future<String?> getPhotoPath();
+  Future<bool> getProfileCompleted();
+
+  Future<String?> getRegion();
+  Future<String?> getUserEmail();
+  Future<String?> getUserId();
+  Future<String?> getUserType();
+  Future<String?> getWoreda();
+  Future<int?> getYearsOfExperience();
+  Future<bool> isAuthenticated();
+  Future<void> setAuthToken(String token);
+  Future<void> setCity(String city);
+  Future<void> setDepartment(String department);
+  Future<void> setEmailVerified(bool isVerified);
+  // Profile setters
+  Future<void> setFullName(String fullName);
+  Future<void> setGender(String gender);
+  Future<void> setHasProfile(bool hasProfile);
+
+  Future<void> setIdNumber(String idNumber);
+  Future<void> setIndustry(String industry);
+  Future<void> setNationality(String nationality);
+  Future<void> setOccupation(String occupation);
+  Future<void> setOrganization(String organization);
+  Future<void> setPhoneNumber(String phoneNumber);
+  Future<void> setPhotoPath(String photoPath);
+  Future<void> setProfileCompleted(bool isCompleted);
+  Future<void> setRegion(String region);
+  Future<void> setUserEmail(String email);
+  Future<void> setUserId(String userId);
+  Future<void> setUserType(String userType);
+  Future<void> setWoreda(String woreda);
+  Future<void> setYearsOfExperience(int years);
+}
+
+class UserDataServiceImpl implements UserDataService {
+  // Constants for keys
+  static const String _authTokenKey = 'auth_token';
+
+  static const String _userTypeKey = 'user_type';
+
+  static const String _userEmailKey = 'user_email';
+
+  static const String _userIdKey = 'user_id';
+  static const String _emailVerifiedKey = 'email_verified';
+  static const String _hasProfileKey = 'has_profile';
+  static const String _profileCompletedKey = 'profile_completed';
+  // New keys for profile data
+  static const String _fullNameKey = 'full_name';
+  static const String _phoneNumberKey = 'phone_number';
+  static const String _occupationKey = 'occupation';
+
+  static const String _organizationKey = 'organization';
+  static const String _genderKey = 'gender';
+  static const String _nationalityKey = 'nationality';
+  static const String _regionKey = 'region';
+  static const String _cityKey = 'city';
+  static const String _woredaKey = 'woreda';
+  static const String _idNumberKey = 'id_number';
+  static const String _departmentKey = 'department';
+  static const String _industryKey = 'industry';
+  static const String _yearsOfExperienceKey = 'years_of_experience';
+  static const String _photoPathKey = 'photo_path';
+  final SharedPreferences sharedPreferences;
+  UserDataServiceImpl({required this.sharedPreferences});
+  @override
   Future<void> clearAllData() async {
-    try {
-      await Future.wait([
-        _sharedPreferences.remove(_userDataKey),
-        _sharedPreferences.remove(_tokenKey),
-        _sharedPreferences.remove(_userIdKey),
-        _sharedPreferences.remove(_userEmailKey),
-        _sharedPreferences.remove(_userTypeKey),
-        _sharedPreferences.setBool(_isLoggedInKey, false),
-      ]);
-    } catch (e) {
-      throw CacheException(
-        message: "Failed to clear user data",
-        code: "CACHE_CLEAR_ERROR",
-      );
-    }
+    await sharedPreferences.remove(_authTokenKey);
+    await sharedPreferences.remove(_userTypeKey);
+    await sharedPreferences.remove(_userEmailKey);
+    await sharedPreferences.remove(_userIdKey);
+    await sharedPreferences.remove(_emailVerifiedKey);
+    await sharedPreferences.remove(_hasProfileKey);
+    await sharedPreferences.remove(_profileCompletedKey);
+
+    // Remove all new profile data keys
+    await sharedPreferences.remove(_fullNameKey);
+    await sharedPreferences.remove(_phoneNumberKey);
+    await sharedPreferences.remove(_occupationKey);
+    await sharedPreferences.remove(_organizationKey);
+    await sharedPreferences.remove(_genderKey);
+    await sharedPreferences.remove(_nationalityKey);
+    await sharedPreferences.remove(_regionKey);
+    await sharedPreferences.remove(_cityKey);
+    await sharedPreferences.remove(_woredaKey);
+    await sharedPreferences.remove(_idNumberKey);
+    await sharedPreferences.remove(_departmentKey);
+    await sharedPreferences.remove(_industryKey);
+    await sharedPreferences.remove(_yearsOfExperienceKey);
+    await sharedPreferences.remove(_photoPathKey);
   }
 
-  // get auth token
+  @override
+  Future<AuthenticationStatus> getAuthenticationStatus() async {
+    final token = await getAuthToken();
+    final userType = await getUserType();
+    final email = await getUserEmail();
+    final userId = await getUserId();
+    final isEmailVerified = await getEmailVerified();
+    final hasProfile = await getHasProfile();
+    final isProfileCompleted = await getProfileCompleted();
+
+    final isAuthenticated = token != null && token.isNotEmpty;
+
+    return AuthenticationStatus(
+      isAuthenticated: isAuthenticated,
+      token: token,
+      userType: userType,
+      email: email,
+      userId: userId,
+      isEmailVerified: isEmailVerified,
+      hasProfile: hasProfile,
+      isProfileCompleted: isProfileCompleted,
+    );
+  }
+
+  @override
   Future<String?> getAuthToken() async {
-    try {
-      return _sharedPreferences.getString(_tokenKey);
-    } catch (e) {
-      return null;
-    }
+    return sharedPreferences.getString(_authTokenKey);
   }
 
-  // get current user data
-  Future<User?> getCurrentUser() async {
-    await clearAllData();
+  @override
+  Future<User?> getCachedUser() async {
     try {
-      final loginData = await getLoginData();
-      return loginData?.user;
-    } catch (e) {
-      return null;
-    }
-  }
+      // Retrieve core user data
+      final userId = await getUserId();
+      final userEmail = await getUserEmail();
+      final userType = await getUserType();
 
-  // get complete login response data
-  Future<LoginResponse?> getLoginData() async {
-    try {
-      final userDataJson = _sharedPreferences.getString(_userDataKey);
-      debugPrint("the found userDataJson: $userDataJson");
-
-      if (userDataJson != null) {
-        debugPrint(userDataJson);
-        final userDataMap = jsonDecode(userDataJson) as Map<String, dynamic>;
-        debugPrint("userDatamap parsed: ");
-        for (var entry in userDataMap.entries) {
-          if (entry.key == "user") continue;
-          debugPrint("<${entry.key}>");
-          debugPrint("    ${entry.value}");
-          debugPrint("</${entry.key}>");
-        }
-        return LoginResponse.fromJson(userDataMap);
+      // If any core data is missing, we cannot construct a valid user
+      if (userId == null || userEmail == null || userType == null) {
+        return null;
       }
-      return null;
-    } catch (e) {
-      throw CacheException(
-        message: "Failed to retreive login data",
-        code: "CACHE_READ_ERROR",
+
+      // Retrieve all profile fields using the new getters
+      final fullName = await getFullName();
+      final phoneNumber = await getPhoneNumber();
+      final occupation = await getOccupation();
+      final organization = await getOrganization();
+      final gender = await getGender();
+      final nationality = await getNationality();
+      final region = await getRegion();
+      final city = await getCity();
+      final woreda = await getWoreda();
+      final idNumber = await getIdNumber();
+      final department = await getDepartment();
+      final industry = await getIndustry();
+      final yearsOfExperience = await getYearsOfExperience();
+      final photoPath = await getPhotoPath();
+
+      // Reconstruct and return the User object
+      return User(
+        id: userId,
+        email: userEmail,
+        userType: userType,
+        fullName: fullName,
+        phoneNumber: phoneNumber,
+        occupation: occupation,
+        organization: organization,
+        gender: gender,
+        nationality: nationality,
+        region: region,
+        city: city,
+        woreda: woreda,
+        idNumber: idNumber,
+        department: department,
+        industry: industry,
+        yearsOfExperience: yearsOfExperience,
+        photoPath: photoPath,
       );
-    }
-  }
-
-  // get user data as map for easy access
-  Future<Map<String, dynamic>?> getUserDataMap() async {
-    try {
-      final user = await getCurrentUser();
-      return user?.toJson();
     } catch (e) {
+      // Log the error and return null if data retrieval fails
+      // debugPrint("Error getting cached user: $e");
       return null;
     }
   }
 
+  @override
+  Future<String?> getCity() async {
+    return sharedPreferences.getString(_cityKey);
+  }
+
+  @override
+  Future<String?> getDepartment() async {
+    return sharedPreferences.getString(_departmentKey);
+  }
+
+  @override
+  Future<bool> getEmailVerified() async {
+    return sharedPreferences.getBool(_emailVerifiedKey) ?? false;
+  }
+
+  // --- Profile Getters ---
+  @override
+  Future<String?> getFullName() async {
+    return sharedPreferences.getString(_fullNameKey);
+  }
+
+  @override
+  Future<String?> getGender() async {
+    return sharedPreferences.getString(_genderKey);
+  }
+
+  @override
+  Future<bool> getHasProfile() async {
+    return sharedPreferences.getBool(_hasProfileKey) ?? false;
+  }
+
+  @override
+  Future<String?> getIdNumber() async {
+    return sharedPreferences.getString(_idNumberKey);
+  }
+
+  @override
+  Future<String?> getIndustry() async {
+    return sharedPreferences.getString(_industryKey);
+  }
+
+  @override
+  Future<String?> getNationality() async {
+    return sharedPreferences.getString(_nationalityKey);
+  }
+
+  @override
+  Future<String?> getOccupation() async {
+    return sharedPreferences.getString(_occupationKey);
+  }
+
+  @override
+  Future<String?> getOrganization() async {
+    return sharedPreferences.getString(_organizationKey);
+  }
+
+  @override
+  Future<String?> getPhoneNumber() async {
+    return sharedPreferences.getString(_phoneNumberKey);
+  }
+
+  @override
+  Future<String?> getPhotoPath() async {
+    return sharedPreferences.getString(_photoPathKey);
+  }
+
+  @override
+  Future<bool> getProfileCompleted() async {
+    return sharedPreferences.getBool(_profileCompletedKey) ?? false;
+  }
+
+  @override
+  Future<String?> getRegion() async {
+    return sharedPreferences.getString(_regionKey);
+  }
+
+  @override
   Future<String?> getUserEmail() async {
-    try {
-      return _sharedPreferences.getString(_userEmailKey);
-    } catch (e) {
-      return null;
-    }
+    return sharedPreferences.getString(_userEmailKey);
   }
 
+  @override
   Future<String?> getUserId() async {
-    try {
-      return _sharedPreferences.getString(_userIdKey);
-    } catch (e) {
-      return null;
-    }
+    return sharedPreferences.getString(_userIdKey);
   }
 
+  @override
   Future<String?> getUserType() async {
-    try {
-      return _sharedPreferences.getString(_userTypeKey);
-    } catch (e) {
-      return null;
-    }
+    return sharedPreferences.getString(_userTypeKey);
   }
 
-  Future<bool> hasProfile() async {
-    try {
-      final isLoggedIn = _sharedPreferences.getBool(_hasProfileKey) ?? false;
-      final user = await getCurrentUser();
-      return isLoggedIn && user != null;
-    } catch (e) {
-      return false;
-    }
+  @override
+  Future<String?> getWoreda() async {
+    return sharedPreferences.getString(_woredaKey);
   }
 
-  // check if user has specific role/type
-  Future<bool> hasUserType(String userType) async {
-    try {
-      final currentUserType = await getUserType();
-      return currentUserType?.toLowerCase() == userType.toLowerCase();
-    } catch (e) {
-      return false;
-    }
+  @override
+  Future<int?> getYearsOfExperience() async {
+    return sharedPreferences.getInt(_yearsOfExperienceKey);
   }
 
-  // check if user is authenticated
+  @override
   Future<bool> isAuthenticated() async {
-    try {
-      final isLoggedIn = _sharedPreferences.getBool(_isLoggedInKey) ?? false;
-      final user = await getCurrentUser();
-      return isLoggedIn && user != null;
-    } catch (e) {
-      return false;
-    }
+    AuthenticationStatus authStat = await getAuthenticationStatus();
+    return authStat.hasProfile &&
+        authStat.isAuthenticated &&
+        authStat.isProfileCompleted;
   }
 
-  // save complete login response data
-  Future<void> saveLoginData(LoginResponse loginResponse) async {
-    try {
-      final userDataJson = jsonEncode(loginResponse.toJson());
-      debugPrint("SAVING USER DATA: $userDataJson");
-
-      await Future.wait([
-        _sharedPreferences.setString(_userIdKey, loginResponse.id),
-        _sharedPreferences.setString(_userDataKey, userDataJson),
-        _sharedPreferences.setString(_tokenKey, loginResponse.token),
-        _sharedPreferences.setString(_userIdKey, loginResponse.user.id),
-        _sharedPreferences.setString(_userEmailKey, loginResponse.user.email),
-        _sharedPreferences.setString(_userTypeKey, loginResponse.user.userType),
-        _sharedPreferences.setBool(_isLoggedInKey, true),
-      ]);
-    } catch (e) {
-      throw CacheException(
-        message: "Failed to save login data",
-        code: "CACHE_WRITE_ERROR",
-      );
-    }
-  }
-
+  @override
   Future<void> setAuthToken(String token) async {
-    try {
-      await _sharedPreferences.setString(_tokenKey, token);
-    } catch (e) {
-      debugPrint("Failed to save token to sharedprefs");
-    }
+    await sharedPreferences.setString(_authTokenKey, token);
   }
 
+  @override
+  Future<void> setCity(String city) async {
+    await sharedPreferences.setString(_cityKey, city);
+  }
+
+  @override
+  Future<void> setDepartment(String department) async {
+    await sharedPreferences.setString(_departmentKey, department);
+  }
+
+  @override
+  Future<void> setEmailVerified(bool isVerified) async {
+    await sharedPreferences.setBool(_emailVerifiedKey, isVerified);
+  }
+
+  // --- Profile Setters ---
+  @override
+  Future<void> setFullName(String fullName) async {
+    await sharedPreferences.setString(_fullNameKey, fullName);
+  }
+
+  @override
+  Future<void> setGender(String gender) async {
+    await sharedPreferences.setString(_genderKey, gender);
+  }
+
+  @override
   Future<void> setHasProfile(bool hasProfile) async {
-    try {
-      await _sharedPreferences.setBool(_hasProfileKey, hasProfile);
-    } catch (e) {
-      debugPrint("Failed to set hasProfile to shared prefs.");
-    }
+    await sharedPreferences.setBool(_hasProfileKey, hasProfile);
   }
 
+  @override
+  Future<void> setIdNumber(String idNumber) async {
+    await sharedPreferences.setString(_idNumberKey, idNumber);
+  }
+
+  @override
+  Future<void> setIndustry(String industry) async {
+    await sharedPreferences.setString(_industryKey, industry);
+  }
+
+  @override
+  Future<void> setNationality(String nationality) async {
+    await sharedPreferences.setString(_nationalityKey, nationality);
+  }
+
+  @override
+  Future<void> setOccupation(String occupation) async {
+    await sharedPreferences.setString(_occupationKey, occupation);
+  }
+
+  @override
+  Future<void> setOrganization(String organization) async {
+    await sharedPreferences.setString(_organizationKey, organization);
+  }
+
+  @override
+  Future<void> setPhoneNumber(String phoneNumber) async {
+    await sharedPreferences.setString(_phoneNumberKey, phoneNumber);
+  }
+
+  @override
+  Future<void> setPhotoPath(String photoPath) async {
+    await sharedPreferences.setString(_photoPathKey, photoPath);
+  }
+
+  @override
+  Future<void> setProfileCompleted(bool isCompleted) async {
+    await sharedPreferences.setBool(_profileCompletedKey, isCompleted);
+  }
+
+  @override
+  Future<void> setRegion(String region) async {
+    await sharedPreferences.setString(_regionKey, region);
+  }
+
+  @override
   Future<void> setUserEmail(String email) async {
-    try {
-      await _sharedPreferences.setString(_userEmailKey, email);
-    } catch (e) {
-      debugPrint("Failed to save user email to shared prefs.");
-    }
+    await sharedPreferences.setString(_userEmailKey, email);
   }
 
+  @override
+  Future<void> setUserId(String userId) async {
+    await sharedPreferences.setString(_userIdKey, userId);
+  }
+
+  @override
   Future<void> setUserType(String userType) async {
-    try {
-      await _sharedPreferences.setString(_userTypeKey, userType);
-    } catch (e) {
-      debugPrint("failed to save user type to shared prefs");
-    }
+    await sharedPreferences.setString(_userTypeKey, userType);
   }
 
-  // update user data
-  Future<void> updateUserData(User updatedUser) async {
-    try {
-      final currentLoginData = await getLoginData();
+  @override
+  Future<void> setWoreda(String woreda) async {
+    await sharedPreferences.setString(_woredaKey, woreda);
+  }
 
-      if (currentLoginData != null) {
-        final updatedLoginData = currentLoginData.copyWith(user: updatedUser);
-        await saveLoginData(updatedLoginData);
-      } else {
-        throw CacheException(
-          message: "No existing login data to update",
-          code: 'NO_LOGIN_DATA',
-        );
-      }
-    } catch (e) {
-      if (e is CacheException) rethrow;
-      throw CacheException(
-        message: "Failed to update user data",
-        code: "CACHE_UPDATE_ERROR",
-      );
-    }
+  @override
+  Future<void> setYearsOfExperience(int years) async {
+    await sharedPreferences.setInt(_yearsOfExperienceKey, years);
   }
 }

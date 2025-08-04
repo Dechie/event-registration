@@ -1,6 +1,7 @@
 part of 'auth_event.dart';
+abstract class ProfileEvent extends AuthEvent {}
 
-class UpdateProfileEvent extends AuthEvent {
+class CreateProfileEvent extends ProfileEvent {
   final String fullName;
   final String? gender;
   final DateTime? dateOfBirth;
@@ -17,7 +18,7 @@ class UpdateProfileEvent extends AuthEvent {
   final int? yearsOfExperience;
   final String? photoPath;
 
-  const UpdateProfileEvent({
+  CreateProfileEvent({
     required this.fullName,
     this.gender,
     this.dateOfBirth,
@@ -34,29 +35,9 @@ class UpdateProfileEvent extends AuthEvent {
     this.yearsOfExperience,
     this.photoPath,
   });
-
-  @override
-  List<Object?> get props => [
-    fullName,
-    gender,
-    dateOfBirth,
-    nationality,
-    phoneNumber,
-    region,
-    city,
-    woreda,
-    idNumber,
-    occupation,
-    organization,
-    department,
-    industry,
-    yearsOfExperience,
-    photoPath,
-  ];
 }
 
-
-class CreateProfileEvent extends AuthEvent {
+class UpdateProfileEvent extends ProfileEvent {
   final String fullName;
   final String? gender;
   final DateTime? dateOfBirth;
@@ -73,7 +54,7 @@ class CreateProfileEvent extends AuthEvent {
   final int? yearsOfExperience;
   final String? photoPath;
 
-  const CreateProfileEvent({
+  UpdateProfileEvent({
     required this.fullName,
     this.gender,
     this.dateOfBirth,
@@ -90,23 +71,4 @@ class CreateProfileEvent extends AuthEvent {
     this.yearsOfExperience,
     this.photoPath,
   });
-
-  @override
-  List<Object?> get props => [
-    fullName,
-    gender,
-    dateOfBirth,
-    nationality,
-    phoneNumber,
-    region,
-    city,
-    woreda,
-    idNumber,
-    occupation,
-    organization,
-    department,
-    industry,
-    yearsOfExperience,
-    photoPath,
-  ];
 }

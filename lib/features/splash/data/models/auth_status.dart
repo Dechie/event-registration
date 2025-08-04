@@ -1,21 +1,39 @@
-enum UserType {
-  none,
-  participant,
-  admin,
-}
-
 class AuthStatus {
   final UserType userType;
   final String? token;
   final String? email;
   final String? userId;
+  final bool isEmailVerified;
+  final bool hasProfile;
+  final bool isProfileCompleted;
 
   const AuthStatus({
     required this.userType,
     this.token,
     this.email,
     this.userId,
+    this.isEmailVerified = false,
+    this.hasProfile = false,
+    this.isProfileCompleted = false,
   });
+
+  factory AuthStatus.admin({
+    required String token,
+    required String email,
+    required String userId,
+    bool isEmailVerified =
+        true, // Admins typically don't need email verification
+    bool hasProfile = true, // Admins typically don't need profile setup
+    bool isProfileCompleted = true,
+  }) => AuthStatus(
+    userType: UserType.admin,
+    token: token,
+    email: email,
+    userId: userId,
+    isEmailVerified: isEmailVerified,
+    hasProfile: hasProfile,
+    isProfileCompleted: isProfileCompleted,
+  );
 
   factory AuthStatus.fromJson(Map<String, dynamic> json) {
     return AuthStatus(
@@ -26,6 +44,97 @@ class AuthStatus {
       token: json['token'] as String?,
       email: json['email'] as String?,
       userId: json['userId'] as String?,
+      isEmailVerified: json['isEmailVerified'] as bool? ?? false,
+      hasProfile: json['hasProfile'] as bool? ?? false,
+      isProfileCompleted: json['isProfileCompleted'] as bool? ?? false,
+    );
+  }
+
+  factory AuthStatus.participant({
+    required String token,
+    required String email,
+    required String userId,
+    bool isEmailVerified = false,
+    bool hasProfile = false,
+    bool isProfileCompleted = false,
+  }) => AuthStatus(
+    userType: UserType.participant,
+    token: token,
+    email: email,
+    userId: userId,
+    isEmailVerified: isEmailVerified,
+    hasProfile: hasProfile,
+    isProfileCompleted: isProfileCompleted,
+  );
+
+  // Factory constructors for common states
+  factory AuthStatus.unauthenticated() => const AuthStatus(
+    userType: UserType.none,
+    token: null,
+    userId: null,
+    email: null,
+    isEmailVerified: false,
+    hasProfile: false,
+    isProfileCompleted: false,
+  );
+
+  bool get isAdmin => userType == UserType.admin;
+
+  // Computed properties
+  bool get isAuthenticated =>
+      userType != UserType.none && token != null && token!.isNotEmpty;
+  bool get isFullySetup =>
+      isAuthenticated && isEmailVerified && hasProfile && isProfileCompleted;
+  bool get isParticipant => userType == UserType.participant;
+
+  // Navigation decision helpers
+  bool get needsEmailVerification => isAuthenticated && !isEmailVerified;
+  bool get needsProfileCompletion =>
+      isAuthenticated && isEmailVerified && hasProfile && !isProfileCompleted;
+  bool get needsProfileCreation =>
+      isAuthenticated && isEmailVerified && !hasProfile;
+  // Where should the user be routed?
+  NavDestination get recommendedDestination {
+    if (!isAuthenticated) {
+      return NavDestination.registration;
+    }
+
+    if (needsEmailVerification) {
+      return NavDestination.emailVerification;
+    }
+
+    if (needsProfileCreation || needsProfileCompletion) {
+      return NavDestination.profileCreation;
+    }
+
+    if (isAdmin) {
+      return NavDestination.adminDashboard;
+    }
+
+    if (isParticipant && isFullySetup) {
+      return NavDestination.participantDashboard;
+    }
+
+    return NavDestination.landing;
+  }
+
+  AuthStatus copyWith({
+    UserType? userType,
+    String? token,
+    String? email,
+    String? userId,
+    bool? isEmailVerified,
+    bool? hasProfile,
+    bool? isProfileCompleted,
+  }) {
+    return AuthStatus(
+      userType: userType ?? this.userType,
+      token: token ?? this.token,
+      email: email ?? this.email,
+      userId: userId ?? this.userId,
+      isEmailVerified: isEmailVerified ?? this.isEmailVerified,
+      hasProfile: hasProfile ?? this.hasProfile,
+      isProfileCompleted: isProfileCompleted ?? this.isProfileCompleted,
     );
   }
 
@@ -35,42 +144,25 @@ class AuthStatus {
       'token': token,
       'email': email,
       'userId': userId,
+      'isEmailVerified': isEmailVerified,
+      'hasProfile': hasProfile,
+      'isProfileCompleted': isProfileCompleted,
     };
   }
 
-  // Factory constructors for common states
-  factory AuthStatus.unauthenticated() => const AuthStatus(
-        userType: UserType.none,
-        token: null,
-        userId: null,
-        email: null,
-      );
-
-  factory AuthStatus.participant({
-    required String token,
-    required String email,
-    required String userId,
-  }) =>
-      AuthStatus(
-        userType: UserType.participant,
-        token: token,
-        email: email,
-        userId: userId,
-      );
-
-  factory AuthStatus.admin({
-    required String token,
-    required String email,
-    required String userId,
-  }) =>
-      AuthStatus(
-        userType: UserType.admin,
-        token: token,
-        email: email,
-        userId: userId,
-      );
-
-  bool get isAuthenticated => userType != UserType.none && token != null;
-  bool get isParticipant => userType == UserType.participant;
-  bool get isAdmin => userType == UserType.admin;
+  @override
+  String toString() {
+    return 'AuthStatus(userType: $userType, isAuth: $isAuthenticated, emailVerified: $isEmailVerified, hasProfile: $hasProfile, profileCompleted: $isProfileCompleted)';
+  }
 }
+
+enum NavDestination {
+  registration,
+  emailVerification,
+  profileCreation,
+  landing,
+  participantDashboard,
+  adminDashboard,
+}
+
+enum UserType { none, participant, admin }

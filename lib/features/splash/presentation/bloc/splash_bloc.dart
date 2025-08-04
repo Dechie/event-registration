@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:event_reg/features/splash/data/models/auth_status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../data/models/auth_status.dart';
 import '../../data/repositories/splash_repository.dart';
 
 part 'splash_event.dart';
@@ -15,7 +15,6 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
   SplashBloc({required this.repository}) : super(SplashInitial()) {
     on<CheckAuthenticationStatus>(_onCheckAuthenticationStatus);
     on<InitializeApp>(_onInitializeApp);
-    on<Authenticated>(_onSplashNavigateToLanding);
   }
 
   Future<void> _onCheckAuthenticationStatus(
@@ -23,32 +22,49 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
     Emitter<SplashState> emit,
   ) async {
     try {
+      debugPrint("🔍 Checking authentication status...");
       final authStatus = await repository.checkAuthenticationStatus();
-      debugPrint("splash bloc: after check auth status:");
+
+      debugPrint("📱 Auth Status: $authStatus");
       debugPrint(
-        "auth status: {token: ${authStatus.token} , email: ${authStatus.email}, usertype: ${authStatus.userType.name}}",
+        "🎯 Recommended destination: ${authStatus.recommendedDestination}",
       );
 
-      if (authStatus.token == null && authStatus.email == null) {
-        debugPrint("token and email null");
-        emit(SplashNavigateToSignUp());
-      }
+      // Use the recommended destination from AuthStatus
+      switch (authStatus.recommendedDestination) {
+        case NavDestination.registration:
+          debugPrint("📍 → Registration Page");
+          emit(SplashNavigateToRegistration());
+          break;
 
-      switch (authStatus.userType) {
-        case UserType.participant:
-          emit(SplashNavigateToLanding());
-          //emit(SplashNavigateToParticipantDashboard(email: authStatus.email!));
+        case NavDestination.emailVerification:
+          debugPrint("📍 → Email Verification Page");
+          emit(SplashNavigateToEmailVerification(email: authStatus.email!));
           break;
-        case UserType.admin:
+
+        case NavDestination.profileCreation:
+          debugPrint("📍 → Profile Creation Page");
+          emit(SplashNavigateToProfileCreation(email: authStatus.email!));
+          break;
+
+        case NavDestination.landing:
+          debugPrint("📍 → Landing Page");
+          emit(SplashNavigateToLanding());
+          break;
+
+        case NavDestination.participantDashboard:
+          debugPrint("📍 → Participant Dashboard");
+          emit(SplashNavigateToParticipantDashboard(email: authStatus.email!));
+          break;
+
+        case NavDestination.adminDashboard:
+          debugPrint("📍 → Admin Dashboard");
           emit(SplashNavigateToAdminDashboard());
-          break;
-        case UserType.none:
-          emit(SplashNavigateToLanding());
           break;
       }
     } catch (e) {
-      // If there's an error, navigate to landing page
-      debugPrint("found error here");
+      debugPrint("❌ Error during authentication check: $e");
+      // If there's an error, navigate to landing page as fallback
       emit(SplashNavigateToLanding());
     }
   }
@@ -58,20 +74,12 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
     Emitter<SplashState> emit,
   ) async {
     emit(SplashLoading());
-    debugPrint("splash bloc: initialized");
+    debugPrint("🚀 Initializing app...");
 
-    // Simulate loading time for better UX
+    // Add a small delay for better UX
+    await Future.delayed(const Duration(milliseconds: 1500));
 
     // Check authentication status
-    debugPrint("splash bloc: added check auth status state");
     add(CheckAuthenticationStatus());
-    debugPrint("splash bloc: checked auth status");
-  }
-
-  FutureOr<void> _onSplashNavigateToLanding(
-    Authenticated event,
-    Emitter<SplashState> emit,
-  ) {
-    emit(SplashNavigateToLanding());
   }
 }

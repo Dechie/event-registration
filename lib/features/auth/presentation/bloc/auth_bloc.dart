@@ -1,5 +1,7 @@
 import 'package:event_reg/core/error/failures.dart';
+import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:event_reg/features/auth/data/repositories/auth_repository.dart';
+import 'package:event_reg/features/auth/data/repositories/profile_add_repository.dart';
 import 'package:event_reg/features/auth/presentation/bloc/events/auth_event.dart';
 import 'package:event_reg/features/auth/presentation/bloc/states/auth_state.dart';
 import 'package:flutter/material.dart' show debugPrint;
@@ -7,8 +9,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
-
-  AuthBloc({required this.authRepository}) : super(const AuthInitialState()) {
+  final ProfileAddRepository profileRepository;
+  final UserDataService userDataService;
+  AuthBloc({
+    required this.authRepository,
+    required this.profileRepository,
+    required this.userDataService,
+  }) : super(AuthInitialState()) {
     on<LoginEvent>(_onLogin);
     on<LogoutEvent>(_onLogout);
     on<CheckAuthStatusEvent>(_onCheckAuthStatus);
@@ -18,7 +25,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<CreateProfileEvent>(_onCreateProfile);
     on<UpdateProfileEvent>(_onUpdateProfile);
   }
-
   String _mapFailureToMessage(Failure failure) {
     switch (failure.code) {
       // login errors:
@@ -97,14 +103,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     CheckAuthStatusEvent event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoadingState());
+    emit(AuthLoadingState());
 
     try {
       final result = await authRepository.getCurrentUser();
 
       result.fold(
         (failure) {
-          emit(const UnauthenticatedState());
+          emit(UnauthenticatedState());
         },
         (user) {
           if (user != null) {
@@ -130,45 +136,56 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     CreateProfileEvent event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoadingState());
+    emit(AuthLoadingState());
 
     try {
-      final result = await authRepository.createProfile(
-        fullName: event.fullName,
-        gender: event.gender,
-        phoneNumber: event.phoneNumber,
-        occupation: event.occupation,
-        organization: event.organization,
-        photoPath: event.photoPath,
+      final token = await userDataService.getAuthToken();
+      if (token == null) {
+        emit(AuthErrorState(message: "Authentication token not found"));
+        return;
+      }
+
+      final profileData = {
+        'fullName': event.fullName,
+        'gender': event.gender,
+        'dateOfBirth': event.dateOfBirth?.toIso8601String(),
+        'nationality': event.nationality,
+        'phoneNumber': event.phoneNumber,
+        'region': event.region,
+        'city': event.city,
+        'woreda': event.woreda,
+        'idNumber': event.idNumber,
+        'occupation': event.occupation,
+        'organization': event.organization,
+        'department': event.department,
+        'industry': event.industry,
+        'yearsOfExperience': event.yearsOfExperience,
+        'photoPath': event.photoPath,
+      };
+
+      final result = await profileRepository.createProfile(
+        token: token,
+        profileData: profileData,
       );
-      debugPrint("create profile success?");
 
       result.fold(
         (failure) {
-          emit(
-            AuthErrorState(
-              message: _mapFailureToMessage(failure),
-              errorCode: failure.code,
-            ),
-          );
+          debugPrint("Failed creating profile");
         },
-        (profileData) {
-          debugPrint("create profile success?");
+        (obtainedResult) async {
+          await userDataService.setHasProfile(true);
+          await userDataService.setProfileCompleted(true);
           emit(
             AuthProfileCreatedState(
-              message: profileData['message'] ?? 'Profile created successfully',
-              participant: profileData['participant'] ?? {},
+              message:
+                  obtainedResult['message'] ?? 'Profile created successfully',
+              userData: obtainedResult['participant'],
             ),
           );
         },
       );
     } catch (e) {
-      emit(
-        const AuthErrorState(
-          message: "Failed to create profile. Please try again",
-          errorCode: "CREATE_PROFILE_ERROR",
-        ),
-      );
+      emit(AuthErrorState(message: e.toString()));
     }
   }
 
@@ -306,58 +323,55 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     UpdateProfileEvent event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoadingState());
+    emit(AuthLoadingState());
 
     try {
-      final result = await authRepository.createProfile(
-        fullName: event.fullName,
-        gender: event.gender,
-        //dateOfBirth: event.dateOfBirth,
-        //nationality: event.nationality,
-        phoneNumber: event.phoneNumber,
-        //region: event.region,
-        //city: event.city,
-        //woreda: event.woreda,
-        //idNumber: event.idNumber,
-        occupation: event.occupation,
-        organization: event.organization,
-        //department: event.department,
-        //industry: event.industry,
-        //yearsOfExperience: event.yearsOfExperience,
-        photoPath: event.photoPath,
+      final token = await userDataService.getAuthToken();
+      if (token == null) {
+        emit(AuthErrorState(message: "Authentication token not found"));
+        return;
+      }
+
+      final profileData = {
+        'fullName': event.fullName,
+        'gender': event.gender,
+        'dateOfBirth': event.dateOfBirth?.toIso8601String(),
+        'nationality': event.nationality,
+        'phoneNumber': event.phoneNumber,
+        'region': event.region,
+        'city': event.city,
+        'woreda': event.woreda,
+        'idNumber': event.idNumber,
+        'occupation': event.occupation,
+        'organization': event.organization,
+        'department': event.department,
+        'industry': event.industry,
+        'yearsOfExperience': event.yearsOfExperience,
+        'photoPath': event.photoPath,
+      };
+
+      final result = await profileRepository.updateProfile(
+        token: token,
+        profileData: profileData,
       );
-      debugPrint("create profiel successful?");
 
       result.fold(
         (failure) {
-          emit(
-            AuthErrorState(
-              message: _mapFailureToMessage(failure),
-              errorCode: failure.code,
-            ),
-          );
+          debugPrint("failed to update profile: ${failure.message}");
         },
-        (updatedUser) {
-          debugPrint(
-            "sucessfully into authenticated state of update/create profile event",
-          );
+        (obtainedResult) async {
+          await userDataService.setHasProfile(true);
+          await userDataService.setProfileCompleted(true);
           emit(
-            AuthenticatedState(
-              userId: updatedUser["user_id"],
-              email: "emailee",
-              userType: "participant",
-              userData: updatedUser,
+            AuthProfileUpdatedState(
+              message: 'Profile updated successfully',
+              userData: obtainedResult.toJson(),
             ),
           );
         },
       );
     } catch (e) {
-      emit(
-        const AuthErrorState(
-          message: "Failed to update profile. Please try again",
-          errorCode: "UPDATE_PROFILE_ERROR",
-        ),
-      );
+      emit(AuthErrorState(message: e.toString()));
     }
   }
 
@@ -365,7 +379,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     VerifyOTPEvent event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoadingState());
+    emit(AuthLoadingState());
 
     try {
       final result = await authRepository.verifyOTP(

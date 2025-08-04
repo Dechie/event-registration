@@ -5,6 +5,7 @@ import 'package:event_reg/features/auth/data/datasource/auth_remote_datasource.d
 import 'package:event_reg/features/auth/data/datasource/profile_remote_datasource.dart';
 // Fix: Import from the correct file
 import 'package:event_reg/features/auth/data/repositories/auth_repository.dart';
+import 'package:event_reg/features/auth/data/repositories/profile_add_repository.dart';
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:event_reg/features/dashboard/data/datasource/dashboard_datasource.dart';
 import 'package:event_reg/features/dashboard/data/datasource/dashboard_local_datasource.dart';
@@ -44,7 +45,7 @@ Future<void> init() async {
 
   // ! Services
   sl.registerLazySingleton<UserDataService>(
-    () => UserDataService(sl<SharedPreferences>()),
+    () => UserDataServiceImpl(sharedPreferences: sl<SharedPreferences>()),
   );
 
   // ! Features - Auth
@@ -77,9 +78,22 @@ Future<void> init() async {
     ),
   );
 
+  debugPrint("registering authrepository");
+  sl.registerLazySingleton<ProfileAddRepository>(
+    () => ProfileAddRepositoryImpl(
+      profileRemoteDatasource: sl<ProfileRemoteDatasource>(),
+    ),
+  );
+
   // Bloc (depends on repository)
   debugPrint("registering authbloc");
-  sl.registerFactory(() => AuthBloc(authRepository: sl()));
+  sl.registerFactory(
+    () => AuthBloc(
+      authRepository: sl(),
+      profileRepository: sl(),
+      userDataService: sl(),
+    ),
+  );
 
   debugPrint("registering event registration datasource");
   sl.registerLazySingleton<EventRegistrationDataSource>(

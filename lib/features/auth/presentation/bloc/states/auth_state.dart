@@ -1,5 +1,6 @@
 // lib/features/auth/presentation/bloc/auth_state.dart
 import 'package:equatable/equatable.dart';
+import 'package:event_reg/features/auth/data/models/user.dart';
 
 class AuthenticatedState extends AuthState {
   final String userId;
@@ -60,10 +61,20 @@ class AuthOTPVerifiedState extends AuthState {
 
 class AuthProfileCreatedState extends AuthState {
   final String message;
-  final Map<String, dynamic> participant;
+  final User userData;
   const AuthProfileCreatedState({
     required this.message,
-    required this.participant,
+    required this.userData,
+  });
+}
+
+class AuthProfileUpdatedState extends AuthState {
+  final String message;
+  final Map<String, dynamic> userData;
+
+  const AuthProfileUpdatedState({
+    required this.message,
+    required this.userData,
   });
 }
 

@@ -12,21 +12,46 @@ class SplashPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocListener<SplashBloc, SplashState>(
       listener: (context, state) {
+        debugPrint("🎯 Splash navigation state: ${state.runtimeType}");
+        
         if (state is SplashNavigateToLanding) {
+          debugPrint("📍 Navigating to Landing Page");
           Navigator.pushReplacementNamed(context, RouteNames.landingPage);
-        } else if (state is SplashNavigateToParticipantDashboard) {
+        } 
+        else if (state is SplashNavigateToParticipantDashboard) {
+          debugPrint("📍 Navigating to Participant Dashboard: ${state.email}");
           Navigator.pushReplacementNamed(
             context,
             RouteNames.participantDashboardPage,
             arguments: {'email': state.email},
           );
-        } else if (state is SplashNavigateToAdminDashboard) {
+        } 
+        else if (state is SplashNavigateToAdminDashboard) {
+          debugPrint("📍 Navigating to Admin Dashboard");
           Navigator.pushReplacementNamed(
             context,
             RouteNames.adminDashboardPage,
           );
-        } else if (state is SplashNavigateToSignUp) {
+        } 
+        else if (state is SplashNavigateToRegistration) {
+          debugPrint("📍 Navigating to Registration Page");
           Navigator.pushReplacementNamed(context, RouteNames.registrationPage);
+        }
+        else if (state is SplashNavigateToEmailVerification) {
+          debugPrint("📍 Navigating to Email Verification: ${state.email}");
+          Navigator.pushReplacementNamed(
+            context, 
+            RouteNames.otpVerificationPage,
+            arguments: {'email': state.email},
+          );
+        }
+        else if (state is SplashNavigateToProfileCreation) {
+          debugPrint("📍 Navigating to Profile Creation: ${state.email}");
+          Navigator.pushReplacementNamed(
+            context, 
+            RouteNames.profileAddPage,
+            arguments: {'email': state.email},
+          );
         }
       },
       child: Scaffold(
@@ -82,6 +107,25 @@ class SplashPage extends StatelessWidget {
               // Loading Indicator
               const CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+              const SizedBox(height: 16),
+              
+              // Loading text
+              BlocBuilder<SplashBloc, SplashState>(
+                builder: (context, state) {
+                  String loadingText = "Initializing...";
+                  if (state is SplashLoading) {
+                    loadingText = "Loading...";
+                  }
+                  
+                  return Text(
+                    loadingText,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withOpacity(0.8),
+                    ),
+                  );
+                },
               ),
             ],
           ),
