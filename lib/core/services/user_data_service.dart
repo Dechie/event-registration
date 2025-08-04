@@ -12,6 +12,7 @@ class UserDataService {
   static const String _userIdKey = "USER_ID";
   static const String _userEmailKey = "USER_EMAIL";
   static const String _isLoggedInKey = "IS_LOGGED_IN";
+  static const String _hasProfileKey = "IS_LOGGED_IN";
   static const String _userTypeKey = 'USER_TYPE';
   final SharedPreferences _sharedPreferences;
 
@@ -116,6 +117,16 @@ class UserDataService {
     }
   }
 
+  Future<bool> hasProfile() async {
+    try {
+      final isLoggedIn = _sharedPreferences.getBool(_hasProfileKey) ?? false;
+      final user = await getCurrentUser();
+      return isLoggedIn && user != null;
+    } catch (e) {
+      return false;
+    }
+  }
+
   // check if user has specific role/type
   Future<bool> hasUserType(String userType) async {
     try {
@@ -157,6 +168,38 @@ class UserDataService {
         message: "Failed to save login data",
         code: "CACHE_WRITE_ERROR",
       );
+    }
+  }
+
+  Future<void> setAuthToken(String token) async {
+    try {
+      await _sharedPreferences.setString(_tokenKey, token);
+    } catch (e) {
+      debugPrint("Failed to save token to sharedprefs");
+    }
+  }
+
+  Future<void> setHasProfile(bool hasProfile) async {
+    try {
+      await _sharedPreferences.setBool(_hasProfileKey, hasProfile);
+    } catch (e) {
+      debugPrint("Failed to set hasProfile to shared prefs.");
+    }
+  }
+
+  Future<void> setUserEmail(String email) async {
+    try {
+      await _sharedPreferences.setString(_userEmailKey, email);
+    } catch (e) {
+      debugPrint("Failed to save user email to shared prefs.");
+    }
+  }
+
+  Future<void> setUserType(String userType) async {
+    try {
+      await _sharedPreferences.setString(_userTypeKey, userType);
+    } catch (e) {
+      debugPrint("failed to save user type to shared prefs");
     }
   }
 

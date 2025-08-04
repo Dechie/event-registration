@@ -90,7 +90,7 @@ Future<void> init() async {
   // ! Features - Splash
   // DataSources
   sl.registerLazySingleton<SplashLocalDataSource>(
-    () => SplashLocalDataSourceImpl(sharedPreferences: sl()),
+    () => SplashLocalDataSourceImpl(userDataService: sl()),
   );
 
   // Repository

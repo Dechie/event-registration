@@ -1,6 +1,6 @@
+import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:event_reg/features/splash/data/models/auth_status.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 abstract class SplashLocalDataSource {
   Future<void> clearAuthData();
@@ -9,30 +9,21 @@ abstract class SplashLocalDataSource {
 }
 
 class SplashLocalDataSourceImpl implements SplashLocalDataSource {
-  static const String _authTokenKey = 'auth_token';
+  final UserDataService userDataService;
 
-  static const String _userTypeKey = 'user_type';
-  static const String _userEmailKey = 'user_email';
-  final SharedPreferences sharedPreferences;
-
-  SplashLocalDataSourceImpl({required this.sharedPreferences});
+  SplashLocalDataSourceImpl({required this.userDataService});
 
   @override
   Future<void> clearAuthData() async {
-    await sharedPreferences.remove(_authTokenKey);
-    await sharedPreferences.remove(_userTypeKey);
-    await sharedPreferences.remove(_userEmailKey);
+    await userDataService.clearAllData();
   }
 
   @override
   Future<AuthStatus> getAuthStatus() async {
-    sharedPreferences.setString(_authTokenKey, "token1234");
-    sharedPreferences.setString(_userTypeKey, UserType.participant.toString());
-    sharedPreferences.setString(_userEmailKey, "user1@email.com");
     debugPrint("splash local datasource: came here to see this");
-    final token = sharedPreferences.getString(_authTokenKey);
-    final userTypeString = sharedPreferences.getString(_userTypeKey);
-    final email = sharedPreferences.getString(_userEmailKey);
+    final token = await userDataService.getAuthToken();
+    final userTypeString = await userDataService.getUserType();
+    final email = await userDataService.getUserEmail() ?? "no email";
     debugPrint("token: $token, user type: $userTypeString, email: $email");
 
     if (token == null || userTypeString == null) {
@@ -50,14 +41,11 @@ class SplashLocalDataSourceImpl implements SplashLocalDataSource {
   @override
   Future<void> saveAuthStatus(AuthStatus authStatus) async {
     if (authStatus.token != null) {
-      await sharedPreferences.setString(_authTokenKey, authStatus.token!);
+      await userDataService.setAuthToken(authStatus.token!);
     }
-    await sharedPreferences.setString(
-      _userTypeKey,
-      authStatus.userType.toString(),
-    );
+    await userDataService.setUserType(authStatus.userType.toString());
     if (authStatus.email != null) {
-      await sharedPreferences.setString(_userEmailKey, authStatus.email!);
+      await userDataService.setUserEmail(authStatus.email!);
     }
   }
 }

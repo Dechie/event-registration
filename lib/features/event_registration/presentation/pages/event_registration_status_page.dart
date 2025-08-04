@@ -13,13 +13,11 @@ import '../../data/models/event_registration.dart';
 class RegistrationStatusPage extends StatefulWidget {
   final Event event;
   final String eventId;
-  final EventRegistration dummyRegistration;
 
   const RegistrationStatusPage({
     super.key,
     required this.event,
     required this.eventId,
-    required this.dummyRegistration,
   });
 
   @override
@@ -52,7 +50,7 @@ class _RegistrationStatusPageState extends State<RegistrationStatusPage> {
           } else if (state is RegistrationStatusLoaded) {
             return _buildStatusView(state.registration);
           } else if (state is BadgeGenerated) {
-            return _buildBadgeGeneratedView(state.badge);
+            return _buildBadgeGeneratedView();
           } else if (state is BadgeLoaded) {
             return _buildBadgeView(state.badge);
           } else if (state is EventRegistrationError) {
@@ -85,17 +83,11 @@ class _RegistrationStatusPageState extends State<RegistrationStatusPage> {
             onPressed: () {
               if (registration.canGenerateBadge) {
                 context.read<EventRegistrationBloc>().add(
-                  FetchBadgeRequested(
-                    eventId: widget.eventId,
-                    badge: registration.badge!,
-                  ),
+                  FetchBadgeRequested(eventId: widget.eventId),
                 );
               } else {
                 context.read<EventRegistrationBloc>().add(
-                  GenerateBadgeRequested(
-                    eventId: widget.eventId,
-                    badge: registration.badge!,
-                  ),
+                  GenerateBadgeRequested(eventId: widget.eventId),
                 );
               }
             },
@@ -119,7 +111,7 @@ class _RegistrationStatusPageState extends State<RegistrationStatusPage> {
     );
   }
 
-  Widget _buildBadgeGeneratedView(badge) {
+  Widget _buildBadgeGeneratedView() {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -142,7 +134,7 @@ class _RegistrationStatusPageState extends State<RegistrationStatusPage> {
               text: 'View Badge',
               onPressed: () {
                 context.read<EventRegistrationBloc>().add(
-                  FetchBadgeRequested(eventId: widget.eventId, badge: badge),
+                  FetchBadgeRequested(eventId: widget.eventId),
                 );
               },
               backgroundColor: AppColors.primary,

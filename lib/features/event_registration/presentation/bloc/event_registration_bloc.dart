@@ -1,8 +1,5 @@
-// lib/features/event_registration/presentation/bloc/event_registration_bloc.dart
 import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:event_reg/features/event_registration/data/datasource/event_registration_datasource.dart';
-import 'package:event_reg/features/event_registration/data/models/event_registration.dart';
-import 'package:event_reg/features/event_registration/data/models/participant_badge.dart';
 import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_event.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -34,28 +31,10 @@ class EventRegistrationBloc
     emit(EventRegistrationLoading());
 
     try {
-      // final registration = await dataSource.getRegistrationStatus(
-      //   event.eventId,
-      // );
-      emit(
-        RegistrationStatusLoaded(
-          registration: EventRegistration(
-            id: "1",
-            eventId: "1234",
-            participantId: "1",
-            status: "approved",
-            badge: ParticipantBadge(
-              id: "1234",
-              participantId: "1",
-              qrCode: 'DUMMY_QR_CODE',
-              eventId: '12345', // Replace with participant ID
-              //organization: 'Example Corp', // Replace with organization name
-              generatedAt: DateTime.now(),
-            ),
-            registeredAt: DateTime.now(),
-          ),
-        ),
+      final registration = await dataSource.getRegistrationStatus(
+        event.eventId,
       );
+      emit(RegistrationStatusLoaded(registration: registration));
     } catch (e) {
       emit(EventRegistrationError(message: e.toString()));
     }
@@ -82,8 +61,7 @@ class EventRegistrationBloc
     emit(EventRegistrationLoading());
 
     try {
-      //final badge = await dataSource.getBadge(event.eventId);
-      final badge = event.badge;
+      final badge = await dataSource.getBadge(event.eventId);
       if (badge != null) {
         emit(BadgeLoaded(badge: badge));
       } else {
@@ -129,9 +107,7 @@ class EventRegistrationBloc
     emit(EventRegistrationLoading());
 
     try {
-      final badge = event.badge;
-      //await dataSource.generateBadge(event.eventId);
-      emit(BadgeGenerated(badge: badge));
+      await dataSource.generateBadge(event.eventId);
     } catch (e) {
       emit(EventRegistrationError(message: e.toString()));
     }

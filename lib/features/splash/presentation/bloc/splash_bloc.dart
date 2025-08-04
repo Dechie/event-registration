@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:event_reg/features/splash/data/models/auth_status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,6 +15,7 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
   SplashBloc({required this.repository}) : super(SplashInitial()) {
     on<CheckAuthenticationStatus>(_onCheckAuthenticationStatus);
     on<InitializeApp>(_onInitializeApp);
+    on<Authenticated>(_onSplashNavigateToLanding);
   }
 
   Future<void> _onCheckAuthenticationStatus(
@@ -25,8 +28,10 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
       debugPrint(
         "auth status: {token: ${authStatus.token} , email: ${authStatus.email}, usertype: ${authStatus.userType.name}}",
       );
+
       switch (authStatus.userType) {
         case UserType.participant:
+          //emit(SplashNavigateToLanding());
           emit(SplashNavigateToParticipantDashboard(email: authStatus.email!));
           break;
         case UserType.admin:
@@ -54,5 +59,12 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
     debugPrint("splash bloc: added check auth status state");
     add(CheckAuthenticationStatus());
     debugPrint("splash bloc: checked auth status");
+  }
+
+  FutureOr<void> _onSplashNavigateToLanding(
+    Authenticated event,
+    Emitter<SplashState> emit,
+  ) {
+    emit(SplashNavigateToLanding());
   }
 }
