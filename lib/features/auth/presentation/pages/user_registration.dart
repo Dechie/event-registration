@@ -40,6 +40,7 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
       ),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
+          debugPrint("current auth state: ${state.runtimeType}");
           if (state is AuthErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -103,6 +104,7 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
   @override
   void initState() {
     super.initState();
+    debugPrint("came to auth sign up page.");
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,

@@ -15,8 +15,6 @@ import 'package:event_reg/features/dashboard/presentation/bloc/dashboard_event.d
 import 'package:event_reg/features/dashboard/presentation/pages/admin_dashboard_page.dart';
 import 'package:event_reg/features/dashboard/presentation/pages/participant_dashboard_page.dart';
 import 'package:event_reg/features/landing/presentation/pages/landing_page.dart';
-import 'package:event_reg/features/registration/presentation/bloc/registration_bloc.dart';
-import 'package:event_reg/features/registration/presentation/pages/registration_page.dart';
 import 'package:event_reg/features/splash/presentation/pages/splash_page.dart';
 import 'package:event_reg/injection_container.dart' as di;
 import 'package:flutter/material.dart';
@@ -55,14 +53,6 @@ class AppRouter {
         );
 
       case RouteNames.registrationPage:
-        return MaterialPageRoute(
-          builder: (_) => BlocProvider(
-            create: (context) => di.sl<RegistrationBloc>(),
-            child: const RegistrationPage(),
-          ),
-        );
-
-      case RouteNames.userRegistrationPage:
         return MaterialPageRoute(
           builder: (_) => const UserRegistrationPage(),
           settings: settings,

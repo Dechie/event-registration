@@ -29,18 +29,26 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
         "auth status: {token: ${authStatus.token} , email: ${authStatus.email}, usertype: ${authStatus.userType.name}}",
       );
 
+      if (authStatus.token == null && authStatus.email == null) {
+        debugPrint("token and email null");
+        emit(SplashNavigateToSignUp());
+      }
+
       switch (authStatus.userType) {
         case UserType.participant:
-          //emit(SplashNavigateToLanding());
-          emit(SplashNavigateToParticipantDashboard(email: authStatus.email!));
+          emit(SplashNavigateToLanding());
+          //emit(SplashNavigateToParticipantDashboard(email: authStatus.email!));
           break;
         case UserType.admin:
           emit(SplashNavigateToAdminDashboard());
           break;
         case UserType.none:
+          emit(SplashNavigateToLanding());
+          break;
       }
     } catch (e) {
       // If there's an error, navigate to landing page
+      debugPrint("found error here");
       emit(SplashNavigateToLanding());
     }
   }
@@ -53,7 +61,6 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
     debugPrint("splash bloc: initialized");
 
     // Simulate loading time for better UX
-    await Future.delayed(const Duration(seconds: 2));
 
     // Check authentication status
     debugPrint("splash bloc: added check auth status state");

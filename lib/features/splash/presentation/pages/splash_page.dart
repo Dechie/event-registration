@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:event_reg/config/routes/route_names.dart';
 import 'package:event_reg/config/themes/app_colors.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../bloc/splash_bloc.dart';
 
@@ -25,6 +25,8 @@ class SplashPage extends StatelessWidget {
             context,
             RouteNames.adminDashboardPage,
           );
+        } else if (state is SplashNavigateToSignUp) {
+          Navigator.pushReplacementNamed(context, RouteNames.registrationPage);
         }
       },
       child: Scaffold(

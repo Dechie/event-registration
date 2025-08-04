@@ -48,6 +48,7 @@ class UserDataService {
 
   // get current user data
   Future<User?> getCurrentUser() async {
+    await clearAllData();
     try {
       final loginData = await getLoginData();
       return loginData?.user;
