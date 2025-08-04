@@ -1,6 +1,5 @@
 // lib/features/event_registration/data/datasource/event_registration_datasource.dart
 import 'package:event_reg/core/network/dio_client.dart';
-import 'package:event_reg/core/constants/app_urls.dart';
 import 'package:event_reg/core/services/user_data_service.dart';
 
 import '../../../landing/data/models/event.dart';
