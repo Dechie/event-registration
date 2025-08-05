@@ -22,8 +22,8 @@ class SplashPage extends StatelessWidget {
           debugPrint("📍 Navigating to Participant Dashboard: ${state.email}");
           Navigator.pushReplacementNamed(
             context,
-            RouteNames.participantDashboardPage,
-            arguments: {'email': state.email},
+            RouteNames.landingPage,
+            //arguments: {'email': state.email},
           );
         } 
         else if (state is SplashNavigateToAdminDashboard) {

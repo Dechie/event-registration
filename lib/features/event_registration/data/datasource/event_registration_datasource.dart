@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:event_reg/core/network/dio_client.dart';
 import 'package:event_reg/core/services/user_data_service.dart';
+import 'package:flutter/material.dart' show debugPrint;
 
 import '../../../landing/data/models/event.dart';
 import '../models/event_reg_request.dart';
@@ -99,24 +102,77 @@ class EventRegistrationDataSourceImpl implements EventRegistrationDataSource {
   Future<EventRegistration> getRegistrationStatus(String eventId) async {
     final token = await userDataService.getAuthToken();
 
+    // Fix: Use the correct endpoint from your Laravel backend
     final response = await dioClient.get('/my-events/$eventId', token: token);
 
-    return EventRegistration.fromJson(response.data['registration']);
+    // The Laravel endpoint returns the full event details with participant data
+    // Extract the registration info from the participant data
+    final participantData = response.data['participant'];
+
+    return EventRegistration(
+      id: participantData['id'].toString(),
+      participantId: participantData['id'].toString(),
+      eventId: eventId,
+      registeredAt: DateTime.parse(response.data['event']['created_at']),
+      status:
+          participantData['is_approved'], // This maps to 'approved', 'pending', 'rejected'
+      qrCode:
+          participantData['badge_number'], // Use badge_number as QR code data
+      badgeUrl: null, // We'll generate this locally
+    );
   }
 
   @override
   Future<EventRegistrationResponse> registerForEvent(
-    EventRegistrationRequest request,
+    EventRegistrationRequest registratinRequest,
     String eventId,
   ) async {
     final token = await userDataService.getAuthToken();
+    // No need to get userId here, as the backend will handle it
 
-    final response = await dioClient.post(
-      '/events/$eventId/participants',
-      data: request.toJson(),
-      token: token,
-    );
+    // Create a new request without a participantId
+    final modifiedRequest = EventRegistrationRequest(eventId: eventId);
 
-    return EventRegistrationResponse.fromJson(response.data);
+    debugPrint("🚀 Request: POST /events/$eventId/participants");
+    debugPrint(
+      "📤 Data: ${jsonEncode(modifiedRequest.toJson())}",
+    ); // This will now print {}
+
+    try {
+      final response = await dioClient.post(
+        '/events/$eventId/participants',
+        // Send an empty data object, or an object with other non-identifying info
+        data: modifiedRequest.toJson(),
+        token: token,
+      );
+
+      debugPrint("✅ Response: ${response.data}");
+      return EventRegistrationResponse.fromJson(response.data);
+    } catch (e, stackTrace) {
+      debugPrint("❌ Error registering for event: $e");
+      debugPrint("Stack trace: $stackTrace");
+      rethrow;
+    }
   }
+
+  // Response class
+
+  // @override
+  // Future<EventRegistrationResponse> registerForEvent(
+  //   EventRegistrationRequest request,
+  //   String eventId,
+  // ) async {
+  //   final token = await userDataService.getAuthToken();
+  //   final userId = await userDataService.getUserId();
+  //   request = request.copyWith(participantId: userId);
+
+  //   debugPrint("request: ${jsonEncode(request.toJson())}");
+  //   final response = await dioClient.post(
+  //     '/events/$eventId/participants',
+  //     data: request.toJson(),
+  //     token: token,
+  //   );
+
+  //   return EventRegistrationResponse.fromJson(response.data);
+  // }
 }

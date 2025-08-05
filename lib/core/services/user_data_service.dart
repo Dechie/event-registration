@@ -1,6 +1,7 @@
 // core/services/user_data_service.dart
 
 import 'package:event_reg/features/auth/data/models/user.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Authentication Status Model
@@ -334,7 +335,11 @@ class UserDataServiceImpl implements UserDataService {
 
   @override
   Future<bool> isAuthenticated() async {
+    debugPrint("in user data service, checking authenticated status: ");
     AuthenticationStatus authStat = await getAuthenticationStatus();
+    debugPrint(
+      "auth datas: {hasProfile: ${authStat.hasProfile}, isAuthed: ${authStat.hasProfile}, isProfileCompleted: ${authStat.isProfileCompleted}}",
+    );
     return authStat.hasProfile &&
         authStat.isAuthenticated &&
         authStat.isProfileCompleted;

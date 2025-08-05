@@ -409,6 +409,7 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
   }
 
   Future<void> _checkAuthStatus() async {
+    debugPrint("in landing page: checking auth status.");
     final isAuth = await _userDataService.isAuthenticated();
     setState(() {
       _isAuthenticated = isAuth;

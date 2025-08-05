@@ -29,12 +29,16 @@ class EventRegistration {
     );
   }
 
+  // Add badge number property
+  String? get badgeNumber =>
+      qrCode; // Since we're using badge_number as QR data
   bool get canGenerateBadge => isApproved && qrCode != null;
-
+  // Update the status checking methods to match Laravel's enum values
   bool get isApproved => status.toLowerCase() == 'approved';
-  // Helper methods
+
   bool get isPending => status.toLowerCase() == 'pending';
   bool get isRejected => status.toLowerCase() == 'rejected';
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

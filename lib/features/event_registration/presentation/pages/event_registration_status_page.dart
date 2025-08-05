@@ -1,10 +1,14 @@
 // lib/features/event_registration/presentation/pages/registration_status_page.dart
 import 'package:event_reg/config/themes/app_colors.dart';
+import 'package:event_reg/core/network/dio_client.dart';
+import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:event_reg/core/shared/widgets/custom_button.dart';
+import 'package:event_reg/features/badge/presentation/pages/badge_page.dart';
 import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_bloc.dart';
 import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_event.dart';
 import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_state.dart';
 import 'package:event_reg/features/landing/data/models/event.dart';
+import 'package:event_reg/injection_container.dart' as di;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -77,33 +81,38 @@ class _RegistrationStatusPageState extends State<RegistrationStatusPage> {
         SizedBox(
           width: double.infinity,
           child: CustomButton(
-            text: registration.canGenerateBadge
-                ? 'View My Badge'
-                : 'Generate Badge',
-            onPressed: () {
-              if (registration.canGenerateBadge) {
-                context.read<EventRegistrationBloc>().add(
-                  FetchBadgeRequested(eventId: widget.eventId),
+            text: 'Generate Badge',
+            onPressed: () async {
+              // Fetch full event details first
+              try {
+                final token = await di.sl<UserDataService>().getAuthToken();
+                final response = await di.sl<DioClient>().get(
+                  '/my-events/${widget.eventId}',
+                  token: token,
                 );
-              } else {
-                context.read<EventRegistrationBloc>().add(
-                  GenerateBadgeRequested(eventId: widget.eventId),
-                );
+                debugPrint("response of get badge: ${response.data}");
+
+                // Navigate to badge page with full event details
+                if (mounted) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BadgePage(
+                        event: widget.event,
+                        registrationData: response.data,
+                      ),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error loading badge data: $e')),
+                  );
+                }
               }
             },
             backgroundColor: AppColors.primary,
-            textColor: Colors.white,
-          ),
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          width: double.infinity,
-          child: CustomButton(
-            text: 'Event Details',
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            backgroundColor: AppColors.secondary,
             textColor: Colors.white,
           ),
         ),

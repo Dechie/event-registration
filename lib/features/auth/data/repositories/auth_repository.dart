@@ -97,6 +97,7 @@ class AuthRepositoryImpl implements AuthRepository {
       // Get token from cached user data
       final cachedData = await localDataSource.getCachedUserData();
       if (cachedData?.token == null) {
+        debugPrint("at auth repository: token is null");
         return const Left(
           AuthenticationFailure(
             message: "Authentication required",

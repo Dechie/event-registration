@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:event_reg/config/themes/app_colors.dart';
 import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:event_reg/core/shared/widgets/custom_button.dart';
+import 'package:event_reg/features/event_registration/data/models/event_badge_data.dart';
 import 'package:event_reg/features/landing/data/models/event.dart';
 import 'package:event_reg/injection_container.dart' as di;
 import 'package:event_reg/injection_container.dart';
@@ -151,16 +152,14 @@ class _BadgePageState extends State<BadgePage> {
   }
 
   Widget _buildBadge() {
-    final participant = _userData?['participant'];
-    final badgeId = '${widget.event.id}-${participant?['id'] ?? 'unknown'}';
+    final badgeData = EventBadgeData.fromEventDetails(widget.registrationData!);
 
     return Container(
       width: 300,
-      padding: const EdgeInsets.all(20),
+      height: 420, // Adjust for badge proportions
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border.all(color: AppColors.primary, width: 3),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.3),
@@ -171,106 +170,124 @@ class _BadgePageState extends State<BadgePage> {
         ],
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          // Header
+          // Top hole punch area (black thin rectangle)
           Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            width: 80,
+            height: 8,
+            margin: const EdgeInsets.only(top: 12),
             decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(4),
             ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Event Title
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              widget.event.title,
+              badgeData.eventTitle,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
+              style: const TextStyle(
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
+                color: Colors.black87,
               ),
             ),
           ),
-          Row(
-            children: [
-              Expanded(
-                flex: 3,
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: AppColors.background,
-                    borderRadius: BorderRadius.circular(50),
-                    border: Border.all(color: AppColors.primary, width: 2),
+
+          const SizedBox(height: 24),
+
+          // Participant Photo (Square)
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey[400]!),
+            ),
+            child: badgeData.photoUrl != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      badgeData.photoUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _buildPhotoPlaceholder(),
+                    ),
+                  )
+                : _buildPhotoPlaceholder(),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Participant Name (Orange, Large)
+          Text(
+            badgeData.participantName,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.orange,
+            ),
+          ),
+
+          const Spacer(),
+
+          // Bottom Row: QR Code and Participant Info
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                // QR Code
+                SizedBox(
+                  width: 80,
+                  height: 80,
+                  child: QrImageView(
+                    data: badgeData.badgeNumber,
+                    version: QrVersions.auto,
+                    backgroundColor: Colors.white,
                   ),
-                  child: participant?['photo'] != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(50),
-                          child: Image.network(
-                            participant['photo'],
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                _buildAvatarPlaceholder(),
-                          ),
-                        )
-                      : _buildAvatarPlaceholder(),
                 ),
-              ),
-              Expanded(
-                flex: 5,
-                child: Column(
-                  spacing: 10,
-                  children: [
-                    // Participant Name
-                    Text(
-                      participant?['name'] ??
-                          _userData?['name'] ??
-                          'Participant',
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+
+                // Participant Info Box
+                Container(
+                  width: 120,
+                  height: 80,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey[400]!),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'PARTICIPANT',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                    // Badge ID
-                    Text(
-                      'ID: ${badgeId.substring(0, 12)}...',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: AppColors.textSecondary,
-                        fontFamily: 'monospace',
+                      const SizedBox(height: 4),
+                      Text(
+                        badgeData.participantId,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
                       ),
-                    ),
-                    // Event Name
-                    Text(
-                      widget.event.organization?.name ?? "Organization",
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    Text(
-                      _formatDate(widget.event.startTime),
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              Expanded(
-                flex: 2,
-                child: QrImageView(
-                  data: badgeId,
-                  version: QrVersions.auto,
-                  size: 80,
-                  backgroundColor: Colors.white,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -294,6 +311,10 @@ class _BadgePageState extends State<BadgePage> {
         ],
       ),
     );
+  }
+
+  Widget _buildPhotoPlaceholder() {
+    return const Icon(Icons.person, size: 50, color: Colors.grey);
   }
 
   String _formatDate(DateTime dateTime) {

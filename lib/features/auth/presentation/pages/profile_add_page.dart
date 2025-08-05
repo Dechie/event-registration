@@ -1,13 +1,15 @@
 import 'dart:io';
 
 import 'package:event_reg/config/routes/route_names.dart';
-import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:event_reg/features/auth/presentation/bloc/events/auth_event.dart';
 import 'package:event_reg/features/auth/presentation/bloc/states/auth_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 class ProfileAddPage extends StatefulWidget {
   final bool isEditMode;
@@ -60,6 +62,9 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
     'Other',
   ];
 
+  // Get total number of steps based on mode
+  int get _totalSteps => widget.isEditMode ? 2 : 3;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,7 +91,9 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
                   backgroundColor: Colors.green,
                 ),
               );
-              Navigator.of(context).pushReplacementNamed(RouteNames.landingPage);
+              Navigator.of(
+                context,
+              ).pushReplacementNamed(RouteNames.landingPage);
             } else {
               // Profile creation completed successfully
               ScaffoldMessenger.of(context).showSnackBar(
@@ -95,27 +102,19 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
                   backgroundColor: Colors.green,
                 ),
               );
-              
               // Navigate to landing page since profile is now complete
-              Navigator.pushReplacementNamed(
-                context,
-                RouteNames.landingPage,
-              );
+              Navigator.pushReplacementNamed(context, RouteNames.landingPage);
             }
           }
         },
         child: Column(
           children: [
-            if (!widget.isEditMode) _buildProgressIndicator(),
+            _buildProgressIndicator(),
             Expanded(
               child: PageView(
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _buildPersonalInfoStep(),
-                  _buildProfessionalInfoStep(),
-                  if (!widget.isEditMode) _buildPreviewAndConfirmStep(),
-                ],
+                children: _buildPages(),
               ),
             ),
             _buildNavigationButtons(),
@@ -146,6 +145,46 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
     if (widget.isEditMode && widget.existingProfileData != null) {
       _populateExistingData();
     }
+  }
+
+  Future<String?> obtainPhotoPath() async {
+    String? finalPhotoPath = _profileImage?.path;
+    if (_profileImage == null) {
+      try {
+        final ByteData byteData = await rootBundle.load(
+          "assets/placeholder_profile.jpg",
+        );
+        final tempDir = await getTemporaryDirectory();
+        final file = File(p.join(tempDir.path, 'placeholder_profile.jpg'));
+
+        debugPrint("about to write file as bytes:");
+        await file.writeAsBytes(
+          byteData.buffer.asUint8List(
+            byteData.offsetInBytes,
+            byteData.lengthInBytes,
+          ),
+        );
+        finalPhotoPath = file.path;
+        debugPrint("successfully loaded asset: $finalPhotoPath");
+        return finalPhotoPath;
+      } catch (e) {
+        // Handle any errors, e.g., if the asset doesn't exist
+        debugPrint("Error creating placeholder file: $e");
+        // Optionally, show a snackbar to the user
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Could not prepare placeholder image. Please try again.',
+              ),
+            ),
+          );
+        }
+        return null;
+        // Stop the submission process if there's an error
+      }
+    }
+    return finalPhotoPath;
   }
 
   Widget _buildInfoCard(List<Widget> children) {
@@ -223,6 +262,20 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
         );
       },
     );
+  }
+
+  List<Widget> _buildPages() {
+    if (widget.isEditMode) {
+      // Edit mode: only 2 pages (Personal Info -> Professional Info)
+      return [_buildPersonalInfoStep(), _buildProfessionalInfoStep()];
+    } else {
+      // Create mode: 3 pages (Personal Info -> Professional Info -> Preview)
+      return [
+        _buildPersonalInfoStep(),
+        _buildProfessionalInfoStep(),
+        _buildPreviewAndConfirmStep(),
+      ];
+    }
   }
 
   Widget _buildPersonalInfoStep() {
@@ -577,10 +630,8 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
             backgroundColor: Colors.grey.shade300,
             backgroundImage: _profileImage != null
                 ? FileImage(_profileImage!)
-                : null,
-            child: _profileImage == null
-                ? Icon(Icons.person, size: 50, color: Colors.grey.shade600)
-                : null,
+                : const AssetImage('assets/placeholder_profile.jpg')
+                      as ImageProvider, // Add placeholder asset
           ),
           Positioned(
             bottom: 0,
@@ -607,11 +658,10 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
   }
 
   Widget _buildProgressIndicator() {
-    final totalSteps = widget.isEditMode ? 2 : 3;
     return Container(
       padding: const EdgeInsets.all(16),
       child: Row(
-        children: List.generate(totalSteps, (index) {
+        children: List.generate(_totalSteps, (index) {
           return Expanded(
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -642,46 +692,67 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
     );
   }
 
-  void _createProfile() {
-    context.read<AuthBloc>().add(
-      CreateProfileEvent(
-        fullName: _fullNameController.text,
-        gender: _selectedGender,
-        dateOfBirth: _dateOfBirth,
-        nationality: _selectedNationality,
-        phoneNumber: _phoneController.text,
-        region: _regionController.text.isEmpty ? null : _regionController.text,
-        city: _cityController.text.isEmpty ? null : _cityController.text,
-        woreda: _woredaController.text.isEmpty ? null : _woredaController.text,
-        idNumber: _idNumberController.text.isEmpty
-            ? null
-            : _idNumberController.text,
-        occupation: _occupationController.text,
-        organization: _organizationController.text,
-        department: _departmentController.text.isEmpty
-            ? null
-            : _departmentController.text,
-        industry: _selectedIndustry!,
-        yearsOfExperience: _yearsOfExperience,
-        photoPath: _profileImage?.path,
-      ),
+  Future<void> _createProfile() async {
+    debugPrint("before sending to api:");
+    debugPrint(
+      "fullname: ${_fullNameController.text}, gender: $_selectedGender, occupation: ${_occupationController.text}, organization: ${_organizationController.text} dateofbirth: ${_dateOfBirth?.toIso8601String() ?? "null date"}, nationality: ${_selectedNationality ?? "null nationality"}, phoneNumber: ${_phoneController.text}, region: ${_regionController.text}, city: ${_cityController.text}, woreda: ${_woredaController.text}",
     );
+    String? finalPhotoPath = await obtainPhotoPath();
+
+    if (mounted) {
+      context.read<AuthBloc>().add(
+        CreateProfileEvent(
+          fullName: _fullNameController.text,
+          gender: _selectedGender,
+          dateOfBirth: _dateOfBirth,
+          nationality: _selectedNationality,
+          phoneNumber: _phoneController.text,
+          region: _regionController.text.isEmpty
+              ? null
+              : _regionController.text,
+          city: _cityController.text.isEmpty ? null : _cityController.text,
+          woreda: _woredaController.text.isEmpty
+              ? null
+              : _woredaController.text,
+          idNumber: _idNumberController.text.isEmpty
+              ? null
+              : _idNumberController.text,
+          occupation: _occupationController.text,
+          organization: _organizationController.text,
+          department: _departmentController.text.isEmpty
+              ? null
+              : _departmentController.text,
+          industry: _selectedIndustry!,
+          yearsOfExperience: _yearsOfExperience,
+          photoPath: finalPhotoPath,
+        ),
+      );
+    }
   }
 
   String _getButtonText() {
     if (widget.isEditMode) {
-      return _currentStep == 0 ? 'Next' : 'Update Profile';
-    }
-
-    switch (_currentStep) {
-      case 0:
-        return 'Next';
-      case 1:
-        return 'Preview';
-      case 2:
-        return 'Create Profile';
-      default:
-        return 'Next';
+      // Edit mode: Step 0 = Next, Step 1 = Update Profile
+      switch (_currentStep) {
+        case 0:
+          return 'Next';
+        case 1:
+          return 'Update Profile';
+        default:
+          return 'Next';
+      }
+    } else {
+      // Create mode: Step 0 = Next, Step 1 = Preview, Step 2 = Create Profile
+      switch (_currentStep) {
+        case 0:
+          return 'Next';
+        case 1:
+          return 'Preview';
+        case 2:
+          return 'Create Profile';
+        default:
+          return 'Next';
+      }
     }
   }
 
@@ -708,7 +779,10 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
           break;
         case 1:
           if (_validateProfessionalInfo()) {
+            debugPrint("validate prof info success");
             _nextStep();
+          } else {
+            debugPrint("validate prof info fail");
           }
           break;
         case 2:
@@ -720,11 +794,15 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
   }
 
   void _nextStep() {
-    final maxSteps = widget.isEditMode ? 1 : 2;
+    final maxSteps = _totalSteps - 1; // Convert to 0-based index
+    debugPrint(
+      "max steps: $maxSteps, currentStep: $_currentStep, isEditMode: ${widget.isEditMode}",
+    );
     if (_currentStep < maxSteps) {
       setState(() {
         _currentStep++;
       });
+      debugPrint("new currentStep: $_currentStep");
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -798,30 +876,40 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
     }
   }
 
-  void _updateProfile() {
-    context.read<AuthBloc>().add(
-      UpdateProfileEvent(
-        fullName: _fullNameController.text,
-        gender: _selectedGender,
-        dateOfBirth: _dateOfBirth,
-        nationality: _selectedNationality,
-        phoneNumber: _phoneController.text,
-        region: _regionController.text.isEmpty ? null : _regionController.text,
-        city: _cityController.text.isEmpty ? null : _cityController.text,
-        woreda: _woredaController.text.isEmpty ? null : _woredaController.text,
-        idNumber: _idNumberController.text.isEmpty
-            ? null
-            : _idNumberController.text,
-        occupation: _occupationController.text,
-        organization: _organizationController.text,
-        department: _departmentController.text.isEmpty
-            ? null
-            : _departmentController.text,
-        industry: _selectedIndustry!,
-        yearsOfExperience: _yearsOfExperience,
-        photoPath: _profileImage?.path,
-      ),
-    );
+  Future<void> _updateProfile() async {
+    debugPrint("full name: ${_fullNameController.text}");
+
+    String? finalPhotoPath = await obtainPhotoPath();
+    if (mounted) {
+      context.read<AuthBloc>().add(
+        CreateProfileEvent(
+          // You might want to create a separate UpdateProfileEvent
+          fullName: _fullNameController.text,
+          gender: _selectedGender,
+          dateOfBirth: _dateOfBirth,
+          nationality: _selectedNationality,
+          phoneNumber: _phoneController.text,
+          region: _regionController.text.isEmpty
+              ? null
+              : _regionController.text,
+          city: _cityController.text.isEmpty ? null : _cityController.text,
+          woreda: _woredaController.text.isEmpty
+              ? null
+              : _woredaController.text,
+          idNumber: _idNumberController.text.isEmpty
+              ? null
+              : _idNumberController.text,
+          occupation: _occupationController.text,
+          organization: _organizationController.text,
+          department: _departmentController.text.isEmpty
+              ? null
+              : _departmentController.text,
+          industry: _selectedIndustry!,
+          yearsOfExperience: _yearsOfExperience,
+          photoPath: finalPhotoPath,
+        ),
+      );
+    }
   }
 
   bool _validateProfessionalInfo() {

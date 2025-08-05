@@ -1,15 +1,17 @@
 class EventRegistrationRequest {
-  final String participantId;
+  // Remove the participantId from here
+  // final String? participantId;
+
   final String eventId;
 
   EventRegistrationRequest({
-    required this.participantId,
+    // Remove participantId from the constructor
     required this.eventId,
   });
 
+  // The toJson method will now return an empty map or just the eventId if needed,
+  // but for your specific backend endpoint, an empty body is likely what's needed
   Map<String, dynamic> toJson() {
-    return {
-      'participant_id': participantId,
-    };
+    return {}; // The backend expects an empty body for this action
   }
 }

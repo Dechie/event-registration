@@ -1,5 +1,6 @@
 import 'package:event_reg/core/error/failures.dart';
 import 'package:event_reg/core/services/user_data_service.dart';
+import 'package:event_reg/features/auth/data/models/user.dart';
 import 'package:event_reg/features/auth/data/repositories/auth_repository.dart';
 import 'package:event_reg/features/auth/data/repositories/profile_add_repository.dart';
 import 'package:event_reg/features/auth/presentation/bloc/events/auth_event.dart';
@@ -146,21 +147,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
 
       final profileData = {
-        'fullName': event.fullName,
+        'full_name': event.fullName,
         'gender': event.gender,
-        'dateOfBirth': event.dateOfBirth?.toIso8601String(),
+        'date_of_birth': event.dateOfBirth?.toIso8601String(),
         'nationality': event.nationality,
-        'phoneNumber': event.phoneNumber,
+        'phone_number': event.phoneNumber,
         'region': event.region,
         'city': event.city,
         'woreda': event.woreda,
-        'idNumber': event.idNumber,
+        'id_number': event.idNumber,
         'occupation': event.occupation,
         'organization': event.organization,
         'department': event.department,
         'industry': event.industry,
-        'yearsOfExperience': event.yearsOfExperience,
-        'photoPath': event.photoPath,
+        'years_of_experience': event.yearsOfExperience,
+        'photo': event.photoPath,
       };
 
       final result = await profileRepository.createProfile(
@@ -170,18 +171,33 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       result.fold(
         (failure) {
-          debugPrint("Failed creating profile");
+          debugPrint(
+            "Failed creating profile: ${failure.code}: ${failure.message}",
+          );
+          if (failure.message.contains("Profile already completed") ||
+              failure.code.contains("PROFILE_ALREADY_EXISTS")) {
+            emit(
+              AuthProfileCreatedState(
+                message: "Your Profile is already created.",
+                userData: User.fromJson(profileData),
+              ),
+            );
+
+            userDataService.setHasProfile(true);
+            userDataService.setProfileCompleted(true);
+          }
         },
-        (obtainedResult) async {
-          await userDataService.setHasProfile(true);
-          await userDataService.setProfileCompleted(true);
+        (obtainedResult) {
           emit(
             AuthProfileCreatedState(
               message:
                   obtainedResult['message'] ?? 'Profile created successfully',
-              userData: obtainedResult['participant'],
+              userData: User.fromJson(obtainedResult['participant']),
             ),
           );
+
+          userDataService.setHasProfile(true);
+          userDataService.setProfileCompleted(true);
         },
       );
     } catch (e) {

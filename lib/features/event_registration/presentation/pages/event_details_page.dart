@@ -35,7 +35,7 @@ class EventDetailsPage extends StatelessWidget {
               ),
             );
 
-            // Navigate to registration status page instead of badge page
+            // Navigate to registration status page
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(

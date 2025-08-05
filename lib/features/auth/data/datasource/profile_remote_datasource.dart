@@ -1,14 +1,15 @@
+import 'package:dio/dio.dart';
 import 'package:event_reg/core/error/exceptions.dart';
 import 'package:event_reg/core/network/dio_client.dart';
 import 'package:event_reg/features/auth/data/models/user.dart';
-import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 abstract class ProfileRemoteDatasource {
-  Future<User> getProfile(String token);
   Future<Map<String, dynamic>> createProfile({
     required String token,
     required Map<String, dynamic> profileData,
   });
+  Future<User> getProfile(String token);
   Future<User> updateProfile({
     required String token,
     required Map<String, dynamic> profileData,
@@ -18,6 +19,68 @@ abstract class ProfileRemoteDatasource {
 class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   final DioClient dioClient;
   ProfileRemoteDatasourceImpl({required this.dioClient});
+
+  @override
+  Future<Map<String, dynamic>> createProfile({
+    required String token,
+    required Map<String, dynamic> profileData,
+  }) async {
+    try {
+      // Create FormData for file upload support
+      final formData = FormData();
+
+      // Add text fields
+      debugPrint("fullname: ${profileData["fullName"]}");
+      profileData.forEach((key, value) {
+        var keyV = mapJavaCaseToSnakeCase(key);
+        debugPrint("key: [$key/$keyV], value: $value");
+        formData.fields.add(MapEntry(key, value.toString()));
+        if (value != null && key != 'photo') {}
+      });
+
+      // Handle photo upload if present
+      if (profileData['photo'] != null) {
+        final photoPath = profileData['photo'] as String;
+        formData.files.add(
+          MapEntry('photo', await MultipartFile.fromFile(photoPath)),
+        );
+      }
+
+      final response = await dioClient.post(
+        "/participant/profile",
+        data: formData,
+        token: token,
+        options: Options(
+          headers: {'Content-Type': 'multipart/form-data'},
+          extra: {"token": token},
+        ),
+      );
+
+      debugPrint("create profile endpoint status code: ${response.statusCode}");
+      debugPrint("create profile endpoint message: ${response.statusMessage}");
+      if (response.statusCode == 200) {
+        final data = response.data;
+        return {
+          'message': data["message"] ?? "Profile created successfully",
+          'participant': data["participant"],
+        };
+      } else {
+        throw ServerException(
+          message: response.data["message"] ?? "Failed to create profile",
+          code: response.data["code"] ?? 'CREATE_PROFILE_FAILED',
+        );
+      }
+    } on ApiError catch (e) {
+      debugPrint("create profile exception: ${e.message}");
+      _handleApiError(e, "CREATE_PROFILE_ERROR");
+    } catch (e) {
+      if (e is ServerException) rethrow;
+      throw ServerException(
+        message: "Failed to create profile",
+        code: "CREATE_PROFILE_ERROR",
+      );
+    }
+  }
 
   @override
   Future<User> getProfile(String token) async {
@@ -44,65 +107,28 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     }
   }
 
-  @override
-  Future<Map<String, dynamic>> createProfile({
-    required String token,
-    required Map<String, dynamic> profileData,
-  }) async {
-    try {
-      // Create FormData for file upload support
-      final formData = FormData();
-      
-      // Add text fields
-      profileData.forEach((key, value) {
-        if (value != null && key != 'photo') {
-          formData.fields.add(MapEntry(key, value.toString()));
-        }
-      });
+  mapJavaCaseToSnakeCase(String key) {
+    if (key == "fullName") {
+      return "full_name";
+    }
+    if (key == "dateOfBirth") {
+      return "date_of_birth";
+    }
 
-      // Handle photo upload if present
-      if (profileData['photoPath'] != null) {
-        final photoPath = profileData['photoPath'] as String;
-        formData.files.add(
-          MapEntry(
-            'photo',
-            await MultipartFile.fromFile(photoPath),
-          ),
-        );
-      }
+    if (key == "yearsOfExperience") {
+      return "years_of_experience";
+    }
 
-      final response = await dioClient.post(
-        "/participant/profile",
-        data: formData,
-        token: token,
-        options: Options(
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-          extra: {"token": token},
-        ),
-      );
+    if (key == "phoneNumber") {
+      return "phone_number";
+    }
 
-      if (response.statusCode == 200) {
-        final data = response.data;
-        return {
-          'message': data["message"] ?? "Profile created successfully",
-          'participant': data["participant"],
-        };
-      } else {
-        throw ServerException(
-          message: response.data["message"] ?? "Failed to create profile",
-          code: response.data["code"] ?? 'CREATE_PROFILE_FAILED',
-        );
-      }
-    } on ApiError catch (e) {
-      _handleApiError(e, "CREATE_PROFILE_ERROR");
-    } catch (e) {
-      if (e is ServerException) rethrow;
-      throw ServerException(
-        message: "Failed to create profile",
-        code: "CREATE_PROFILE_ERROR",
-      );
+    if (key == "idNumber") {
+      return "idNumber";
+    }
+
+    if (key == "photoPath") {
+      return "photo_path";
     }
   }
 
@@ -112,7 +138,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     required Map<String, dynamic> profileData,
   }) async {
     try {
-      final response = await dioClient.put(
+      final response = await dioClient.post(
         "/me",
         data: profileData,
         token: token,

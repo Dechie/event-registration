@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:event_reg/features/event_registration/data/models/event_reg_request.dart';
 
 class UserRegistrationRequest extends Equatable {
   final String email;
@@ -29,4 +30,6 @@ class UserRegistrationRequest extends Equatable {
       passwordConfirmation: json["password-confirmation"],
     );
   }
+
+  
 }
