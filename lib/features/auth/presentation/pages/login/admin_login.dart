@@ -48,9 +48,10 @@ class _AdminLoginPageState extends State<AdminLoginPage>
           } else if (state is AuthenticatedState) {
             // Admin successfully logged in, navigate to admin dashboard
             debugPrint("successfully authenticated as admin.");
-            Navigator.pushReplacementNamed(
+            Navigator.pushNamedAndRemoveUntil(
               context,
               RouteNames.adminDashboardPage,
+              (route) => false,
             );
           }
         },

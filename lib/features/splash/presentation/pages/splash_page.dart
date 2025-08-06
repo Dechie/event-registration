@@ -13,42 +13,38 @@ class SplashPage extends StatelessWidget {
     return BlocListener<SplashBloc, SplashState>(
       listener: (context, state) {
         debugPrint("🎯 Splash navigation state: ${state.runtimeType}");
-        
+
         if (state is SplashNavigateToLanding) {
           debugPrint("📍 Navigating to Landing Page");
           Navigator.pushReplacementNamed(context, RouteNames.landingPage);
-        } 
-        else if (state is SplashNavigateToParticipantDashboard) {
+        } else if (state is SplashNavigateToParticipantDashboard) {
           debugPrint("📍 Navigating to Participant Dashboard: ${state.email}");
           Navigator.pushReplacementNamed(
             context,
             RouteNames.landingPage,
             //arguments: {'email': state.email},
           );
-        } 
-        else if (state is SplashNavigateToAdminDashboard) {
+        } else if (state is SplashNavigateToAdminDashboard) {
           debugPrint("📍 Navigating to Admin Dashboard");
-          Navigator.pushReplacementNamed(
+          Navigator.pushNamedAndRemoveUntil(
             context,
             RouteNames.adminDashboardPage,
+            (route) => false,
           );
-        } 
-        else if (state is SplashNavigateToRegistration) {
+        } else if (state is SplashNavigateToRegistration) {
           debugPrint("📍 Navigating to Registration Page");
           Navigator.pushReplacementNamed(context, RouteNames.registrationPage);
-        }
-        else if (state is SplashNavigateToEmailVerification) {
+        } else if (state is SplashNavigateToEmailVerification) {
           debugPrint("📍 Navigating to Email Verification: ${state.email}");
           Navigator.pushReplacementNamed(
-            context, 
+            context,
             RouteNames.otpVerificationPage,
             arguments: {'email': state.email},
           );
-        }
-        else if (state is SplashNavigateToProfileCreation) {
+        } else if (state is SplashNavigateToProfileCreation) {
           debugPrint("📍 Navigating to Profile Creation: ${state.email}");
           Navigator.pushReplacementNamed(
-            context, 
+            context,
             RouteNames.profileAddPage,
             arguments: {'email': state.email},
           );
@@ -109,7 +105,7 @@ class SplashPage extends StatelessWidget {
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
               ),
               const SizedBox(height: 16),
-              
+
               // Loading text
               BlocBuilder<SplashBloc, SplashState>(
                 builder: (context, state) {
@@ -117,7 +113,7 @@ class SplashPage extends StatelessWidget {
                   if (state is SplashLoading) {
                     loadingText = "Loading...";
                   }
-                  
+
                   return Text(
                     loadingText,
                     style: TextStyle(

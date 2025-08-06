@@ -103,15 +103,25 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
                 ),
               );
               // Navigate based on user role
-              final userData = state is AuthenticatedState ? state.userData : null;
+              final userData = state is AuthenticatedState
+                  ? state.userData
+                  : null;
               final role = userData?['role'] ?? 'participant';
-              
+
               if (role == 'admin') {
                 // Admin goes to admin dashboard
-                Navigator.pushReplacementNamed(context, RouteNames.adminDashboardPage);
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  RouteNames.adminDashboardPage,
+                  (route) => false,
+                );
               } else {
                 // Participant goes to landing page
-                Navigator.pushReplacementNamed(context, RouteNames.landingPage);
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  RouteNames.landingPage,
+                  (route) => false,
+                );
               }
             }
           }
