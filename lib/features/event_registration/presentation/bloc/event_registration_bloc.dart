@@ -121,7 +121,8 @@ class EventRegistrationBloc
     emit(EventRegistrationLoading());
 
     try {
-      final userDataService = sl<UserDataService>();
+
+    final userDataService = sl<UserDataService>();
       final user = await userDataService.getCachedUser();
       if (user == null) {
         emit(EventRegistrationError(message: 'User not authenticated'));
@@ -134,7 +135,9 @@ class EventRegistrationBloc
       //   return;
       // }
 
-      final request = EventRegistrationRequest(eventId: event.eventId);
+      final request = EventRegistrationRequest(
+        eventId: event.eventId,
+      );
 
       final response = await dataSource.registerForEvent(
         request,

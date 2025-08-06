@@ -201,6 +201,7 @@ class _BadgePageState extends State<BadgePage> {
           const SizedBox(height: 24),
 
           // Participant Photo (Square)
+          // Replace the photo container section with:
           Container(
             width: 100,
             height: 100,
@@ -209,11 +210,11 @@ class _BadgePageState extends State<BadgePage> {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.grey[400]!),
             ),
-            child: badgeData.photoUrl != null
+            child: badgeData.downloadedImagePath != null
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      badgeData.photoUrl!,
+                    child: Image.file(
+                      File(badgeData.downloadedImagePath!),
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => _buildPhotoPlaceholder(),
                     ),

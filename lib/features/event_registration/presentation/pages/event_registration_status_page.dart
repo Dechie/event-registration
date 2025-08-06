@@ -4,6 +4,7 @@ import 'package:event_reg/core/network/dio_client.dart';
 import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:event_reg/core/shared/widgets/custom_button.dart';
 import 'package:event_reg/features/badge/presentation/pages/badge_page.dart';
+import 'package:event_reg/features/event_registration/data/datasource/event_registration_datasource.dart';
 import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_bloc.dart';
 import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_event.dart';
 import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_state.dart';
@@ -90,7 +91,13 @@ class _RegistrationStatusPageState extends State<RegistrationStatusPage> {
                   '/my-events/${widget.eventId}',
                   token: token,
                 );
+                final photoFile = await di
+                    .sl<EventRegistrationDataSourceImpl>()
+                    .downloadParticipantPhoto(response.data["photo"]);
+                final downloadedPhoto = photoFile.path;
                 debugPrint("response of get badge: ${response.data}");
+                response.data["participant"]?["downloaded_image_path"] =
+                    downloadedPhoto;
 
                 // Navigate to badge page with full event details
                 if (mounted) {

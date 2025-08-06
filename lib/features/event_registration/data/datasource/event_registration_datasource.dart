@@ -1,8 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:dio/dio.dart';
+import 'package:event_reg/core/constants/app_urls.dart';
 import 'package:event_reg/core/network/dio_client.dart';
 import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:flutter/material.dart' show debugPrint;
+import 'package:path_provider/path_provider.dart';
 
 import '../../../landing/data/models/event.dart';
 import '../models/event_reg_request.dart';
@@ -33,6 +37,40 @@ class EventRegistrationDataSourceImpl implements EventRegistrationDataSource {
     required this.userDataService,
   });
 
+  Future<File> downloadParticipantPhoto(String photoPath) async {
+    // Check if the photoPath is a valid relative path
+    if (photoPath.isEmpty) {
+      throw Exception("Photo path is invalid.");
+    }
+
+    // Construct the full URL for the image
+    final photoUrl = '${AppUrls.baseUrl}/storage/$photoPath';
+    debugPrint("🚀 Downloading photo from: $photoUrl");
+
+    try {
+      // Make a GET request with Dio, but specify the response type as bytes
+      final response = await dioClient.dio.get(
+        photoUrl,
+        options: Options(responseType: ResponseType.bytes),
+      );
+
+      // Get the temporary directory on the device
+      final directory = await getTemporaryDirectory();
+      final localPath = '${directory.path}/${photoPath.split('/').last}';
+
+      // Create a file and write the downloaded bytes to it
+      final file = File(localPath);
+      await file.writeAsBytes(response.data);
+
+      debugPrint("✅ Photo downloaded to: $localPath");
+      return file;
+    } on DioException catch (e) {
+      throw ApiError("Failed to download image: ${e.message}");
+    } catch (e) {
+      throw ApiError("An unexpected error occurred: ${e.toString()}");
+    }
+  }
+
   @override
   Future<List<Event>> fetchAvailableEvents() async {
     final response = await dioClient.get('/fetch-events');
@@ -50,6 +88,12 @@ class EventRegistrationDataSourceImpl implements EventRegistrationDataSource {
       token: token,
     );
 
+    debugPrint("badge image: ${response.data["photo"]}");
+    File downloadedImage = await downloadParticipantPhoto(
+      response.data["photo"],
+    );
+    response.data["downloaded_image"] = downloadedImage.path;
+
     return ParticipantBadge.fromJson(response.data);
   }
 
@@ -62,6 +106,12 @@ class EventRegistrationDataSourceImpl implements EventRegistrationDataSource {
         '/events/$eventId/badge',
         token: token,
       );
+      debugPrint("get badge hit");
+      if (response.statusCode == 200) {
+        for (var data in response.data) {
+          debugPrint(data.runtimeType.toString());
+        }
+      }
 
       return ParticipantBadge.fromJson(response.data);
     } catch (e) {
@@ -103,6 +153,7 @@ class EventRegistrationDataSourceImpl implements EventRegistrationDataSource {
     final token = await userDataService.getAuthToken();
 
     // Fix: Use the correct endpoint from your Laravel backend
+    debugPrint("this api hit");
     final response = await dioClient.get('/my-events/$eventId', token: token);
 
     // The Laravel endpoint returns the full event details with participant data

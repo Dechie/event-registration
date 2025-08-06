@@ -1,9 +1,12 @@
+import 'package:flutter/material.dart' show debugPrint;
+
 class EventBadgeData {
   final String eventTitle;
   final String participantName;
   final String participantId;
   final String badgeNumber;
   final String? photoUrl;
+  final String downloadedImagePath;
   final String organizationName;
   final DateTime eventDate;
   final String eventLocation;
@@ -14,6 +17,7 @@ class EventBadgeData {
     required this.participantId,
     required this.badgeNumber,
     this.photoUrl,
+    this.downloadedImagePath = "",
     required this.organizationName,
     required this.eventDate,
     required this.eventLocation,
@@ -22,6 +26,7 @@ class EventBadgeData {
   factory EventBadgeData.fromEventDetails(Map<String, dynamic> eventDetails) {
     final event = eventDetails['event'];
     final participant = eventDetails['participant'];
+    debugPrint("photo: ${event['photo']}");
 
     return EventBadgeData(
       eventTitle: event['title'],
@@ -32,6 +37,7 @@ class EventBadgeData {
       organizationName: event['organization']['name'],
       eventDate: DateTime.parse(event['start_time']),
       eventLocation: event['location'],
+      downloadedImagePath: eventDetails["downloaded_image_path"] ?? "",
     );
   }
 }

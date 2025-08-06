@@ -353,6 +353,49 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
                       textColor: Colors.white,
                     ),
                   ),
+                  // Replace the existing Action Button section with:
+                  // Action Button
+                  FutureBuilder<String?>(
+                    future: _getUserRegistrationStatus(event.id),
+                    builder: (context, snapshot) {
+                      final registrationStatus = snapshot.data;
+
+                      String buttonText;
+                      Color buttonColor;
+                      bool isEnabled = true;
+
+                      if (registrationStatus == 'approved') {
+                        buttonText = 'Approved ✓';
+                        buttonColor = Colors.green;
+                        isEnabled = false;
+                      } else if (registrationStatus == 'pending') {
+                        buttonText = 'Pending Review';
+                        buttonColor = Colors.orange;
+                        isEnabled = false;
+                      } else if (_isAuthenticated) {
+                        buttonText = 'View Details & Register';
+                        buttonColor = AppColors.primary;
+                      } else {
+                        buttonText = 'View Details';
+                        buttonColor = AppColors.primary;
+                      }
+
+                      return SizedBox(
+                        width: double.infinity,
+                        child: CustomButton(
+                          text: buttonText,
+                          onPressed: () {
+                            if (isEnabled) {
+                              _navigateToEventDetails(event);
+                            }
+                          },
+
+                          backgroundColor: buttonColor,
+                          textColor: Colors.white,
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -432,6 +475,28 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
       'Dec',
     ];
     return '${dateTime.day} ${months[dateTime.month - 1]} ${dateTime.year}';
+  }
+
+  Future<String?> _getUserRegistrationStatus(String eventId) async {
+    if (!_isAuthenticated) return null;
+
+    try {
+      final bloc = context.read<EventRegistrationBloc>();
+      // You'll need to add a new event for this
+      bloc.add(CheckRegistrationStatusRequested(eventId: eventId));
+
+      // Wait for the response and return status
+      await for (final state in bloc.stream) {
+        if (state is RegistrationStatusLoaded) {
+          return state.registration.status;
+        } else if (state is EventRegistrationError) {
+          return null;
+        }
+      }
+    } catch (e) {
+      return null;
+    }
+    return null;
   }
 
   void _navigateToEventDetails(Event event) {

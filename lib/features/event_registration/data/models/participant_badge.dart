@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class ParticipantBadge {
   final String id;
   final String participantId;
@@ -5,6 +7,7 @@ class ParticipantBadge {
   final String qrCode;
   final String? badgeImageUrl;
   final DateTime generatedAt;
+  final String? downloadedImagePath;
 
   ParticipantBadge({
     required this.id,
@@ -12,16 +15,22 @@ class ParticipantBadge {
     required this.eventId,
     required this.qrCode,
     this.badgeImageUrl,
-    required this.generatedAt, 
+    this.downloadedImagePath,
+    required this.generatedAt,
   });
 
   factory ParticipantBadge.fromJson(Map<String, dynamic> json) {
+    var downloadedImagePath = json["downloaded_image"] as String;
+    debugPrint(
+      "downloaded image path at fromJson method: $downloadedImagePath",
+    );
     return ParticipantBadge(
       id: json['id'].toString(),
       participantId: json['participant_id'].toString(),
       eventId: json['event_id'].toString(),
       qrCode: json['qr_code'],
       badgeImageUrl: json['badge_image_url'],
+      downloadedImagePath: json["downloaded_image"],
       generatedAt: DateTime.parse(json['generated_at']),
     );
   }
