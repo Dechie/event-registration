@@ -47,6 +47,7 @@ class _AdminLoginPageState extends State<AdminLoginPage>
             );
           } else if (state is AuthenticatedState) {
             // Admin successfully logged in, navigate to admin dashboard
+            debugPrint("successfully authenticated as admin.");
             Navigator.pushReplacementNamed(
               context,
               RouteNames.adminDashboardPage,
@@ -117,6 +118,69 @@ class _AdminLoginPageState extends State<AdminLoginPage>
     _animationController.forward();
   }
 
+  Widget _buildEmailField() {
+    return TextFormField(
+      controller: _emailController,
+      keyboardType: TextInputType.emailAddress,
+      textInputAction: TextInputAction.next,
+      decoration: InputDecoration(
+        labelText: 'Email Address',
+        hintText: 'Enter your admin email',
+        prefixIcon: const Icon(Icons.email_outlined),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+        ),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter your email';
+        }
+        if (!Validators.isValidEmail(value)) {
+          return 'Please enter a valid email address';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildLoginButton() {
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        return ElevatedButton(
+          onPressed: state is AuthLoadingState ? null : _handleLogin,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Theme.of(context).primaryColor,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 2,
+          ),
+          child: state is AuthLoadingState
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : const Text(
+                  'Login',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+        );
+      },
+    );
+  }
+
   Widget _buildLoginForm() {
     return Form(
       key: _formKey,
@@ -164,9 +228,9 @@ class _AdminLoginPageState extends State<AdminLoginPage>
                 const SizedBox(height: 8),
                 Text(
                   'Access your admin dashboard',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                 ),
                 const SizedBox(height: 32),
                 _buildEmailField(),
@@ -183,37 +247,6 @@ class _AdminLoginPageState extends State<AdminLoginPage>
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildEmailField() {
-    return TextFormField(
-      controller: _emailController,
-      keyboardType: TextInputType.emailAddress,
-      textInputAction: TextInputAction.next,
-      decoration: InputDecoration(
-        labelText: 'Email Address',
-        hintText: 'Enter your admin email',
-        prefixIcon: const Icon(Icons.email_outlined),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).primaryColor),
-        ),
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter your email';
-        }
-        if (!Validators.isValidEmail(value)) {
-          return 'Please enter a valid email address';
-        }
-        return null;
-      },
     );
   }
 
@@ -277,41 +310,6 @@ class _AdminLoginPageState extends State<AdminLoginPage>
     );
   }
 
-  Widget _buildLoginButton() {
-    return BlocBuilder<AuthBloc, AuthState>(
-      builder: (context, state) {
-        return ElevatedButton(
-          onPressed: state is AuthLoadingState ? null : _handleLogin,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).primaryColor,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            elevation: 2,
-          ),
-          child: state is AuthLoadingState
-              ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : const Text(
-                  'Login',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-        );
-      },
-    );
-  }
-
   Widget _buildSignUpLink() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -324,7 +322,7 @@ class _AdminLoginPageState extends State<AdminLoginPage>
           onTap: () {
             Navigator.pushReplacementNamed(
               context,
-              RouteNames.userRegistrationPage,
+              RouteNames.registrationPage,
             );
           },
           child: Text(
@@ -340,7 +338,7 @@ class _AdminLoginPageState extends State<AdminLoginPage>
     );
   }
 
-  Future<void> _handleLogin() async {
+  void _handleLogin() {
     if (_formKey.currentState!.validate()) {
       FocusScope.of(context).unfocus();
       if (mounted) {
@@ -355,4 +353,4 @@ class _AdminLoginPageState extends State<AdminLoginPage>
       }
     }
   }
-} 
+}

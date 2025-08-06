@@ -415,6 +415,7 @@ class _AuthOTPVerificationPageState extends State<AuthOTPVerificationPage>
           email: widget.email,
           otp: otp,
           otpToken: widget.otpToken,
+          role: widget.role ?? "participant",
         ),
       );
     }

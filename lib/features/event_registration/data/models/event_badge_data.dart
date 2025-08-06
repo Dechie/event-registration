@@ -27,6 +27,7 @@ class EventBadgeData {
     final event = eventDetails['event'];
     final participant = eventDetails['participant'];
     debugPrint("photo: ${event['photo']}");
+    
 
     return EventBadgeData(
       eventTitle: event['title'],

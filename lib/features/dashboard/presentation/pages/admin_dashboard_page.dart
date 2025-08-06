@@ -78,10 +78,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                       const SizedBox(height: 16),
                       Text(
                         'Welcome, Admin!',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey[800],
-                        ),
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[800],
+                            ),
                       ),
                       const SizedBox(height: 8),
                       Text(
@@ -109,7 +110,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                         subtitle: 'Scan participant badges',
                         color: Colors.blue,
                         onTap: () {
-                          Navigator.pushNamed(context, RouteNames.qrScannerPage);
+                          Navigator.pushNamed(
+                            context,
+                            RouteNames.qrScannerPage,
+                          );
                         },
                       ),
                       _buildActionCard(
@@ -205,11 +209,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                 color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(30),
               ),
-              child: Icon(
-                icon,
-                size: 30,
-                color: color,
-              ),
+              child: Icon(icon, size: 30, color: color),
             ),
             const SizedBox(height: 12),
             Text(
@@ -223,13 +223,29 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showComingSoonDialog(String feature) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(feature),
+        content: Text('$feature feature is coming soon!'),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
       ),
     );
   }
@@ -260,22 +276,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
               foregroundColor: Colors.white,
             ),
             child: const Text('Logout'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showComingSoonDialog(String feature) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(feature),
-        content: Text('$feature feature is coming soon!'),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
           ),
         ],
       ),

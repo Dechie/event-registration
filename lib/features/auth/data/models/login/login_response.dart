@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:event_reg/features/auth/data/models/user.dart';
+import 'package:flutter/material.dart' show debugPrint;
 
 // class LoginResponse {
 //   final String id;
@@ -86,11 +89,60 @@ class LoginResponse {
     final userJson = Map<String, dynamic>.from(json['user']);
     userJson['role'] = json['role'];
     userJson['has_profile'] = json['has_profile'];
+
+    for (var entry in userJson.entries) {
+      if (entry.key == "user") {
+        debugPrint("<${entry.key}>");
+        for (var entryU in entry.value.entries) {
+          String val = "";
+          if (entryU.value == null) {
+            val = "null";
+          } else if (entryU.value == "") {
+            val = "empt";
+          } else if (entryU.value is int || entryU.value is double) {
+            val = entryU.toString();
+          } else {
+            val = entryU.value;
+          }
+          debugPrint("<   ${entryU.key}>");
+          debugPrint("        <$val>");
+          debugPrint("    </${entryU.key}>");
+        }
+        debugPrint("<${entry.key}>");
+        continue;
+      }
+      String val = "";
+      if (entry.value == null) {
+        val = "null";
+      } else if (entry.value == "") {
+        val = "empt";
+      } else if (entry.value is int || entry.value is double) {
+        val = entry.toString();
+      } else {
+        val = entry.value;
+      }
+      debugPrint("<${entry.key}>");
+      debugPrint("    <$val>");
+      debugPrint("</${entry.key}>");
+      debugPrint(" ");
+    }
+
+    debugPrint("loginresponsedata: ${jsonEncode(json)}");
+
     return LoginResponse(
-      id: json['id'],
-      message: json['message'],
-      token: json['token'],
+      id: json['id'] ?? "",
+      message: json['message'] ?? "",
+      token: json['token'] ?? "no-token",
       user: User.fromJson(userJson),
+    );
+  }
+
+  LoginResponse copyWithForceUserRole({required String role}) {
+    return LoginResponse(
+      id: id,
+      message: message,
+      token: token,
+      user: user.copyWith(role: role),
     );
   }
 }

@@ -99,6 +99,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final cachedData = await localDataSource.getCachedUserData();
       if (cachedData?.token == null) {
         debugPrint("at auth repository: token is null");
+
         return const Left(
           AuthenticationFailure(
             message: "Authentication required",
@@ -126,14 +127,18 @@ class AuthRepositoryImpl implements AuthRepository {
       return Right(result);
     } on NetworkException catch (e) {
       debugPrint('❌ Network error during create profile: ${e.message}');
+
       return Left(NetworkFailure(message: e.message, code: e.code));
     } on AuthenticationException catch (e) {
       debugPrint('❌ Authentication error during create profile: ${e.message}');
+
       return Left(AuthenticationFailure(message: e.message, code: e.code));
     } on ValidationException catch (e) {
       debugPrint('❌ Validation error during create profile: ${e.message}');
+
       if (e.code == "PROFILE_ALREADY_EXISTS") {
         debugPrint('❌ Profile already exists.');
+
         return Left(
           ValidationFailure(
             message: "Profile already exists",
@@ -141,14 +146,17 @@ class AuthRepositoryImpl implements AuthRepository {
           ),
         );
       }
+
       return Left(
         ValidationFailure(message: e.message, code: e.code, errors: e.errors),
       );
     } on ServerException catch (e) {
       debugPrint('❌ Server error during Profile create: ${e.message}');
+
       return Left(ServerFailure(message: e.message, code: e.code));
     } catch (e) {
       debugPrint('❌ Unexpected error during profile create: $e');
+
       return const Left(UnknownFailure());
     }
   }
@@ -161,16 +169,20 @@ class AuthRepositoryImpl implements AuthRepository {
       final cachedData = await localDataSource.getCachedUserData();
       if (cachedData != null) {
         debugPrint('✅ Found cached user data for: ${cachedData.user.email}');
+
         return Right(cachedData.user);
       }
 
       debugPrint('⚠️ No cached user data found');
+
       return const Right(null);
     } on CacheException catch (e) {
       debugPrint('❌ Cache error getting current user: ${e.message}');
+
       return Left(CacheFailure(message: e.message, code: e.code));
     } catch (e) {
       debugPrint('❌ Unexpected error getting current user: $e');
+
       return const Left(UnknownFailure());
     }
   }
@@ -181,9 +193,11 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final isAuth = await localDataSource.isAuthenticated();
       debugPrint('🔍 User authenticated: $isAuth');
+
       return Right(isAuth);
     } catch (e) {
       debugPrint('❌ Error checking authentication: $e');
+
       return const Right(false);
     }
   }
@@ -218,34 +232,51 @@ class AuthRepositoryImpl implements AuthRepository {
       final loginResponse = await remoteDatasource.login(loginRequest);
 
       debugPrint('✅ Login successful, caching user data...');
+      if (loginResponse.user.role == "no-role") {
+        LoginResponse loginResponseCopy = loginResponse.copyWithForceUserRole(
+          role: role,
+        );
+        await localDataSource.cacheUserData(loginResponseCopy);
 
-      // Cache the user data locally
-      await localDataSource.cacheUserData(loginResponse);
+        // Cache the user data locally
+        debugPrint('✅ User data cached successfully');
 
-      debugPrint('✅ User data cached successfully');
+        return Right(loginResponseCopy);
+      } else {
+        await localDataSource.cacheUserData(loginResponse);
 
-      return Right(loginResponse);
+        // Cache the user data locally
+        debugPrint('✅ User data cached successfully');
+
+        return Right(loginResponse);
+      }
     } on NetworkException catch (e) {
       debugPrint('❌ Network error during login: ${e.message}');
+
       return Left(NetworkFailure(message: e.message, code: e.code));
     } on AuthenticationException catch (e) {
       debugPrint('❌ Authentication error during login: ${e.message}');
+
       return Left(AuthenticationFailure(message: e.message, code: e.code));
     } on ValidationException catch (e) {
       debugPrint('❌ Validation error during login: ${e.message}');
+
       return Left(
         ValidationFailure(message: e.message, code: e.code, errors: e.errors),
       );
     } on ServerException catch (e) {
       debugPrint('❌ Server error during login: ${e.message}');
+
       return Left(ServerFailure(message: e.message, code: e.code));
     } on CacheException catch (e) {
       debugPrint('❌ Cache error during login: ${e.message}');
       // Login was successful but caching failed - still return success
       // but maybe log this for monitoring
+
       return Left(CacheFailure(message: e.message, code: e.code));
     } catch (e) {
       debugPrint('❌ Unexpected error during login: $e');
+
       return const Left(UnknownFailure());
     }
   }

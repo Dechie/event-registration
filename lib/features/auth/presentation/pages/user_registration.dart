@@ -168,6 +168,7 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
         if (value != _passwordController.text) {
           return 'Passwords do not match';
         }
+
         return null;
       },
     );
@@ -501,10 +502,11 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
         ),
         GestureDetector(
           onTap: () {
-            Navigator.pushReplacementNamed(
-              context,
-              RouteNames.participantLoginPage,
-            );
+            if (_selectedRole == "participant") {
+              Navigator.pushNamed(context, RouteNames.participantLoginPage);
+            } else if (_selectedRole == "admin") {
+              Navigator.pushNamed(context, RouteNames.adminLoginPage);
+            }
           },
           child: Text(
             'Sign In',

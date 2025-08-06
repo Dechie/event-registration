@@ -11,6 +11,7 @@ import 'package:event_reg/features/badge/presentation/pages/badge_page.dart';
 import 'package:event_reg/features/dashboard/presentation/pages/admin_dashboard_page.dart';
 import 'package:event_reg/features/landing/presentation/pages/landing_page.dart';
 import 'package:event_reg/features/splash/presentation/pages/splash_page.dart';
+import 'package:event_reg/features/verification/presentation/pages/qr_scanner_page.dart';
 import 'package:event_reg/injection_container.dart' as di;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,14 +30,6 @@ class AppRouter {
 
       case RouteNames.landingPage:
         return MaterialPageRoute(builder: (_) => const UpdatedLandingPage());
-
-      // case RouteNames.myEventsPage:
-      //   return MaterialPageRoute(
-      //     builder: (_) => BlocProvider(
-      //       create: (context) => di.sl<EventRegistrationBloc>(),
-      //       child: MyEventsPage(),
-      //     ),
-      //   );
 
       case RouteNames.badgePage:
         final args = settings.arguments as Map<String, dynamic>;
@@ -113,35 +106,11 @@ class AppRouter {
 
       // Uncomment and modify this section:
       case RouteNames.adminDashboardPage:
-        return MaterialPageRoute(
-          builder: (_) => AuthGuard(
-            requiredrole: 'admin',
-            child: const AdminDashboardPage(),
-          ),
-        );
+        return MaterialPageRoute(builder: (_) => const AdminDashboardPage());
 
       case RouteNames.qrScannerPage:
         return MaterialPageRoute(
-          builder: (_) => const Scaffold(
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.qr_code_scanner, size: 80, color: Colors.blue),
-                  SizedBox(height: 16),
-                  Text(
-                    'QR Scanner',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'QR Scanner feature is coming soon!',
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          ),
+          builder: (_) => const QrScannerPage(), 
         );
 
       case RouteNames.eventAgendaPage:
@@ -164,7 +133,7 @@ class AppRouter {
 // Auth Guard Widget to protect routes
 class AuthGuard extends StatelessWidget {
   final Widget child;
-  final String requiredrole; // 'admin' or 'participant'
+  final String requiredrole;
 
   const AuthGuard({super.key, required this.child, required this.requiredrole});
 
@@ -172,25 +141,52 @@ class AuthGuard extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
-        if (state is AuthenticatedState && state.role == requiredrole) {
-          return child;
-        } else if (state is AuthLoadingState) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+        debugPrint("required role: $requiredrole");
+        if (state is AuthenticatedState) {
+          debugPrint("state role: ${state.role}");
+        }
+        if (state is AuthOTPVerifiedState) {
+          debugPrint("state role: ${state.role}");
+        }
+
+        if (state is AuthLoadingState) {
+          debugPrint(
+            "at authguard: state is: ${state.runtimeType}, should be loading now",
           );
-        } else {
-          // Redirect to appropriate login page
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            final route = requiredrole == 'admin'
-                ? RouteNames.adminLoginPage
-                : RouteNames.participantLoginPage;
-            Navigator.pushReplacementNamed(context, route);
-          });
 
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
+
+        if (state is AuthenticatedState && state.role == requiredrole) {
+          debugPrint(
+            "at authguard: state is: ${state.runtimeType}, role is: ${state.role}, should return proper next page",
+          );
+
+          return child;
+        }
+
+        if (state is AuthOTPVerifiedState && state.role == requiredrole) {
+          debugPrint(
+            "at authguard: state is: ${state.runtimeType}, role is: ${state.role}, should return proper next page",
+          );
+
+          return child;
+        }
+
+        // If none of the above conditions are met, redirect to the login page.
+        debugPrint(
+          "at authguard: state is: ${state.runtimeType}, force push to next page",
+        );
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final route = requiredrole == 'admin'
+              ? RouteNames.adminLoginPage
+              : RouteNames.participantLoginPage;
+          Navigator.pushReplacementNamed(context, route);
+        });
+
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
       },
     );
   }

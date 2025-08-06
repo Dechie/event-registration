@@ -52,11 +52,16 @@ class AuthOTPSentState extends AuthState {
 class AuthOTPVerifiedState extends AuthState {
   final String message;
   final String email;
+  final String role;
 
-  const AuthOTPVerifiedState({required this.message, required this.email});
+  const AuthOTPVerifiedState({
+    required this.message,
+    required this.email,
+    required this.role,
+  });
 
   @override
-  List<Object?> get props => [message, email];
+  List<Object?> get props => [message, email, role];
 }
 
 class AuthProfileCreatedState extends AuthState {

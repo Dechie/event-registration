@@ -223,6 +223,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           );
         },
         (loginResponse) {
+          debugPrint(
+            "at auth bloc: login successful. role: ${loginResponse.user.role}",
+          );
           emit(
             AuthenticatedState(
               userId: loginResponse.user.id,
@@ -412,7 +415,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           );
         },
         (message) {
-          emit(AuthOTPVerifiedState(message: message, email: event.email));
+          emit(
+            AuthOTPVerifiedState(
+              message: message,
+              email: event.email,
+              role: event.role,
+            ),
+          );
         },
       );
     } catch (e) {

@@ -199,8 +199,8 @@ class _QrScannerPageState extends State<QrScannerPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Scan QR Code'),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.onPrimary,
+        foregroundColor: Theme.of(context).colorScheme.primary,
         actions: [
           IconButton(
             onPressed: () => cameraController.toggleTorch(),

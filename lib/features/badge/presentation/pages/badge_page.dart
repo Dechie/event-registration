@@ -7,7 +7,6 @@ import 'package:event_reg/core/shared/widgets/custom_button.dart';
 import 'package:event_reg/features/event_registration/data/models/event_badge_data.dart';
 import 'package:event_reg/features/landing/data/models/event.dart';
 import 'package:event_reg/injection_container.dart' as di;
-import 'package:event_reg/injection_container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
@@ -153,6 +152,9 @@ class _BadgePageState extends State<BadgePage> {
 
   Widget _buildBadge() {
     final badgeData = EventBadgeData.fromEventDetails(widget.registrationData!);
+    debugPrint(
+      "badgeData's downloaded image path: ${badgeData.downloadedImagePath}",
+    );
 
     return Container(
       width: 300,

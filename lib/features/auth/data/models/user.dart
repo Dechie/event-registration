@@ -80,40 +80,39 @@ class User {
         department: json['department'],
         industry: json['industry'],
         yearsOfExperience: _parseInteger(json['years_of_experience']),
-        photoPath: json['photo_path'] ?? json['avatar'] ?? json['profile_photo'],
+        photoPath:
+            json['photo_path'] ?? json['avatar'] ?? json['profile_photo'],
       );
     } catch (e) {
       throw FormatException('Failed to parse User from JSON: $e');
     }
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'email': email,
-      'name': name,
-      'full_name': fullName,
-      'user_type': role,
-      'organization_id': organizationId,
-      'verification_code': verificationCode,
-      'email_verified_at': emailVerifiedAt?.toIso8601String(),
-      'created_at': createdAt?.toIso8601String(),
-      'updated_at': updatedAt?.toIso8601String(),
-      'phone_number': phoneNumber,
-      'occupation': occupation,
-      'organization': organization,
-      'gender': gender,
-      'date_of_birth': dateOfBirth?.toIso8601String(),
-      'nationality': nationality,
-      'region': region,
-      'city': city,
-      'woreda': woreda,
-      'id_number': idNumber,
-      'department': department,
-      'industry': industry,
-      'years_of_experience': yearsOfExperience,
-      'photo_path': photoPath,
-    };
+  /// Get display name
+  String get displayName {
+    if (fullName?.isNotEmpty == true) return fullName!;
+    if (name?.isNotEmpty == true) return name!;
+    return email.split('@').first; // Use email username as fallback
+  }
+
+  /// Check if user has completed profile
+  bool get hasCompletedProfile {
+    return fullName?.isNotEmpty == true &&
+        phoneNumber?.isNotEmpty == true &&
+        occupation?.isNotEmpty == true &&
+        organization?.isNotEmpty == true;
+  }
+
+  @override
+  int get hashCode => id.hashCode ^ email.hashCode;
+
+  /// Check if email is verified
+  bool get isEmailVerified => emailVerifiedAt != null;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is User && other.id == id && other.email == email;
   }
 
   User copyWith({
@@ -170,6 +169,40 @@ class User {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'email': email,
+      'name': name,
+      'full_name': fullName,
+      'user_type': role,
+      'organization_id': organizationId,
+      'verification_code': verificationCode,
+      'email_verified_at': emailVerifiedAt?.toIso8601String(),
+      'created_at': createdAt?.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+      'phone_number': phoneNumber,
+      'occupation': occupation,
+      'organization': organization,
+      'gender': gender,
+      'date_of_birth': dateOfBirth?.toIso8601String(),
+      'nationality': nationality,
+      'region': region,
+      'city': city,
+      'woreda': woreda,
+      'id_number': idNumber,
+      'department': department,
+      'industry': industry,
+      'years_of_experience': yearsOfExperience,
+      'photo_path': photoPath,
+    };
+  }
+
+  @override
+  String toString() {
+    return 'User(id: $id, email: $email, name: $name, role: $role)';
+  }
+
   /// Helper method to determine user type
   /// You can customize this logic based on your backend implementation
   static String _determinerole(Map<String, dynamic> json) {
@@ -189,7 +222,7 @@ class User {
     }
 
     // Default to participant
-    return 'participant';
+    return 'no-role';
   }
 
   /// Helper method to safely parse DateTime
@@ -220,36 +253,4 @@ class User {
     if (value is double) return value.toInt();
     return null;
   }
-
-  /// Check if user has completed profile
-  bool get hasCompletedProfile {
-    return fullName?.isNotEmpty == true &&
-           phoneNumber?.isNotEmpty == true &&
-           occupation?.isNotEmpty == true &&
-           organization?.isNotEmpty == true;
-  }
-
-  /// Get display name
-  String get displayName {
-    if (fullName?.isNotEmpty == true) return fullName!;
-    if (name?.isNotEmpty == true) return name!;
-    return email.split('@').first; // Use email username as fallback
-  }
-
-  /// Check if email is verified
-  bool get isEmailVerified => emailVerifiedAt != null;
-
-  @override
-  String toString() {
-    return 'User(id: $id, email: $email, name: $name, role: $role)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is User && other.id == id && other.email == email;
-  }
-
-  @override
-  int get hashCode => id.hashCode ^ email.hashCode;
 }

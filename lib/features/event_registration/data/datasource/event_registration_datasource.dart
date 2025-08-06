@@ -46,7 +46,7 @@ class EventRegistrationDataSourceImpl implements EventRegistrationDataSource {
     }
 
     // Construct the full URL for the image
-    final photoUrl = '${AppUrls.baseUrl}/storage/$photoPath';
+    final photoUrl = '${AppUrls.storageUrl}/$photoPath';
     debugPrint("🚀 Downloading photo from: $photoUrl");
 
     try {

@@ -1,4 +1,6 @@
 // // lib/features/auth/data/datasource/auth_remote_datasource.dart
+import 'dart:convert';
+
 import 'package:event_reg/core/error/exceptions.dart';
 import 'package:event_reg/core/network/dio_client.dart';
 import 'package:event_reg/features/auth/data/models/registration/user_registration_response.dart';
@@ -46,7 +48,8 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         final loginData = data is Map<String, dynamic>
             ? (data["data"] ?? data)
             : data;
-
+        debugPrint("at auth remote datasoruce, login response:");
+        debugPrint(jsonEncode(loginData));
         if (loginData is! Map<String, dynamic>) {
           debugPrint('❌ Invalid response format: ${loginData.runtimeType}');
           throw ServerException(
@@ -60,6 +63,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         try {
           final loginResponse = LoginResponse.fromJson(loginData);
           debugPrint('✅ Successfully parsed LoginResponse');
+
           return loginResponse;
         } catch (e) {
           debugPrint('❌ Error parsing LoginResponse: $e');
