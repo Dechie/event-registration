@@ -1,5 +1,5 @@
 class AuthStatus {
-  final UserType userType;
+  final Role role;
   final String? token;
   final String? email;
   final String? userId;
@@ -8,7 +8,7 @@ class AuthStatus {
   final bool isProfileCompleted;
 
   const AuthStatus({
-    required this.userType,
+    required this.role,
     this.token,
     this.email,
     this.userId,
@@ -26,7 +26,7 @@ class AuthStatus {
     bool hasProfile = true, // Admins typically don't need profile setup
     bool isProfileCompleted = true,
   }) => AuthStatus(
-    userType: UserType.admin,
+    role: Role.admin,
     token: token,
     email: email,
     userId: userId,
@@ -37,9 +37,9 @@ class AuthStatus {
 
   factory AuthStatus.fromJson(Map<String, dynamic> json) {
     return AuthStatus(
-      userType: UserType.values.firstWhere(
-        (e) => e.toString().split('.').last == json['userType'],
-        orElse: () => UserType.none,
+      role: Role.values.firstWhere(
+        (e) => e.toString().split('.').last == json['role'],
+        orElse: () => Role.none,
       ),
       token: json['token'] as String?,
       email: json['email'] as String?,
@@ -58,7 +58,7 @@ class AuthStatus {
     bool hasProfile = false,
     bool isProfileCompleted = false,
   }) => AuthStatus(
-    userType: UserType.participant,
+    role: Role.participant,
     token: token,
     email: email,
     userId: userId,
@@ -69,7 +69,7 @@ class AuthStatus {
 
   // Factory constructors for common states
   factory AuthStatus.unauthenticated() => const AuthStatus(
-    userType: UserType.none,
+    role: Role.none,
     token: null,
     userId: null,
     email: null,
@@ -78,14 +78,14 @@ class AuthStatus {
     isProfileCompleted: false,
   );
 
-  bool get isAdmin => userType == UserType.admin;
+  bool get isAdmin => role == Role.admin;
 
   // Computed properties
   bool get isAuthenticated =>
-      userType != UserType.none && token != null && token!.isNotEmpty;
+      Role != Role.none && token != null && token!.isNotEmpty;
   bool get isFullySetup =>
       isAuthenticated && isEmailVerified && hasProfile && isProfileCompleted;
-  bool get isParticipant => userType == UserType.participant;
+  bool get isParticipant => Role == Role.participant;
 
   // Navigation decision helpers
   bool get needsEmailVerification => isAuthenticated && !isEmailVerified;
@@ -119,7 +119,7 @@ class AuthStatus {
   }
 
   AuthStatus copyWith({
-    UserType? userType,
+    Role? role,
     String? token,
     String? email,
     String? userId,
@@ -128,7 +128,7 @@ class AuthStatus {
     bool? isProfileCompleted,
   }) {
     return AuthStatus(
-      userType: userType ?? this.userType,
+      role: role ?? this.role,
       token: token ?? this.token,
       email: email ?? this.email,
       userId: userId ?? this.userId,
@@ -140,7 +140,7 @@ class AuthStatus {
 
   Map<String, dynamic> toJson() {
     return {
-      'userType': userType.toString().split('.').last,
+      'role': role.toString().split('.').last,
       'token': token,
       'email': email,
       'userId': userId,
@@ -152,7 +152,7 @@ class AuthStatus {
 
   @override
   String toString() {
-    return 'AuthStatus(userType: $userType, isAuth: $isAuthenticated, emailVerified: $isEmailVerified, hasProfile: $hasProfile, profileCompleted: $isProfileCompleted)';
+    return 'AuthStatus(role: $Role, isAuth: $isAuthenticated, emailVerified: $isEmailVerified, hasProfile: $hasProfile, profileCompleted: $isProfileCompleted)';
   }
 }
 
@@ -165,4 +165,4 @@ enum NavDestination {
   adminDashboard,
 }
 
-enum UserType { none, participant, admin }
+enum Role { none, participant, admin }

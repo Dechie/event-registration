@@ -29,31 +29,29 @@ class AuthLocalDatasourceImpl implements AuthLocalDatasource {
       await userDataService.setAuthToken(loginResponse.token);
       await userDataService.setUserId(loginResponse.user.id);
       await userDataService.setUserEmail(loginResponse.user.email);
-      await userDataService.setUserType(loginResponse.user.userType);
-      
-      // Use the User model's getters to get the status flags
-      await userDataService.setEmailVerified(loginResponse.user.isEmailVerified);
-      // We assume 'hasProfile' and 'isProfileCompleted' are equivalent to
-      // the 'hasCompletedProfile' getter for now.
-      await userDataService.setHasProfile(loginResponse.user.hasCompletedProfile);
-      await userDataService.setProfileCompleted(loginResponse.user.hasCompletedProfile);
-
-      // Cache other profile fields if present
+      await userDataService.setUserRole(loginResponse.user.role);
       await userDataService.setFullName(loginResponse.user.fullName ?? '');
-      await userDataService.setPhoneNumber(loginResponse.user.phoneNumber ?? '');
+      await userDataService.setPhoneNumber(
+        loginResponse.user.phoneNumber ?? '',
+      );
       await userDataService.setOccupation(loginResponse.user.occupation ?? '');
-      await userDataService.setOrganization(loginResponse.user.organization ?? '');
+      await userDataService.setOrganization(
+        loginResponse.user.organization ?? '',
+      );
       await userDataService.setGender(loginResponse.user.gender ?? '');
-      await userDataService.setNationality(loginResponse.user.nationality ?? '');
+      await userDataService.setNationality(
+        loginResponse.user.nationality ?? '',
+      );
       await userDataService.setRegion(loginResponse.user.region ?? '');
       await userDataService.setCity(loginResponse.user.city ?? '');
       await userDataService.setWoreda(loginResponse.user.woreda ?? '');
       await userDataService.setIdNumber(loginResponse.user.idNumber ?? '');
       await userDataService.setDepartment(loginResponse.user.department ?? '');
       await userDataService.setIndustry(loginResponse.user.industry ?? '');
-      await userDataService.setYearsOfExperience(loginResponse.user.yearsOfExperience ?? 0);
+      await userDataService.setYearsOfExperience(
+        loginResponse.user.yearsOfExperience ?? 0,
+      );
       await userDataService.setPhotoPath(loginResponse.user.photoPath ?? '');
-
     } on CacheException {
       rethrow;
     } catch (e) {
@@ -84,7 +82,7 @@ class AuthLocalDatasourceImpl implements AuthLocalDatasource {
       final token = await userDataService.getAuthToken();
       final userId = await userDataService.getUserId();
       final userEmail = await userDataService.getUserEmail();
-      final userType = await userDataService.getUserType();
+      final role = await userDataService.getUserRole();
       final fullName = await userDataService.getFullName();
       final phoneNumber = await userDataService.getPhoneNumber();
       final occupation = await userDataService.getOccupation();
@@ -100,12 +98,15 @@ class AuthLocalDatasourceImpl implements AuthLocalDatasource {
       final yearsOfExperience = await userDataService.getYearsOfExperience();
       final photoPath = await userDataService.getPhotoPath();
 
-      if (token != null && userId != null && userEmail != null && userType != null) {
+      if (token != null &&
+          userId != null &&
+          userEmail != null &&
+          role != null) {
         // Reconstruct the User and LoginResponse object from the cached data
         final user = User(
           id: userId,
           email: userEmail,
-          userType: userType,
+          role: role,
           fullName: fullName,
           phoneNumber: phoneNumber,
           occupation: occupation,

@@ -19,7 +19,7 @@ class SplashRepositoryImpl implements SplashRepository {
       debugPrint("splash repo: came here");
       return await localDataSource.getAuthStatus();
     } catch (e) {
-      return AuthStatus(userType: UserType.participant);
+      return AuthStatus(role: Role.participant);
     }
   }
 

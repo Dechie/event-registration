@@ -1,6 +1,6 @@
 class AppUrls {
   //static const String baseUrl = 'https://api.eventregistration.com';
-  static const String baseUrl = 'http://localhost:8001/api';
+  static const String baseUrl = 'http://localhost:8000/api';
 
   // Auth endpoints
   static const String login = '/login';

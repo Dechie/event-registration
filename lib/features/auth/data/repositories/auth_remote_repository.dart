@@ -16,7 +16,7 @@
 //   Future<Either<Failure, LoginResponse>> login({
 //     required String email,
 //     required String password,
-//     required String userType,
+//     required String role,
 //   });
 
 //   Future<Either<Failure, void>> logout();
@@ -37,7 +37,7 @@
 //       final cachedUser = await localDataSource.getCachedUserData();
 
 //       if (cachedUser != null) {
-       
+
 //       }
 
 //       return const Right(null);
@@ -80,13 +80,13 @@
 //   Future<Either<Failure, LoginResponse>> login({
 //     required String email,
 //     required String password,
-//     required String userType,
+//     required String role,
 //   }) async {
 //     try {
 //       final loginRequest = LoginRequest(
 //         email: email,
 //         password: password,
-//         userType: userType,
+//         role: role,
 //       );
 
 //       final loginResponse = await remoteDataSource.login(loginRequest);

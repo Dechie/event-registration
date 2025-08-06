@@ -440,7 +440,7 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
         LoginEvent(
           email: _emailController.text.trim(),
           password: _passwordController.text,
-          userType: 'participant',
+          role: 'participant',
         ),
       );
     }

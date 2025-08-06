@@ -22,7 +22,7 @@ class SplashLocalDataSourceImpl implements SplashLocalDataSource {
   @override
   Future<AuthStatus> getAuthStatus() async {
     debugPrint("🔍 Getting auth status from splash datasource");
-    
+
     try {
       final authStatus = await userDataService.getAuthenticationStatus();
       debugPrint("📱 Authentication status retrieved: $authStatus");
@@ -30,27 +30,27 @@ class SplashLocalDataSourceImpl implements SplashLocalDataSource {
       // If not authenticated at all
       if (!authStatus.isAuthenticated) {
         debugPrint("❌ User not authenticated");
-        return AuthStatus(userType: UserType.none);
+        return AuthStatus(role: Role.none);
       }
 
       // Determine user type
-      UserType userType = UserType.none;
-      if (authStatus.userType != null) {
-        switch (authStatus.userType!.toLowerCase()) {
+      Role role = Role.none;
+      if (authStatus.role != null) {
+        switch (authStatus.role!.toLowerCase()) {
           case 'participant':
-            userType = UserType.participant;
+            role = Role.participant;
             break;
           case 'admin':
-            userType = UserType.admin;
+            role = Role.admin;
             break;
           default:
-            userType = UserType.none;
+            role = Role.none;
         }
       }
 
       // Create enhanced AuthStatus with additional flags
       return AuthStatus(
-        userType: userType,
+        role: role,
         token: authStatus.token,
         email: authStatus.email,
         userId: authStatus.userId,
@@ -61,23 +61,25 @@ class SplashLocalDataSourceImpl implements SplashLocalDataSource {
       );
     } catch (e) {
       debugPrint("❌ Error getting auth status: $e");
-      return AuthStatus(userType: UserType.none);
+      return AuthStatus(role: Role.none);
     }
   }
 
   @override
   Future<void> saveAuthStatus(AuthStatus authStatus) async {
     debugPrint("💾 Saving auth status from splash datasource");
-    
+
     try {
       if (authStatus.token != null) {
         await userDataService.setAuthToken(authStatus.token!);
       }
-      
-      if (authStatus.userType != UserType.none) {
-        await userDataService.setUserType(authStatus.userType.toString().split('.').last);
+
+      if (authStatus.role != Role.none) {
+        await userDataService.setrole(
+          authStatus.role.toString().split('.').last,
+        );
       }
-      
+
       if (authStatus.email != null) {
         await userDataService.setUserEmail(authStatus.email!);
       }
@@ -90,7 +92,7 @@ class SplashLocalDataSourceImpl implements SplashLocalDataSource {
       await userDataService.setEmailVerified(authStatus.isEmailVerified);
       await userDataService.setHasProfile(authStatus.hasProfile);
       await userDataService.setProfileCompleted(authStatus.isProfileCompleted);
-      
+
       debugPrint("✅ Auth status saved successfully");
     } catch (e) {
       debugPrint("❌ Failed to save auth status: $e");

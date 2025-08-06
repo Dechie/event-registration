@@ -5,7 +5,6 @@ import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:event_reg/features/auth/presentation/bloc/events/auth_event.dart';
 import 'package:event_reg/features/auth/presentation/bloc/states/auth_state.dart';
 import 'package:event_reg/features/auth/presentation/pages/auth_otp_verification_page.dart';
-import 'package:event_reg/features/auth/presentation/pages/login/admin_login_page.dart'; // New admin login
 import 'package:event_reg/features/auth/presentation/pages/login/participant_login.dart';
 import 'package:event_reg/features/auth/presentation/pages/profile_add_page.dart';
 import 'package:event_reg/features/auth/presentation/pages/user_registration.dart';
@@ -89,44 +88,36 @@ class AppRouter {
           ),
         );
 
-      case RouteNames.adminLoginPage:
-        return MaterialPageRoute(
-          builder: (_) => BlocProvider(
-            create: (context) => di.sl<AuthBloc>(),
-            child: const AdminLoginPage(),
-          ),
-        );
+      // case RouteNames.participantDashboardPage:
+      //   final args = settings.arguments as Map<String, dynamic>?;
+      //   return MaterialPageRoute(
+      //     builder: (_) => AuthGuard(
+      //       requiredrole: 'participant',
+      //       child: BlocProvider(
+      //         create: (context) => di.sl<DashboardBloc>()
+      //           ..add(
+      //             LoadParticipantDashboardEvent(
+      //                   email: args?['email'] as String? ?? '',
+      //                 )
+      //                 as DashboardEvent,
+      //           ),
+      //         child: ParticipantDashboardPage(email: args?['email'] ?? ''),
+      //       ),
+      //     ),
+      //   );
 
-      case RouteNames.participantDashboardPage:
-        final args = settings.arguments as Map<String, dynamic>?;
-        return MaterialPageRoute(
-          builder: (_) => AuthGuard(
-            requiredUserType: 'participant',
-            child: BlocProvider(
-              create: (context) => di.sl<DashboardBloc>()
-                ..add(
-                  LoadParticipantDashboardEvent(
-                        email: args?['email'] as String? ?? '',
-                      )
-                      as DashboardEvent,
-                ),
-              child: ParticipantDashboardPage(email: args?['email'] ?? ''),
-            ),
-          ),
-        );
-
-      case RouteNames.adminDashboardPage:
-        return MaterialPageRoute(
-          builder: (_) => AuthGuard(
-            requiredUserType: 'admin',
-            child: BlocProvider(
-              create: (context) =>
-                  di.sl<DashboardBloc>()
-                    ..add(const LoadAdminDashboardEvent() as DashboardEvent),
-              child: const AdminDashboardPage(),
-            ),
-          ),
-        );
+      // case RouteNames.adminDashboardPage:
+      //   return MaterialPageRoute(
+      //     builder: (_) => AuthGuard(
+      //       requiredrole: 'admin',
+      //       child: BlocProvider(
+      //         create: (context) =>
+      //             di.sl<DashboardBloc>()
+      //               ..add(const LoadAdminDashboardEvent() as DashboardEvent),
+      //         child: const AdminDashboardPage(),
+      //       ),
+      //     ),
+      //   );
 
       case RouteNames.eventAgendaPage:
         return MaterialPageRoute(builder: (_) => const EventAgendaPage());
@@ -148,19 +139,15 @@ class AppRouter {
 // Auth Guard Widget to protect routes
 class AuthGuard extends StatelessWidget {
   final Widget child;
-  final String requiredUserType; // 'admin' or 'participant'
+  final String requiredrole; // 'admin' or 'participant'
 
-  const AuthGuard({
-    super.key,
-    required this.child,
-    required this.requiredUserType,
-  });
+  const AuthGuard({super.key, required this.child, required this.requiredrole});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
-        if (state is AuthenticatedState && state.userType == requiredUserType) {
+        if (state is AuthenticatedState && state.role == requiredrole) {
           return child;
         } else if (state is AuthLoadingState) {
           return const Scaffold(
@@ -169,7 +156,7 @@ class AuthGuard extends StatelessWidget {
         } else {
           // Redirect to appropriate login page
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            final route = requiredUserType == 'admin'
+            final route = requiredrole == 'admin'
                 ? RouteNames.adminLoginPage
                 : RouteNames.participantLoginPage;
             Navigator.pushReplacementNamed(context, route);

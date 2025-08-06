@@ -13,7 +13,7 @@ class AuthHelper {
   static String? getCurrentUserByType(BuildContext context) {
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthenticatedState) {
-      return authState.userType;
+      return authState.role;
     }
     return null;
   }
@@ -35,13 +35,13 @@ class AuthHelper {
   }
 
   static bool isAdmin(BuildContext context) {
-    final userType = getCurrentUserByType(context);
-    return userType == "admin";
+    final role = getCurrentUserByType(context);
+    return role == "admin";
   }
 
   static bool isParticipant(BuildContext context) {
-    final userType = getCurrentUserByType(context);
-    return userType == "participant";
+    final role = getCurrentUserByType(context);
+    return role == "participant";
   }
 
   static bool isUserAuthenticated(BuildContext context) {

@@ -119,7 +119,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               AuthenticatedState(
                 userId: user.id,
                 email: user.email,
-                userType: user.userType,
+                role: user.role,
                 userData: user.toJson(),
               ),
             );
@@ -184,7 +184,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             );
 
             userDataService.setHasProfile(true);
-            userDataService.setProfileCompleted(true);
           }
         },
         (obtainedResult) {
@@ -197,7 +196,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           );
 
           userDataService.setHasProfile(true);
-          userDataService.setProfileCompleted(true);
         },
       );
     } catch (e) {
@@ -212,7 +210,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final result = await authRepository.login(
         email: event.email,
         password: event.password,
-        userType: event.userType,
+        role: event.role,
       );
 
       result.fold(
@@ -229,7 +227,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             AuthenticatedState(
               userId: loginResponse.user.id,
               email: loginResponse.user.email,
-              userType: loginResponse.user.userType,
+              role: loginResponse.user.role,
               token: loginResponse.token,
               userData: loginResponse.user.toJson(),
             ),
@@ -377,7 +375,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         },
         (obtainedResult) async {
           await userDataService.setHasProfile(true);
-          await userDataService.setProfileCompleted(true);
           emit(
             AuthProfileUpdatedState(
               message: 'Profile updated successfully',

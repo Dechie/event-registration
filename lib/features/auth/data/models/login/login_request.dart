@@ -1,24 +1,24 @@
 class LoginRequest {
   final String email;
   final String password;
-  final String userType;
+  final String role;
   LoginRequest({
     required this.email,
     required this.password,
-    required this.userType,
+    required this.role,
   });
 
   factory LoginRequest.fromJson(Map<String, dynamic> json) {
     return LoginRequest(
       email: json["email"] ?? '',
       password: json["password"] ?? '',
-      userType: json["userType"] ?? 'participant',
+      role: json["role"] ?? 'participant',
     );
   }
 
   @override
   int get hashCode {
-    return email.hashCode ^ password.hashCode ^ userType.hashCode;
+    return email.hashCode ^ password.hashCode ^ role.hashCode;
   }
 
   @override
@@ -27,14 +27,14 @@ class LoginRequest {
     return other is LoginRequest &&
         other.email == email &&
         other.password == password &&
-        other.userType == userType;
+        other.role == role;
   }
 
-  LoginRequest copyWith({String? email, String? password, String? userType}) {
+  LoginRequest copyWith({String? email, String? password, String? role}) {
     return LoginRequest(
       email: email ?? this.email,
       password: password ?? this.password,
-      userType: userType ?? this.userType,
+      role: role ?? this.role,
     );
   }
 
@@ -44,7 +44,7 @@ class LoginRequest {
 
   @override
   String toString() {
-    return 'LoginRequest(email: $email, userType: $userType)';
+    return 'LoginRequest(email: $email, role: $role)';
     // Don't include password in toString for security
   }
 }

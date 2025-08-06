@@ -1,14 +1,12 @@
-// core/services/user_data_service.dart
-
 import 'package:event_reg/features/auth/data/models/user.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' show debugPrint;
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Authentication Status Model
 class AuthenticationStatus {
   final bool isAuthenticated;
   final String? token;
-  final String? userType;
+  final String? role;
   final String? email;
   final String? userId;
   final bool isEmailVerified;
@@ -18,7 +16,7 @@ class AuthenticationStatus {
   const AuthenticationStatus({
     required this.isAuthenticated,
     this.token,
-    this.userType,
+    this.role,
     this.email,
     this.userId,
     this.isEmailVerified = false,
@@ -28,7 +26,7 @@ class AuthenticationStatus {
 
   @override
   String toString() {
-    return 'AuthStatus(isAuth: $isAuthenticated, userType: $userType, emailVerified: $isEmailVerified, hasProfile: $hasProfile, profileCompleted: $isProfileCompleted)';
+    return 'AuthStatus(isAuth: $isAuthenticated, role: $role, emailVerified: $isEmailVerified, hasProfile: $hasProfile, profileCompleted: $isProfileCompleted)';
   }
 }
 
@@ -43,28 +41,29 @@ abstract class UserDataService {
   Future<String?> getDepartment();
   // Profile status methods
   Future<bool> getEmailVerified();
-  // Profile getters
   Future<String?> getFullName();
-  Future<String?> getGender();
-  Future<bool> getHasProfile();
 
+  Future<String?> getGender();
   Future<String?> getIdNumber();
   Future<String?> getIndustry();
+
   Future<String?> getNationality();
   Future<String?> getOccupation();
   Future<String?> getOrganization();
   Future<String?> getPhoneNumber();
-
   Future<String?> getPhotoPath();
   Future<bool> getProfileCompleted();
 
   Future<String?> getRegion();
+  Future<String?> getrole();
+
   Future<String?> getUserEmail();
   Future<String?> getUserId();
-  Future<String?> getUserType();
+  Future<String?> getUserRole();
   Future<String?> getWoreda();
   Future<int?> getYearsOfExperience();
   Future<bool> isAuthenticated();
+  // Profile getters
   Future<void> setAuthToken(String token);
   Future<void> setCity(String city);
   Future<void> setDepartment(String department);
@@ -73,8 +72,8 @@ abstract class UserDataService {
   Future<void> setFullName(String fullName);
   Future<void> setGender(String gender);
   Future<void> setHasProfile(bool hasProfile);
-
   Future<void> setIdNumber(String idNumber);
+
   Future<void> setIndustry(String industry);
   Future<void> setNationality(String nationality);
   Future<void> setOccupation(String occupation);
@@ -83,9 +82,10 @@ abstract class UserDataService {
   Future<void> setPhotoPath(String photoPath);
   Future<void> setProfileCompleted(bool isCompleted);
   Future<void> setRegion(String region);
+  Future<void> setrole(String role);
   Future<void> setUserEmail(String email);
   Future<void> setUserId(String userId);
-  Future<void> setUserType(String userType);
+  Future<void> setUserRole(String role);
   Future<void> setWoreda(String woreda);
   Future<void> setYearsOfExperience(int years);
 }
@@ -94,7 +94,7 @@ class UserDataServiceImpl implements UserDataService {
   // Constants for keys
   static const String _authTokenKey = 'auth_token';
 
-  static const String _userTypeKey = 'user_type';
+  static const String _roleKey = 'user_type';
 
   static const String _userEmailKey = 'user_email';
 
@@ -118,12 +118,13 @@ class UserDataServiceImpl implements UserDataService {
   static const String _industryKey = 'industry';
   static const String _yearsOfExperienceKey = 'years_of_experience';
   static const String _photoPathKey = 'photo_path';
+  static const String _userRoleKey = "user_role";
   final SharedPreferences sharedPreferences;
   UserDataServiceImpl({required this.sharedPreferences});
   @override
   Future<void> clearAllData() async {
     await sharedPreferences.remove(_authTokenKey);
-    await sharedPreferences.remove(_userTypeKey);
+    await sharedPreferences.remove(_roleKey);
     await sharedPreferences.remove(_userEmailKey);
     await sharedPreferences.remove(_userIdKey);
     await sharedPreferences.remove(_emailVerifiedKey);
@@ -150,7 +151,7 @@ class UserDataServiceImpl implements UserDataService {
   @override
   Future<AuthenticationStatus> getAuthenticationStatus() async {
     final token = await getAuthToken();
-    final userType = await getUserType();
+    final role = await getrole();
     final email = await getUserEmail();
     final userId = await getUserId();
     final isEmailVerified = await getEmailVerified();
@@ -162,7 +163,7 @@ class UserDataServiceImpl implements UserDataService {
     return AuthenticationStatus(
       isAuthenticated: isAuthenticated,
       token: token,
-      userType: userType,
+      role: role,
       email: email,
       userId: userId,
       isEmailVerified: isEmailVerified,
@@ -182,10 +183,10 @@ class UserDataServiceImpl implements UserDataService {
       // Retrieve core user data
       final userId = await getUserId();
       final userEmail = await getUserEmail();
-      final userType = await getUserType();
+      final role = await getrole();
 
       // If any core data is missing, we cannot construct a valid user
-      if (userId == null || userEmail == null || userType == null) {
+      if (userId == null || userEmail == null || role == null) {
         return null;
       }
 
@@ -200,6 +201,7 @@ class UserDataServiceImpl implements UserDataService {
       final city = await getCity();
       final woreda = await getWoreda();
       final idNumber = await getIdNumber();
+      final hasProfile = await getHasProfile();
       final department = await getDepartment();
       final industry = await getIndustry();
       final yearsOfExperience = await getYearsOfExperience();
@@ -209,7 +211,7 @@ class UserDataServiceImpl implements UserDataService {
       return User(
         id: userId,
         email: userEmail,
-        userType: userType,
+        role: role,
         fullName: fullName,
         phoneNumber: phoneNumber,
         occupation: occupation,
@@ -309,6 +311,11 @@ class UserDataServiceImpl implements UserDataService {
   }
 
   @override
+  Future<String?> getrole() async {
+    return sharedPreferences.getString(_roleKey);
+  }
+
+  @override
   Future<String?> getUserEmail() async {
     return sharedPreferences.getString(_userEmailKey);
   }
@@ -319,9 +326,8 @@ class UserDataServiceImpl implements UserDataService {
   }
 
   @override
-  Future<String?> getUserType() async {
-    return sharedPreferences.getString(_userTypeKey);
-  }
+  Future<String?> getUserRole() async =>
+      sharedPreferences.getString(_userRoleKey);
 
   @override
   Future<String?> getWoreda() async {
@@ -427,6 +433,11 @@ class UserDataServiceImpl implements UserDataService {
   }
 
   @override
+  Future<void> setrole(String role) async {
+    await sharedPreferences.setString(_roleKey, role);
+  }
+
+  @override
   Future<void> setUserEmail(String email) async {
     await sharedPreferences.setString(_userEmailKey, email);
   }
@@ -437,9 +448,8 @@ class UserDataServiceImpl implements UserDataService {
   }
 
   @override
-  Future<void> setUserType(String userType) async {
-    await sharedPreferences.setString(_userTypeKey, userType);
-  }
+  Future<void> setUserRole(String role) async =>
+      await sharedPreferences.setString(_userRoleKey, role);
 
   @override
   Future<void> setWoreda(String woreda) async {

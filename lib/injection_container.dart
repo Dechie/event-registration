@@ -7,14 +7,8 @@ import 'package:event_reg/features/auth/data/datasource/profile_remote_datasourc
 import 'package:event_reg/features/auth/data/repositories/auth_repository.dart';
 import 'package:event_reg/features/auth/data/repositories/profile_add_repository.dart';
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:event_reg/features/dashboard/data/datasource/dashboard_datasource.dart';
-import 'package:event_reg/features/dashboard/data/datasource/dashboard_local_datasource.dart';
-import 'package:event_reg/features/dashboard/data/repositories/dashboard_repository.dart';
-import 'package:event_reg/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:event_reg/features/event_registration/data/datasource/event_registration_datasource.dart';
 import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_bloc.dart';
-import 'package:event_reg/features/registration/data/datasources/registratoin_local_datasource.dart';
-import 'package:event_reg/features/registration/data/repositories/registration_repository.dart';
 import 'package:event_reg/features/splash/data/datasource/splash_datasource.dart';
 import 'package:event_reg/features/splash/data/repositories/splash_repository.dart';
 import 'package:event_reg/features/splash/presentation/bloc/splash_bloc.dart';
@@ -25,8 +19,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/network/dio_client.dart';
 import 'core/network/network_info.dart';
-import 'features/registration/data/datasources/registration_remote_datasource.dart';
-import 'features/registration/presentation/bloc/registration_bloc.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -121,45 +113,23 @@ Future<void> init() async {
 
   // ! Features - Dashboard
   // DataSources
-  sl.registerLazySingleton<DashboardRemoteDataSource>(
-    () => DashboardRemoteDataSourceImpl(dioClient: sl()),
-  );
+  // sl.registerLazySingleton<DashboardRemoteDataSource>(
+  //   () => DashboardRemoteDataSourceImpl(dioClient: sl()),
+  // );
 
-  sl.registerLazySingleton<DashboardLocalDataSource>(
-    () => DashboardLocalDataSourceImpl(sharedPreferences: sl()),
-  );
+  // sl.registerLazySingleton<DashboardLocalDataSource>(
+  //   () => DashboardLocalDataSourceImpl(sharedPreferences: sl()),
+  // );
 
-  // Repository
-  sl.registerLazySingleton<DashboardRepository>(
-    () => DashboardRepositoryImpl(
-      remoteDataSource: sl(),
-      localDataSource: sl(),
-      networkInfo: sl(),
-    ),
-  );
+  // // Repository
+  // sl.registerLazySingleton<DashboardRepository>(
+  //   () => DashboardRepositoryImpl(
+  //     remoteDataSource: sl(),
+  //     localDataSource: sl(),
+  //     networkInfo: sl(),
+  //   ),
+  // );
 
-  // Bloc
-  sl.registerFactory(() => DashboardBloc(repository: sl()));
-
-  // ! Features - Registration
-  // DataSources
-  sl.registerLazySingleton<RegistrationRemoteDataSource>(
-    () => RegistrationRemoteDataSourceImpl(dioClient: sl()),
-  );
-
-  sl.registerLazySingleton<RegistrationLocalDataSource>(
-    () => RegistrationLocalDataSourceImpl(sharedPreferences: sl()),
-  );
-
-  // Repository
-  sl.registerLazySingleton<RegistrationRepository>(
-    () => RegistrationRepositoryImpl(
-      remoteDataSource: sl(),
-      localDataSource: sl(),
-      networkInfo: sl(),
-    ),
-  );
-
-  // Bloc
-  sl.registerFactory(() => RegistrationBloc(repository: sl()));
+  // // Bloc
+  // sl.registerFactory(() => DashboardBloc(repository: sl()));
 }

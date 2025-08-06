@@ -27,7 +27,7 @@ abstract class AuthRepository {
   Future<Either<Failure, LoginResponse>> login({
     required String email,
     required String password,
-    required String userType,
+    required String role,
     bool rememberMe = false,
   });
   Future<Either<Failure, void>> logout();
@@ -191,7 +191,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, LoginResponse>> login({
     required String email,
     required String password,
-    required String userType,
+    required String role,
     bool rememberMe = false,
   }) async {
     try {
@@ -205,12 +205,12 @@ class AuthRepositoryImpl implements AuthRepository {
         );
       }
 
-      debugPrint('🔐 Attempting login for: $email with userType: $userType');
+      debugPrint('🔐 Attempting login for: $email with role: $role');
 
       final loginRequest = LoginRequest(
         email: email,
         password: password,
-        userType: userType,
+        role: role,
       );
 
       // Call the remote datasource

@@ -1,10 +1,9 @@
-// lib/features/auth/data/models/user.dart
 class User {
   final String id;
   final String email;
   final String? name;
   final String? fullName;
-  final String userType;
+  final String role;
   final String? organizationId;
   final String? verificationCode;
   final DateTime? emailVerifiedAt;
@@ -30,7 +29,7 @@ class User {
     required this.email,
     this.name,
     this.fullName,
-    this.userType = 'participant', // Default value
+    this.role = 'participant', // Default value
     this.organizationId,
     this.verificationCode,
     this.emailVerifiedAt,
@@ -60,13 +59,13 @@ class User {
         email: json['email'] ?? '',
         name: json['name'],
         fullName: json['full_name'] ?? json['name'], // Use name as fallback
-        userType: _determineUserType(json),
+        role: _determinerole(json),
         organizationId: json['organization_id']?.toString(),
         verificationCode: json['verification_code'],
         emailVerifiedAt: _parseDateTime(json['email_verified_at']),
         createdAt: _parseDateTime(json['created_at']),
         updatedAt: _parseDateTime(json['updated_at']),
-        
+
         // Additional profile fields (may not be present initially)
         phoneNumber: json['phone_number'] ?? json['phone'],
         occupation: json['occupation'],
@@ -94,7 +93,7 @@ class User {
       'email': email,
       'name': name,
       'full_name': fullName,
-      'user_type': userType,
+      'user_type': role,
       'organization_id': organizationId,
       'verification_code': verificationCode,
       'email_verified_at': emailVerifiedAt?.toIso8601String(),
@@ -122,7 +121,7 @@ class User {
     String? email,
     String? name,
     String? fullName,
-    String? userType,
+    String? role,
     String? organizationId,
     String? verificationCode,
     DateTime? emailVerifiedAt,
@@ -148,7 +147,7 @@ class User {
       email: email ?? this.email,
       name: name ?? this.name,
       fullName: fullName ?? this.fullName,
-      userType: userType ?? this.userType,
+      role: role ?? this.role,
       organizationId: organizationId ?? this.organizationId,
       verificationCode: verificationCode ?? this.verificationCode,
       emailVerifiedAt: emailVerifiedAt ?? this.emailVerifiedAt,
@@ -173,22 +172,22 @@ class User {
 
   /// Helper method to determine user type
   /// You can customize this logic based on your backend implementation
-  static String _determineUserType(Map<String, dynamic> json) {
+  static String _determinerole(Map<String, dynamic> json) {
     // Check if there's an explicit user_type field
     if (json['user_type'] != null) {
       return json['user_type'].toString();
     }
-    
+
     // Check if there's a role field
     if (json['role'] != null) {
       return json['role'].toString();
     }
-    
+
     // Check organization_id to determine if admin
     if (json['organization_id'] != null) {
       return 'admin';
     }
-    
+
     // Default to participant
     return 'participant';
   }
@@ -242,7 +241,7 @@ class User {
 
   @override
   String toString() {
-    return 'User(id: $id, email: $email, name: $name, userType: $userType)';
+    return 'User(id: $id, email: $email, name: $name, role: $role)';
   }
 
   @override
@@ -254,6 +253,3 @@ class User {
   @override
   int get hashCode => id.hashCode ^ email.hashCode;
 }
-
-// Typedef for Admin (since they're both users with different types)
-typedef Admin = User;

@@ -5,20 +5,20 @@ import 'package:event_reg/features/auth/data/models/user.dart';
 class AuthenticatedState extends AuthState {
   final String userId;
   final String email;
-  final String userType; // 'participant' or 'admin'
+  final String role; // 'participant' or 'admin'
   final String? token;
   final Map<String, dynamic>? userData;
 
   const AuthenticatedState({
     required this.userId,
     required this.email,
-    required this.userType,
+    required this.role,
     this.token,
     this.userData,
   });
 
   @override
-  List<Object?> get props => [userId, email, userType, token, userData];
+  List<Object?> get props => [userId, email, role, token, userData];
 }
 
 class AuthErrorState extends AuthState {

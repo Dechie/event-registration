@@ -1,10 +1,12 @@
 // lib/features/landing/presentation/pages/updated_landing_page.dart
 import 'package:event_reg/config/routes/route_names.dart';
 import 'package:event_reg/config/themes/app_colors.dart';
+import 'package:event_reg/core/network/dio_client.dart';
 import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:event_reg/core/shared/widgets/custom_button.dart';
 import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_bloc.dart';
 import 'package:event_reg/features/event_registration/presentation/pages/event_details_page.dart';
+import 'package:event_reg/features/event_registration/presentation/pages/event_registration_status_page.dart';
 import 'package:event_reg/features/landing/data/models/event.dart';
 import 'package:event_reg/injection_container.dart' as di;
 import 'package:flutter/material.dart';
@@ -24,6 +26,12 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
   final UserDataService _userDataService = di.sl<UserDataService>();
   bool _isAuthenticated = false;
 
+  List<Event> _availableEvents = [];
+
+  List<Event> _registeredEvents = [];
+
+  final Map<String, String> _registrationStatuses = {};
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,11 +42,15 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
             FetchAvailableEventsRequested(),
           );
           await _checkAuthStatus();
+          if (_isAuthenticated && context.mounted) {
+            context.read<EventRegistrationBloc>().add(FetchMyEventsRequested());
+          }
+          // Clear cached statuses to refresh them
+          _registrationStatuses.clear();
         },
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Available Events Section
               BlocBuilder<EventRegistrationBloc, EventRegistrationState>(
                 builder: (context, state) {
                   if (state is EventRegistrationLoading) {
@@ -47,7 +59,11 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
                       child: Center(child: CircularProgressIndicator()),
                     );
                   } else if (state is AvailableEventsLoaded) {
-                    return _buildEventsSection(state.events.take(1).toList());
+                    _availableEvents = state.events;
+                    return _buildEventsSection();
+                  } else if (state is MyEventsLoaded) {
+                    _registeredEvents = state.events;
+                    return _buildEventsSection();
                   } else if (state is EventRegistrationError) {
                     return Padding(
                       padding: const EdgeInsets.all(24.0),
@@ -80,6 +96,11 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
                               context.read<EventRegistrationBloc>().add(
                                 FetchAvailableEventsRequested(),
                               );
+                              if (_isAuthenticated) {
+                                context.read<EventRegistrationBloc>().add(
+                                  FetchMyEventsRequested(),
+                                );
+                              }
                             },
                             backgroundColor: AppColors.primary,
                             textColor: Colors.white,
@@ -88,7 +109,7 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
                       ),
                     );
                   }
-                  return const SizedBox.shrink();
+                  return _buildEventsSection();
                 },
               ),
 
@@ -405,49 +426,325 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
     );
   }
 
-  Widget _buildEventsSection(List<Event> events) {
-    if (events.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            Icon(Icons.event_busy, size: 48, color: AppColors.textSecondary),
-            const SizedBox(height: 16),
-            Text(
-              'No Events Available',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Check back later for upcoming events',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-          ],
-        ),
-      );
-    }
+  // 4. Replace the _buildEventsSection method with this:
+  Widget _buildEventsSection() {
+    // Filter available events to exclude already registered ones
+    final registeredEventIds = _registeredEvents.map((e) => e.id).toSet();
+    final unregisteredEvents = _availableEvents
+        .where((event) => !registeredEventIds.contains(event.id))
+        .toList();
 
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: events.length,
-            itemBuilder: (context, index) {
-              final event = events[index];
-              return _buildEventCard(event);
-            },
+          // Registered Events Section (only show if authenticated and has registered events)
+          if (_isAuthenticated && _registeredEvents.isNotEmpty) ...[
+            Text(
+              'My Registered Events',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _registeredEvents.length,
+              itemBuilder: (context, index) {
+                final event = _registeredEvents[index];
+                return _buildRegisteredEventCard(event);
+              },
+            ),
+            const SizedBox(height: 32),
+          ],
+
+          // Available Events Section
+          Text(
+            _isAuthenticated ? 'Other Available Events' : 'Available Events',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
           ),
+          const SizedBox(height: 16),
+
+          if (unregisteredEvents.isEmpty) ...[
+            Column(
+              children: [
+                Icon(
+                  Icons.event_busy,
+                  size: 48,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'No Available Events',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Check back later for upcoming events',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
+              ],
+            ),
+          ] else ...[
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: unregisteredEvents.length,
+              itemBuilder: (context, index) {
+                final event = unregisteredEvents[index];
+                return _buildEventCard(event);
+              },
+            ),
+          ],
         ],
       ),
+    );
+  }
+
+  Widget _buildRegisteredEventButton(Event event) {
+    return FutureBuilder<String?>(
+      future: _getRegistrationStatusForEvent(event.id),
+      builder: (context, snapshot) {
+        final status = snapshot.data ?? 'pending';
+
+        String buttonText;
+        Color buttonColor;
+
+        switch (status.toLowerCase()) {
+          case 'approved':
+            buttonText = 'View Badge';
+            buttonColor = Colors.green;
+            break;
+          case 'rejected':
+            buttonText = 'View Details';
+            buttonColor = Colors.red;
+            break;
+          case 'pending':
+          default:
+            buttonText = 'View Status';
+            buttonColor = Colors.orange;
+            break;
+        }
+
+        return CustomButton(
+          text: buttonText,
+          onPressed: () => _navigateToRegistrationStatus(event),
+          backgroundColor: buttonColor,
+          textColor: Colors.white,
+        );
+      },
+    );
+  }
+
+  Widget _buildRegisteredEventCard(Event event) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () => _navigateToRegistrationStatus(event),
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Event Banner
+            if (event.banner != null)
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(12),
+                ),
+                child: Stack(
+                  children: [
+                    Image.network(
+                      event.banner!,
+                      width: double.infinity,
+                      height: 160,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        width: double.infinity,
+                        height: 160,
+                        color: AppColors.background,
+                        child: Icon(
+                          Icons.image_not_supported,
+                          size: 48,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                    // Registration status badge
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: _buildStatusBadge(event.id),
+                    ),
+                  ],
+                ),
+              ),
+
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Event Title
+                  Text(
+                    event.title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Organization
+                  if (event.organization != null)
+                    Text(
+                      'By ${event.organization!.name}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  const SizedBox(height: 8),
+
+                  // Event Details
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on,
+                        size: 16,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          event.location,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.access_time,
+                        size: 16,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _formatDateTime(event.startTime),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Description Preview
+                  Text(
+                    event.description,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Status-based Action Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: _buildRegisteredEventButton(event),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 6. Add helper methods:
+  Widget _buildStatusBadge(String eventId) {
+    return FutureBuilder<String?>(
+      future: _getRegistrationStatusForEvent(eventId),
+      builder: (context, snapshot) {
+        final status = snapshot.data ?? 'pending';
+
+        Color badgeColor;
+        String statusText;
+        IconData statusIcon;
+
+        switch (status.toLowerCase()) {
+          case 'approved':
+            badgeColor = Colors.green;
+            statusText = 'Approved';
+            statusIcon = Icons.check_circle;
+            break;
+          case 'rejected':
+            badgeColor = Colors.red;
+            statusText = 'Rejected';
+            statusIcon = Icons.cancel;
+            break;
+          case 'pending':
+          default:
+            badgeColor = Colors.orange;
+            statusText = 'Pending';
+            statusIcon = Icons.hourglass_empty;
+            break;
+        }
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: badgeColor,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(statusIcon, color: Colors.white, size: 16),
+              const SizedBox(width: 4),
+              Text(
+                statusText,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -457,6 +754,11 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
     setState(() {
       _isAuthenticated = isAuth;
     });
+
+    // If authenticated, also fetch registered events
+    if (isAuth && mounted) {
+      context.read<EventRegistrationBloc>().add(FetchMyEventsRequested());
+    }
   }
 
   String _formatDateTime(DateTime dateTime) {
@@ -475,6 +777,28 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
       'Dec',
     ];
     return '${dateTime.day} ${months[dateTime.month - 1]} ${dateTime.year}';
+  }
+
+  Future<String?> _getRegistrationStatusForEvent(String eventId) async {
+    // Check if we already have the status cached
+    if (_registrationStatuses.containsKey(eventId)) {
+      return _registrationStatuses[eventId];
+    }
+
+    try {
+      final token = await _userDataService.getAuthToken();
+      final response = await di.sl<DioClient>().get(
+        '/my-events/$eventId',
+        token: token,
+      );
+      final status = response.data['participant']?['is_approved'] ?? 'pending';
+
+      // Cache the status
+      _registrationStatuses[eventId] = status;
+      return status;
+    } catch (e) {
+      return 'pending';
+    }
   }
 
   Future<String?> _getUserRegistrationStatus(String eventId) async {
@@ -515,6 +839,18 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
       // Show dialog to prompt login/registration
       _showAuthRequiredDialog(event);
     }
+  }
+
+  void _navigateToRegistrationStatus(Event event) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BlocProvider.value(
+          value: context.read<EventRegistrationBloc>(),
+          child: RegistrationStatusPage(event: event, eventId: event.id),
+        ),
+      ),
+    );
   }
 
   void _showAuthRequiredDialog(Event event) {
