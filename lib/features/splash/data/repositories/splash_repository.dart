@@ -17,6 +17,7 @@ class SplashRepositoryImpl implements SplashRepository {
   Future<AuthStatus> checkAuthenticationStatus() async {
     try {
       debugPrint("splash repo: came here");
+
       return await localDataSource.getAuthStatus();
     } catch (e) {
       return AuthStatus(role: Role.participant);

@@ -87,7 +87,7 @@ class LoginResponse {
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     final userJson = Map<String, dynamic>.from(json['user']);
-    userJson['role'] = json['role'];
+    userJson['role'] = json['role'] ?? json['user_type'] ?? 'participant';
     userJson['has_profile'] = json['has_profile'];
 
     for (var entry in userJson.entries) {

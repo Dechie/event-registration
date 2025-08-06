@@ -5,7 +5,6 @@ class AuthStatus {
   final String? userId;
   final bool isEmailVerified;
   final bool hasProfile;
-  final bool isProfileCompleted;
 
   const AuthStatus({
     required this.role,
@@ -14,7 +13,6 @@ class AuthStatus {
     this.userId,
     this.isEmailVerified = false,
     this.hasProfile = false,
-    this.isProfileCompleted = false,
   });
 
   factory AuthStatus.admin({
@@ -32,7 +30,6 @@ class AuthStatus {
     userId: userId,
     isEmailVerified: isEmailVerified,
     hasProfile: hasProfile,
-    isProfileCompleted: isProfileCompleted,
   );
 
   factory AuthStatus.fromJson(Map<String, dynamic> json) {
@@ -46,7 +43,6 @@ class AuthStatus {
       userId: json['userId'] as String?,
       isEmailVerified: json['isEmailVerified'] as bool? ?? false,
       hasProfile: json['hasProfile'] as bool? ?? false,
-      isProfileCompleted: json['isProfileCompleted'] as bool? ?? false,
     );
   }
 
@@ -64,7 +60,6 @@ class AuthStatus {
     userId: userId,
     isEmailVerified: isEmailVerified,
     hasProfile: hasProfile,
-    isProfileCompleted: isProfileCompleted,
   );
 
   // Factory constructors for common states
@@ -75,7 +70,6 @@ class AuthStatus {
     email: null,
     isEmailVerified: false,
     hasProfile: false,
-    isProfileCompleted: false,
   );
 
   bool get isAdmin => role == Role.admin;
@@ -83,14 +77,13 @@ class AuthStatus {
   // Computed properties
   bool get isAuthenticated =>
       role != Role.none && token != null && token!.isNotEmpty;
-  bool get isFullySetup =>
-      isAuthenticated && isEmailVerified && hasProfile && isProfileCompleted;
+  bool get isFullySetup => isAuthenticated && isEmailVerified && hasProfile;
   bool get isParticipant => role == Role.participant;
 
   // Navigation decision helpers
   bool get needsEmailVerification => isAuthenticated && !isEmailVerified;
   bool get needsProfileCompletion =>
-      isAuthenticated && isEmailVerified && hasProfile && !isProfileCompleted;
+      isAuthenticated && isEmailVerified && hasProfile;
   bool get needsProfileCreation =>
       isAuthenticated && isEmailVerified && !hasProfile;
   // Where should the user be routed?
@@ -113,7 +106,7 @@ class AuthStatus {
       if (needsProfileCreation || needsProfileCompletion) {
         return NavDestination.profileCreation;
       }
-      
+
       if (isFullySetup) {
         return NavDestination.participantDashboard;
       }
@@ -138,7 +131,6 @@ class AuthStatus {
       userId: userId ?? this.userId,
       isEmailVerified: isEmailVerified ?? this.isEmailVerified,
       hasProfile: hasProfile ?? this.hasProfile,
-      isProfileCompleted: isProfileCompleted ?? this.isProfileCompleted,
     );
   }
 
@@ -150,13 +142,12 @@ class AuthStatus {
       'userId': userId,
       'isEmailVerified': isEmailVerified,
       'hasProfile': hasProfile,
-      'isProfileCompleted': isProfileCompleted,
     };
   }
 
   @override
   String toString() {
-    return 'AuthStatus(role: $Role, isAuth: $isAuthenticated, emailVerified: $isEmailVerified, hasProfile: $hasProfile, profileCompleted: $isProfileCompleted)';
+    return 'AuthStatus(role: $Role, isAuth: $isAuthenticated, emailVerified: $isEmailVerified, hasProfile: $hasProfile)';
   }
 }
 

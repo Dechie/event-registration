@@ -26,12 +26,14 @@ class BadgePage extends StatefulWidget {
 }
 
 class _BadgePageState extends State<BadgePage> {
-  final GlobalKey _badgeKey = GlobalKey();
+  final GlobalKey _frontBadgeKey = GlobalKey();
+  final GlobalKey _backBadgeKey = GlobalKey();
   final UserDataService _userDataService = di.sl<UserDataService>();
 
   Map<String, dynamic>? _userData;
   bool _isLoading = true;
   bool _isGeneratingPdf = false;
+  bool _showBack = false;
 
   @override
   Widget build(BuildContext context) {
@@ -59,9 +61,41 @@ class _BadgePageState extends State<BadgePage> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            // Badge View Toggle
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ChoiceChip(
+                  label: const Text('Front'),
+                  selected: !_showBack,
+                  onSelected: (selected) => setState(() => _showBack = false),
+                  selectedColor: AppColors.primary.withOpacity(0.2),
+                ),
+                const SizedBox(width: 16),
+                ChoiceChip(
+                  label: const Text('Back'),
+                  selected: _showBack,
+                  onSelected: (selected) => setState(() => _showBack = true),
+                  selectedColor: AppColors.primary.withOpacity(0.2),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
             // Badge Preview
             Center(
-              child: RepaintBoundary(key: _badgeKey, child: _buildBadge()),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: _showBack
+                    ? RepaintBoundary(
+                        key: _backBadgeKey,
+                        child: _buildBackBadge(),
+                      )
+                    : RepaintBoundary(
+                        key: _frontBadgeKey,
+                        child: _buildFrontBadge(),
+                      ),
+              ),
             ),
             const SizedBox(height: 32),
 
@@ -75,6 +109,8 @@ class _BadgePageState extends State<BadgePage> {
                         : 'Download PDF',
                     onPressed: () {
                       if (_isGeneratingPdf) {
+                        return;
+                      } else {
                         _generatePdf();
                       }
                     },
@@ -88,6 +124,8 @@ class _BadgePageState extends State<BadgePage> {
                     text: 'Share Badge',
                     onPressed: () {
                       if (_isGeneratingPdf) {
+                        return;
+                      } else {
                         _shareBadge();
                       }
                     },
@@ -146,21 +184,13 @@ class _BadgePageState extends State<BadgePage> {
     _loadUserData();
   }
 
-  Widget _buildAvatarPlaceholder() {
-    return Icon(Icons.person, size: 50, color: AppColors.textSecondary);
-  }
-
-  Widget _buildBadge() {
+  Widget _buildBackBadge() {
     final badgeData = EventBadgeData.fromEventDetails(widget.registrationData!);
-    debugPrint(
-      "badgeData's downloaded image path: ${badgeData.downloadedImagePath}",
-    );
 
     return Container(
       width: 300,
-      height: 420, // Adjust for badge proportions
+      height: 420,
       decoration: BoxDecoration(
-        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -171,126 +201,127 @@ class _BadgePageState extends State<BadgePage> {
           ),
         ],
       ),
-      child: Column(
+      child: Stack(
         children: [
-          // Top hole punch area (black thin rectangle)
+          // Main white container
           Container(
-            width: 80,
-            height: 8,
-            margin: const EdgeInsets.only(top: 12),
+            width: 300,
+            height: 450,
             decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(4),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
 
-          const SizedBox(height: 20),
-
-          // Event Title
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              badgeData.eventTitle,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+          // Orange/amber side decorative strips
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            child: Container(
+              width: 8,
+              decoration: BoxDecoration(
+                color: Colors.orange.shade400,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  bottomLeft: Radius.circular(12),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            right: 0,
+            top: 0,
+            bottom: 0,
+            child: Container(
+              width: 8,
+              decoration: BoxDecoration(
+                color: Colors.orange.shade400,
+                borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(12),
+                  bottomRight: Radius.circular(12),
+                ),
               ),
             ),
           ),
 
-          const SizedBox(height: 24),
+          // Main content
+          Column(
+            children: [
+              // Top hole punch area
+              Container(
+                width: 80,
+                height: 8,
+                margin: const EdgeInsets.only(top: 12),
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
 
-          // Participant Photo (Square)
-          // Replace the photo container section with:
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey[400]!),
-            ),
-            child: badgeData.downloadedImagePath != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.file(
-                      File(badgeData.downloadedImagePath),
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildPhotoPlaceholder(),
+              const SizedBox(height: 20),
+
+              // Organization logo/name area
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    Text(
+                      'NETCOM',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.indigo.shade800,
+                        letterSpacing: 2,
+                      ),
                     ),
-                  )
-                : _buildPhotoPlaceholder(),
-          ),
+                    Text(
+                      'EVENT ORG NAME',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.orange.shade600,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
-          const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
-          // Participant Name (Orange, Large)
-          Text(
-            badgeData.participantName,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.orange,
-            ),
-          ),
-
-          const Spacer(),
-
-          // Bottom Row: QR Code and Participant Info
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                // QR Code
-                SizedBox(
-                  width: 80,
-                  height: 80,
-                  child: QrImageView(
-                    data: badgeData.badgeNumber,
-                    version: QrVersions.auto,
-                    backgroundColor: Colors.white,
+              // Event title in box
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.indigo.shade800, width: 2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  badgeData.eventTitle,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.indigo.shade800,
                   ),
                 ),
+              ),
 
-                // Participant Info Box
-                Container(
-                  width: 120,
-                  height: 80,
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey[400]!),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'PARTICIPANT',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        badgeData.participantId,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
+              const SizedBox(height: 20),
+
+              // Date range
+              Text(
+                _formatDateRange(widget.event.startTime, widget.event.endTime),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.orange.shade600,
+                  fontWeight: FontWeight.w500,
                 ),
-              ],
-            ),
+              ),
+
+              const Spacer(),
+            ],
           ),
         ],
       ),
@@ -316,26 +347,249 @@ class _BadgePageState extends State<BadgePage> {
     );
   }
 
+  Widget _buildFrontBadge() {
+    final badgeData = EventBadgeData.fromEventDetails(widget.registrationData!);
+
+    return Container(
+      width: 300,
+      height: 450,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            spreadRadius: 2,
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Main white container
+          Container(
+            width: 300,
+            height: 450,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+
+          // Orange/amber side decorative strips
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            child: Container(
+              width: 8,
+              decoration: BoxDecoration(
+                color: Colors.orange.shade400,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  bottomLeft: Radius.circular(12),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            right: 0,
+            top: 0,
+            bottom: 0,
+            child: Container(
+              width: 8,
+              decoration: BoxDecoration(
+                color: Colors.orange.shade400,
+                borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(12),
+                  bottomRight: Radius.circular(12),
+                ),
+              ),
+            ),
+          ),
+
+          // Main content
+          Column(
+            children: [
+              // Top hole punch area
+              Container(
+                width: 80,
+                height: 8,
+                margin: const EdgeInsets.only(top: 12),
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Event Title
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  badgeData.eventTitle,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.indigo.shade800,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Participant Photo (Square)
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey[400]!),
+                ),
+                child: badgeData.downloadedImagePath != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.file(
+                          File(badgeData.downloadedImagePath),
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              _buildPhotoPlaceholder(),
+                        ),
+                      )
+                    : _buildPhotoPlaceholder(),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Participant Name (Orange, Large)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  badgeData.participantName,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orange.shade600,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Occupation/Role
+              Text(
+                'OCCUPATION', // Replace with actual occupation if available
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.indigo.shade800,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+
+              const Spacer(),
+
+              // Bottom Row: QR Code and Participant Info
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    // QR Code (Larger)
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.grey[300]!),
+                      ),
+                      child: QrImageView(
+                        data: badgeData.badgeNumber,
+                        version: QrVersions.auto,
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.all(4),
+                      ),
+                    ),
+
+                    // Participant Info Box
+                    Container(
+                      width: 120,
+                      height: 100,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.orange.shade400,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'PARTICIPANT',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.indigo.shade800,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            badgeData.participantId,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orange.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPhotoPlaceholder() {
-    return const Icon(Icons.person, size: 50, color: Colors.grey);
+    return const Icon(Icons.person, size: 60, color: Colors.grey);
   }
 
   String _formatDate(DateTime dateTime) {
     final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
+      'JAN',
+      'FEB',
+      'MAR',
+      'APR',
+      'MAY',
+      'JUN',
+      'JUL',
+      'AUG',
+      'SEP',
+      'OCT',
+      'NOV',
+      'DEC',
     ];
-    return '${dateTime.day} ${months[dateTime.month - 1]} ${dateTime.year}';
+    return '${months[dateTime.month - 1]} ${dateTime.day}';
+  }
+
+  String _formatDateRange(DateTime start, DateTime? end) {
+    if (end == null) return _formatDate(start);
+
+    final startFormatted = _formatDate(start);
+    final endFormatted = _formatDate(end);
+
+    return '$startFormatted – $endFormatted\n${start.year}';
   }
 
   String _formatTime(DateTime dateTime) {
@@ -353,17 +607,33 @@ class _BadgePageState extends State<BadgePage> {
     });
 
     try {
-      // Capture badge as image
-      final boundary =
-          _badgeKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-      final image = await boundary.toImage(pixelRatio: 3.0);
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      final pngBytes = byteData!.buffer.asUint8List();
+      // Capture both badges as images
+      final frontBoundary =
+          _frontBadgeKey.currentContext!.findRenderObject()
+              as RenderRepaintBoundary;
+      final backBoundary =
+          _backBadgeKey.currentContext!.findRenderObject()
+              as RenderRepaintBoundary;
+
+      final frontImage = await frontBoundary.toImage(pixelRatio: 3.0);
+      final backImage = await backBoundary.toImage(pixelRatio: 3.0);
+
+      final frontByteData = await frontImage.toByteData(
+        format: ui.ImageByteFormat.png,
+      );
+      final backByteData = await backImage.toByteData(
+        format: ui.ImageByteFormat.png,
+      );
+
+      final frontPngBytes = frontByteData!.buffer.asUint8List();
+      final backPngBytes = backByteData!.buffer.asUint8List();
 
       // Create PDF
       final pdf = pw.Document();
-      final badgeImage = pw.MemoryImage(pngBytes);
+      final frontBadgeImage = pw.MemoryImage(frontPngBytes);
+      final backBadgeImage = pw.MemoryImage(backPngBytes);
 
+      // Add front badge page
       pdf.addPage(
         pw.Page(
           pageFormat: PdfPageFormat.a4,
@@ -372,14 +642,16 @@ class _BadgePageState extends State<BadgePage> {
               mainAxisAlignment: pw.MainAxisAlignment.center,
               children: [
                 pw.Text(
-                  'Event Registration Badge',
+                  'Event Registration Badge - Front',
                   style: pw.TextStyle(
                     fontSize: 24,
                     fontWeight: pw.FontWeight.bold,
                   ),
                 ),
                 pw.SizedBox(height: 20),
-                pw.Center(child: pw.Image(badgeImage, width: 300, height: 400)),
+                pw.Center(
+                  child: pw.Image(frontBadgeImage, width: 300, height: 400),
+                ),
                 pw.SizedBox(height: 20),
                 pw.Text(
                   'Please present this badge at the event venue',
@@ -388,7 +660,32 @@ class _BadgePageState extends State<BadgePage> {
                     fontStyle: pw.FontStyle.italic,
                   ),
                 ),
-                pw.SizedBox(height: 10),
+              ],
+            );
+          },
+        ),
+      );
+
+      // Add back badge page
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          build: (pw.Context context) {
+            return pw.Column(
+              mainAxisAlignment: pw.MainAxisAlignment.center,
+              children: [
+                pw.Text(
+                  'Event Registration Badge - Back',
+                  style: pw.TextStyle(
+                    fontSize: 24,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.SizedBox(height: 20),
+                pw.Center(
+                  child: pw.Image(backBadgeImage, width: 300, height: 400),
+                ),
+                pw.SizedBox(height: 20),
                 pw.Text(
                   'Generated on: ${DateTime.now().toString().substring(0, 16)}',
                   style: pw.TextStyle(fontSize: 10),
@@ -411,8 +708,10 @@ class _BadgePageState extends State<BadgePage> {
             content: Text('Badge PDF saved to ${file.path}'),
             backgroundColor: Colors.green,
             action: SnackBarAction(
-              label: 'Share',
-              onPressed: () {}, // => Share.shareXFiles([XFile(file.path)]),
+              label: 'Open',
+              onPressed: () {
+                // You can implement opening the PDF here
+              },
             ),
           ),
         );
@@ -451,21 +750,43 @@ class _BadgePageState extends State<BadgePage> {
 
   Future<void> _shareBadge() async {
     try {
-      // Capture badge as image
-      final boundary =
-          _badgeKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-      final image = await boundary.toImage(pixelRatio: 3.0);
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      final pngBytes = byteData!.buffer.asUint8List();
+      // Capture both badges as images
+      final frontBoundary =
+          _frontBadgeKey.currentContext!.findRenderObject()
+              as RenderRepaintBoundary;
+      final backBoundary =
+          _backBadgeKey.currentContext!.findRenderObject()
+              as RenderRepaintBoundary;
 
-      // Save temporary image
+      final frontImage = await frontBoundary.toImage(pixelRatio: 3.0);
+      final backImage = await backBoundary.toImage(pixelRatio: 3.0);
+
+      final frontByteData = await frontImage.toByteData(
+        format: ui.ImageByteFormat.png,
+      );
+      final backByteData = await backImage.toByteData(
+        format: ui.ImageByteFormat.png,
+      );
+
+      final frontPngBytes = frontByteData!.buffer.asUint8List();
+      final backPngBytes = backByteData!.buffer.asUint8List();
+
+      // Save temporary images
       final directory = await getTemporaryDirectory();
-      final file = File('${directory.path}/event_badge_${widget.event.id}.png');
-      await file.writeAsBytes(pngBytes);
+      final frontFile = File(
+        '${directory.path}/event_badge_front_${widget.event.id}.png',
+      );
+      final backFile = File(
+        '${directory.path}/event_badge_back_${widget.event.id}.png',
+      );
 
-      // Share image
+      await frontFile.writeAsBytes(frontPngBytes);
+      await backFile.writeAsBytes(backPngBytes);
+
+      // Share images
       // await Share.shareXFiles([
-      //   XFile(file.path),
+      //   XFile(frontFile.path),
+      //   XFile(backFile.path),
       // ], text: 'My badge for ${widget.event.title}');
     } catch (e) {
       if (mounted) {

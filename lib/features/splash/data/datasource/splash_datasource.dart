@@ -27,7 +27,6 @@ class SplashLocalDataSourceImpl implements SplashLocalDataSource {
       final authStatus = await userDataService.getAuthenticationStatus();
       debugPrint("📱 Authentication status retrieved: $authStatus");
 
-      // If not authenticated at all
       if (!authStatus.isAuthenticated) {
         debugPrint("❌ User not authenticated");
         return AuthStatus(role: Role.none);
@@ -48,16 +47,20 @@ class SplashLocalDataSourceImpl implements SplashLocalDataSource {
         }
       }
 
-      // Create enhanced AuthStatus with additional flags
+      // ADD THIS LOGIC: If user has a token, assume email is verified
+      bool emailVerified = authStatus.isEmailVerified;
+      if (authStatus.token != null && authStatus.token!.isNotEmpty) {
+        emailVerified =
+            true; // Assume email is verified if user has valid token
+      }
+
       return AuthStatus(
         role: role,
         token: authStatus.token,
         email: authStatus.email,
         userId: authStatus.userId,
-        // Additional flags for routing decisions
-        isEmailVerified: authStatus.isEmailVerified,
+        isEmailVerified: emailVerified, // Use the updated status
         hasProfile: authStatus.hasProfile,
-        isProfileCompleted: authStatus.isProfileCompleted,
       );
     } catch (e) {
       debugPrint("❌ Error getting auth status: $e");
@@ -75,7 +78,7 @@ class SplashLocalDataSourceImpl implements SplashLocalDataSource {
       }
 
       if (authStatus.role != Role.none) {
-        await userDataService.setrole(
+        await userDataService.setRole(
           authStatus.role.toString().split('.').last,
         );
       }
@@ -91,7 +94,6 @@ class SplashLocalDataSourceImpl implements SplashLocalDataSource {
       // Save additional status flags
       await userDataService.setEmailVerified(authStatus.isEmailVerified);
       await userDataService.setHasProfile(authStatus.hasProfile);
-      await userDataService.setProfileCompleted(authStatus.isProfileCompleted);
 
       debugPrint("✅ Auth status saved successfully");
     } catch (e) {

@@ -4,6 +4,7 @@ import 'package:event_reg/core/error/exceptions.dart';
 import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:event_reg/features/auth/data/models/login/login_response.dart';
 import 'package:event_reg/features/auth/data/models/user.dart'; // Corrected import path
+import 'package:flutter/material.dart' show debugPrint;
 import 'package:shared_preferences/shared_preferences.dart';
 
 abstract class AuthLocalDatasource {
@@ -29,7 +30,7 @@ class AuthLocalDatasourceImpl implements AuthLocalDatasource {
       await userDataService.setAuthToken(loginResponse.token);
       await userDataService.setUserId(loginResponse.user.id);
       await userDataService.setUserEmail(loginResponse.user.email);
-      await userDataService.setUserRole(loginResponse.user.role);
+      await userDataService.setRole(loginResponse.user.role);
       await userDataService.setFullName(loginResponse.user.fullName ?? '');
       await userDataService.setPhoneNumber(
         loginResponse.user.phoneNumber ?? '',
@@ -82,7 +83,7 @@ class AuthLocalDatasourceImpl implements AuthLocalDatasource {
       final token = await userDataService.getAuthToken();
       final userId = await userDataService.getUserId();
       final userEmail = await userDataService.getUserEmail();
-      final role = await userDataService.getUserRole();
+      final role = await userDataService.getRole();
       final fullName = await userDataService.getFullName();
       final phoneNumber = await userDataService.getPhoneNumber();
       final occupation = await userDataService.getOccupation();
@@ -98,6 +99,7 @@ class AuthLocalDatasourceImpl implements AuthLocalDatasource {
       final yearsOfExperience = await userDataService.getYearsOfExperience();
       final photoPath = await userDataService.getPhotoPath();
 
+      debugPrint("user token is: $token");
       if (token != null &&
           userId != null &&
           userEmail != null &&
@@ -131,6 +133,7 @@ class AuthLocalDatasourceImpl implements AuthLocalDatasource {
           token: token,
         );
       }
+
       return null;
     } on CacheException {
       rethrow;

@@ -55,7 +55,7 @@ abstract class UserDataService {
   Future<bool> getProfileCompleted();
 
   Future<String?> getRegion();
-  Future<String?> getrole();
+  Future<String?> getRole();
 
   Future<String?> getUserEmail();
   Future<String?> getUserId();
@@ -82,7 +82,7 @@ abstract class UserDataService {
   Future<void> setPhotoPath(String photoPath);
   Future<void> setProfileCompleted(bool isCompleted);
   Future<void> setRegion(String region);
-  Future<void> setrole(String role);
+  Future<void> setRole(String role);
   Future<void> setUserEmail(String email);
   Future<void> setUserId(String userId);
   Future<void> setUserRole(String role);
@@ -118,7 +118,6 @@ class UserDataServiceImpl implements UserDataService {
   static const String _industryKey = 'industry';
   static const String _yearsOfExperienceKey = 'years_of_experience';
   static const String _photoPathKey = 'photo_path';
-  static const String _userRoleKey = "user_role";
   final SharedPreferences sharedPreferences;
   UserDataServiceImpl({required this.sharedPreferences});
   @override
@@ -151,7 +150,7 @@ class UserDataServiceImpl implements UserDataService {
   @override
   Future<AuthenticationStatus> getAuthenticationStatus() async {
     final token = await getAuthToken();
-    final role = await getrole();
+    final role = await getRole();
     final email = await getUserEmail();
     final userId = await getUserId();
     final isEmailVerified = await getEmailVerified();
@@ -183,9 +182,12 @@ class UserDataServiceImpl implements UserDataService {
       // Retrieve core user data
       final userId = await getUserId();
       final userEmail = await getUserEmail();
-      final role = await getrole();
+      final role = await getRole();
 
       // If any core data is missing, we cannot construct a valid user
+      debugPrint(
+        "core data of cached user: userId: ${userId ?? "null"}, userEmail: ${userEmail ?? "null"}, userRole: ${role ?? "null"}",
+      );
       if (userId == null || userEmail == null || role == null) {
         return null;
       }
@@ -311,7 +313,7 @@ class UserDataServiceImpl implements UserDataService {
   }
 
   @override
-  Future<String?> getrole() async {
+  Future<String?> getRole() async {
     return sharedPreferences.getString(_roleKey);
   }
 
@@ -326,8 +328,7 @@ class UserDataServiceImpl implements UserDataService {
   }
 
   @override
-  Future<String?> getUserRole() async =>
-      sharedPreferences.getString(_userRoleKey);
+  Future<String?> getUserRole() async => sharedPreferences.getString(_roleKey);
 
   @override
   Future<String?> getWoreda() async {
@@ -346,9 +347,9 @@ class UserDataServiceImpl implements UserDataService {
     debugPrint(
       "auth datas: {hasProfile: ${authStat.hasProfile}, isAuthed: ${authStat.hasProfile}, isProfileCompleted: ${authStat.isProfileCompleted}}",
     );
-    return authStat.hasProfile &&
-        authStat.isAuthenticated &&
-        authStat.isProfileCompleted;
+
+    return authStat.isAuthenticated &&
+        (authStat.role != "participant" || authStat.hasProfile);
   }
 
   @override
@@ -433,7 +434,7 @@ class UserDataServiceImpl implements UserDataService {
   }
 
   @override
-  Future<void> setrole(String role) async {
+  Future<void> setRole(String role) async {
     await sharedPreferences.setString(_roleKey, role);
   }
 
@@ -449,8 +450,7 @@ class UserDataServiceImpl implements UserDataService {
 
   @override
   Future<void> setUserRole(String role) async =>
-      await sharedPreferences.setString(_userRoleKey, role);
-
+      sharedPreferences.setString(_roleKey, role);
   @override
   Future<void> setWoreda(String woreda) async {
     await sharedPreferences.setString(_woredaKey, woreda);

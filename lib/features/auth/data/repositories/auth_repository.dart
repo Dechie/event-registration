@@ -232,7 +232,8 @@ class AuthRepositoryImpl implements AuthRepository {
       final loginResponse = await remoteDatasource.login(loginRequest);
 
       debugPrint('✅ Login successful, caching user data...');
-      if (loginResponse.user.role == "no-role") {
+      if (loginResponse.user.role == "no-role" ||
+          loginResponse.user.role == "") {
         LoginResponse loginResponseCopy = loginResponse.copyWithForceUserRole(
           role: role,
         );

@@ -60,6 +60,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
       debugPrint("create profile endpoint message: ${response.statusMessage}");
       if (response.statusCode == 200) {
         final data = response.data;
+
         return {
           'message': data["message"] ?? "Profile created successfully",
           'participant': data["participant"],
@@ -89,6 +90,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
 
       if (response.statusCode == 200) {
         final data = response.data["data"] ?? response.data;
+
         return User.fromJson(data);
       } else {
         throw ServerException(

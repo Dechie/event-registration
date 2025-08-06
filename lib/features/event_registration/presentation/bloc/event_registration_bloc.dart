@@ -126,6 +126,7 @@ class EventRegistrationBloc
       final user = await userDataService.getCachedUser();
       if (user == null) {
         emit(EventRegistrationError(message: 'User not authenticated'));
+
         return;
       }
 
