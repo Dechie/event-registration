@@ -83,20 +83,39 @@ class _RegistrationStatusPageState extends State<RegistrationStatusPage> {
           width: double.infinity,
           child: CustomButton(
             text: 'Generate Badge',
+            // NEW, CORRECTED CODE
             onPressed: () async {
-              // Fetch full event details first
               try {
                 final token = await di.sl<UserDataService>().getAuthToken();
                 final response = await di.sl<DioClient>().get(
                   '/my-events/${widget.eventId}',
                   token: token,
                 );
+
+                // Correctly access the nested photo path
+                final String? photoPath =
+                    response.data?['participant']?['photo'];
+
+                if (photoPath == null || photoPath.isEmpty) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Error: Participant photo not found.'),
+                      ),
+                    );
+                  }
+                  return; // Stop execution if there's no photo path
+                }
+
                 final photoFile = await di
-                    .sl<EventRegistrationDataSourceImpl>()
-                    .downloadParticipantPhoto(response.data["photo"]);
+                    .sl<EventRegistrationDataSource>()
+                    .downloadParticipantPhoto(photoPath);
+
                 final downloadedPhoto = photoFile.path;
                 debugPrint("response of get badge: ${response.data}");
-                response.data["participant"]?["downloaded_image_path"] =
+
+                // You probably want to add the downloaded path to the participant object
+                response.data["participant"]["downloaded_image_path"] =
                     downloadedPhoto;
 
                 // Navigate to badge page with full event details
@@ -114,7 +133,7 @@ class _RegistrationStatusPageState extends State<RegistrationStatusPage> {
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error loading badge data: $e')),
+                    SnackBar(content: Text("Error loading badge data: $e")),
                   );
                 }
               }

@@ -1,18 +1,14 @@
-// lib/config/routes/app_router.dart
 import 'package:event_reg/config/routes/route_names.dart';
-// Import BLoCs
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:event_reg/features/auth/presentation/bloc/events/auth_event.dart';
 import 'package:event_reg/features/auth/presentation/bloc/states/auth_state.dart';
 import 'package:event_reg/features/auth/presentation/pages/auth_otp_verification_page.dart';
+import 'package:event_reg/features/auth/presentation/pages/login/admin_login.dart';
 import 'package:event_reg/features/auth/presentation/pages/login/participant_login.dart';
 import 'package:event_reg/features/auth/presentation/pages/profile_add_page.dart';
 import 'package:event_reg/features/auth/presentation/pages/user_registration.dart';
 import 'package:event_reg/features/badge/presentation/pages/badge_page.dart';
-import 'package:event_reg/features/dashboard/presentation/bloc/dashboard_bloc.dart';
-import 'package:event_reg/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:event_reg/features/dashboard/presentation/pages/admin_dashboard_page.dart';
-import 'package:event_reg/features/dashboard/presentation/pages/participant_dashboard_page.dart';
 import 'package:event_reg/features/landing/presentation/pages/landing_page.dart';
 import 'package:event_reg/features/splash/presentation/pages/splash_page.dart';
 import 'package:event_reg/injection_container.dart' as di;
@@ -64,6 +60,7 @@ class AppRouter {
             email: args?['email'] ?? '',
             otpToken: args?['otpToken'],
             message: args?['message'],
+            role: args?['role'],
           ),
           settings: settings,
         );
@@ -88,6 +85,14 @@ class AppRouter {
           ),
         );
 
+      case RouteNames.adminLoginPage:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (context) => di.sl<AuthBloc>(),
+            child: const AdminLoginPage(),
+          ),
+        );
+
       // case RouteNames.participantDashboardPage:
       //   final args = settings.arguments as Map<String, dynamic>?;
       //   return MaterialPageRoute(
@@ -106,18 +111,38 @@ class AppRouter {
       //     ),
       //   );
 
-      // case RouteNames.adminDashboardPage:
-      //   return MaterialPageRoute(
-      //     builder: (_) => AuthGuard(
-      //       requiredrole: 'admin',
-      //       child: BlocProvider(
-      //         create: (context) =>
-      //             di.sl<DashboardBloc>()
-      //               ..add(const LoadAdminDashboardEvent() as DashboardEvent),
-      //         child: const AdminDashboardPage(),
-      //       ),
-      //     ),
-      //   );
+      // Uncomment and modify this section:
+      case RouteNames.adminDashboardPage:
+        return MaterialPageRoute(
+          builder: (_) => AuthGuard(
+            requiredrole: 'admin',
+            child: const AdminDashboardPage(),
+          ),
+        );
+
+      case RouteNames.qrScannerPage:
+        return MaterialPageRoute(
+          builder: (_) => const Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.qr_code_scanner, size: 80, color: Colors.blue),
+                  SizedBox(height: 16),
+                  Text(
+                    'QR Scanner',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'QR Scanner feature is coming soon!',
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
 
       case RouteNames.eventAgendaPage:
         return MaterialPageRoute(builder: (_) => const EventAgendaPage());

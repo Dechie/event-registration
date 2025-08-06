@@ -15,6 +15,7 @@ import '../models/event_registration.dart';
 import '../models/participant_badge.dart';
 
 abstract class EventRegistrationDataSource {
+  Future<File> downloadParticipantPhoto(String photoPath);
   Future<List<Event>> fetchAvailableEvents();
   Future<ParticipantBadge> generateBadge(String eventId);
   Future<ParticipantBadge?> getBadge(String eventId);
@@ -37,6 +38,7 @@ class EventRegistrationDataSourceImpl implements EventRegistrationDataSource {
     required this.userDataService,
   });
 
+  @override
   Future<File> downloadParticipantPhoto(String photoPath) async {
     // Check if the photoPath is a valid relative path
     if (photoPath.isEmpty) {
@@ -63,6 +65,7 @@ class EventRegistrationDataSourceImpl implements EventRegistrationDataSource {
       await file.writeAsBytes(response.data);
 
       debugPrint("✅ Photo downloaded to: $localPath");
+
       return file;
     } on DioException catch (e) {
       throw ApiError("Failed to download image: ${e.message}");
@@ -76,6 +79,7 @@ class EventRegistrationDataSourceImpl implements EventRegistrationDataSource {
     final response = await dioClient.get('/fetch-events');
 
     final List<dynamic> eventsJson = response.data;
+
     return eventsJson.map((json) => Event.fromJson(json)).toList();
   }
 
@@ -123,6 +127,7 @@ class EventRegistrationDataSourceImpl implements EventRegistrationDataSource {
   @override
   Future<Event> getEventDetails(String eventId) async {
     final response = await dioClient.get('/get-event/$eventId');
+
     return Event.fromJson(response.data);
   }
 
@@ -133,6 +138,7 @@ class EventRegistrationDataSourceImpl implements EventRegistrationDataSource {
     final response = await dioClient.get('/my-events', token: token);
 
     final List<dynamic> eventsJson = response.data;
+
     return eventsJson.map((json) => Event.fromJson(json)).toList();
   }
 
@@ -143,6 +149,7 @@ class EventRegistrationDataSourceImpl implements EventRegistrationDataSource {
     final response = await dioClient.get('/my-registrations', token: token);
 
     final List<dynamic> registrationsJson = response.data;
+
     return registrationsJson
         .map((json) => EventRegistration.fromJson(json))
         .toList();
@@ -198,6 +205,7 @@ class EventRegistrationDataSourceImpl implements EventRegistrationDataSource {
       );
 
       debugPrint("✅ Response: ${response.data}");
+
       return EventRegistrationResponse.fromJson(response.data);
     } catch (e, stackTrace) {
       debugPrint("❌ Error registering for event: $e");

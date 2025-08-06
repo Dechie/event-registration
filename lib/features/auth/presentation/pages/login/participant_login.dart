@@ -37,13 +37,26 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
               ),
             );
           } else if (state is AuthenticatedState) {
-            // Navigate to participant dashboard
-
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              RouteNames.profileAddPage,
-              arguments: {"isEditMode": true},
-              (route) => false,
-            );
+            // Check if user needs profile creation
+            final userData = state.userData;
+            final hasProfile = userData?['hasProfile'] ?? false;
+            final isProfileCompleted = userData?['isProfileCompleted'] ?? false;
+            
+            if (!hasProfile || !isProfileCompleted) {
+              // User needs to complete profile
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                RouteNames.profileAddPage,
+                arguments: {"isEditMode": false},
+                (route) => false,
+              );
+            } else {
+              // User has complete profile, go to participant dashboard
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                RouteNames.participantDashboardPage,
+                arguments: {"email": state.email},
+                (route) => false,
+              );
+            }
           }
         },
         child: Container(

@@ -12,12 +12,14 @@ class AuthOTPVerificationPage extends StatefulWidget {
   final String email;
   final String? otpToken;
   final String? message;
+  final String? role; // Added role parameter
 
   const AuthOTPVerificationPage({
     super.key,
     required this.email,
     this.otpToken,
     this.message,
+    this.role, // Initialize role
   });
 
   @override
@@ -70,11 +72,21 @@ class _AuthOTPVerificationPageState extends State<AuthOTPVerificationPage>
                 behavior: SnackBarBehavior.floating,
               ),
             );
-            // Navigate to login page after successful verification
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              RouteNames.participantLoginPage,
-              (route) => false,
-            );
+            // Navigate based on role after successful verification
+            final role = widget.role ?? 'participant';
+            if (role == 'admin') {
+              // Admin goes directly to admin dashboard
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                RouteNames.adminDashboardPage,
+                (route) => false,
+              );
+            } else {
+              // Participant goes to login page
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                RouteNames.participantLoginPage,
+                (route) => false,
+              );
+            }
           } else if (state is AuthOTPSentState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

@@ -1,4 +1,4 @@
-import 'package:event_reg/features/dashboard/data/models/session.dart';
+import 'package:event_reg/features/attendance/data/models/session.dart';
 
 enum EventStatus {
   draft,
@@ -194,12 +194,12 @@ class Event {
     }
   }
 
-  List<Session> get activeSessions =>
-      sessions.where((session) => session.isActive).toList();
+  // List<Session> get activeSessions =>
+  //     sessions.where((session) => session.isActive).toList();
 
-  int get totalCapacity =>
-      sessions.fold(0, (sum, session) => sum + session.capacity);
+  // int get totalCapacity =>
+  //     sessions.fold(0, (sum, session) => sum + session.capacity);
 
-  int get totalCurrentAttendees =>
-      sessions.fold(0, (sum, session) => sum + session.currentAttendees);
+  // int get totalCurrentAttendees =>
+  //     sessions.fold(0, (sum, session) => sum + session.currentAttendees);
 }

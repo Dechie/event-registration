@@ -12,6 +12,9 @@ import 'package:event_reg/features/event_registration/presentation/bloc/event_re
 import 'package:event_reg/features/splash/data/datasource/splash_datasource.dart';
 import 'package:event_reg/features/splash/data/repositories/splash_repository.dart';
 import 'package:event_reg/features/splash/presentation/bloc/splash_bloc.dart';
+import 'package:event_reg/features/verification/data/datasource/verification_datasource.dart';
+import 'package:event_reg/features/verification/data/repositories/verification_repository.dart';
+import 'package:event_reg/features/verification/presentation/bloc/verification_bloc.dart';
 import 'package:flutter/material.dart' show debugPrint;
 import 'package:get_it/get_it.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -110,7 +113,20 @@ Future<void> init() async {
   sl.registerFactory(
     () => EventRegistrationBloc(dataSource: sl(), userDataService: sl()),
   );
+  sl.registerLazySingleton<VerificationRemoteDataSource>(
+    () => VerificationRemoteDataSourceImpl(dioClient: sl()),
+  );
 
+  // sl.registerLazySingleton<EventRegistrationDataSource>(
+  //   () =>
+  //       EventRegistrationDataSourceImpl(dioClient: sl(), userDataService: sl()),
+  // );
+
+  sl.registerLazySingleton<VerificationRepository>(
+    () => VerificationRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
+
+  sl.registerFactory(() => VerificationBloc(repository: sl()));
   // ! Features - Dashboard
   // DataSources
   // sl.registerLazySingleton<DashboardRemoteDataSource>(

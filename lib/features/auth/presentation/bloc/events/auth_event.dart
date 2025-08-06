@@ -31,14 +31,17 @@ class RegisterUserEvent extends AuthEvent {
   final String email;
   final String password;
   final String passwordConfirmation;
+  final String role;
+  
   const RegisterUserEvent({
     required this.email,
     required this.password,
     required this.passwordConfirmation,
+    required this.role,
   });
 
   @override
-  List<Object?> get props => [email, password, passwordConfirmation];
+  List<Object?> get props => [email, password, passwordConfirmation, role];
 }
 
 class ResetPasswordEvent extends AuthEvent {

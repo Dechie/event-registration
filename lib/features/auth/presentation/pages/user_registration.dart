@@ -24,6 +24,7 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _acceptTerms = false;
+  String _selectedRole = 'participant'; // Default to participant
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -58,6 +59,7 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
                 'email': state.email,
                 'otpToken': state.otpToken,
                 'message': state.message,
+                'role': _selectedRole,
               },
             );
           }
@@ -346,6 +348,10 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
                 _buildConfirmPasswordField(),
                 const SizedBox(height: 16),
 
+                // Role Selection
+                _buildRoleSelection(),
+                const SizedBox(height: 16),
+
                 // Register Button
                 _buildRegisterButton(),
                 const SizedBox(height: 16),
@@ -378,6 +384,107 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
           style: TextStyle(
             fontSize: 12,
             color: isMet ? Colors.green : Colors.grey[600],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRoleSelection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Account Type',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: Colors.grey[800],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            children: [
+              RadioListTile<String>(
+                title: Row(
+                  children: [
+                    Icon(Icons.person, color: Colors.blue),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Participant',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            'Register for events and attend sessions',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                value: 'participant',
+                groupValue: _selectedRole,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedRole = value!;
+                  });
+                },
+                activeColor: Theme.of(context).primaryColor,
+              ),
+              Divider(height: 1, color: Colors.grey.shade300),
+              RadioListTile<String>(
+                title: Row(
+                  children: [
+                    Icon(Icons.admin_panel_settings, color: Colors.green),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Admin',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            'Manage events and verify participants',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                value: 'admin',
+                groupValue: _selectedRole,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedRole = value!;
+                  });
+                },
+                activeColor: Theme.of(context).primaryColor,
+              ),
+            ],
           ),
         ),
       ],
@@ -473,6 +580,7 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
             email: _emailController.text.trim(),
             password: _passwordController.text,
             passwordConfirmation: _confirmPasswordController.text,
+            role: _selectedRole,
           ),
         );
       }

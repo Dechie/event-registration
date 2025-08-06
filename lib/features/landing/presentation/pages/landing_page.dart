@@ -5,15 +5,14 @@ import 'package:event_reg/core/network/dio_client.dart';
 import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:event_reg/core/shared/widgets/custom_button.dart';
 import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_bloc.dart';
+import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_event.dart';
+import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_state.dart';
 import 'package:event_reg/features/event_registration/presentation/pages/event_details_page.dart';
 import 'package:event_reg/features/event_registration/presentation/pages/event_registration_status_page.dart';
 import 'package:event_reg/features/landing/data/models/event.dart';
 import 'package:event_reg/injection_container.dart' as di;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../../../event_registration/presentation/bloc/event_registration_event.dart';
-import '../../../event_registration/presentation/bloc/event_registration_state.dart';
 
 class UpdatedLandingPage extends StatefulWidget {
   const UpdatedLandingPage({super.key});
@@ -202,7 +201,7 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
               child: CustomButton(
                 text: 'Already Registered? Sign In',
                 onPressed: () {
-                  Navigator.pushNamed(context, RouteNames.participantLoginPage);
+                  _showRoleSelectionDialog();
                 },
                 backgroundColor: Colors.transparent,
                 textColor: AppColors.primary,
@@ -242,6 +241,8 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
       ),
     );
   }
+
+  // In lib/features/landing/presentation/pages/landing_page.dart
 
   Widget _buildEventCard(Event event) {
     return Card(
@@ -362,61 +363,8 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Action Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: CustomButton(
-                      text: _isAuthenticated
-                          ? 'View Details & Register'
-                          : 'View Details',
-                      onPressed: () => _navigateToEventDetails(event),
-                      backgroundColor: AppColors.primary,
-                      textColor: Colors.white,
-                    ),
-                  ),
-                  // Replace the existing Action Button section with:
-                  // Action Button
-                  FutureBuilder<String?>(
-                    future: _getUserRegistrationStatus(event.id),
-                    builder: (context, snapshot) {
-                      final registrationStatus = snapshot.data;
-
-                      String buttonText;
-                      Color buttonColor;
-                      bool isEnabled = true;
-
-                      if (registrationStatus == 'approved') {
-                        buttonText = 'Approved ✓';
-                        buttonColor = Colors.green;
-                        isEnabled = false;
-                      } else if (registrationStatus == 'pending') {
-                        buttonText = 'Pending Review';
-                        buttonColor = Colors.orange;
-                        isEnabled = false;
-                      } else if (_isAuthenticated) {
-                        buttonText = 'View Details & Register';
-                        buttonColor = AppColors.primary;
-                      } else {
-                        buttonText = 'View Details';
-                        buttonColor = AppColors.primary;
-                      }
-
-                      return SizedBox(
-                        width: double.infinity,
-                        child: CustomButton(
-                          text: buttonText,
-                          onPressed: () {
-                            if (isEnabled) {
-                              _navigateToEventDetails(event);
-                            }
-                          },
-
-                          backgroundColor: buttonColor,
-                          textColor: Colors.white,
-                        ),
-                      );
-                    },
-                  ),
+                  // Action Button with Registration Status
+                  _buildEventActionButton(event),
                 ],
               ),
             ),
@@ -426,9 +374,97 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
     );
   }
 
-  // 4. Replace the _buildEventsSection method with this:
+  Widget _buildEventActionButton(Event event) {
+    // Check if user is registered for this event
+    final isRegistered = _registeredEvents.any((e) => e.id == event.id);
+    
+    if (!_isAuthenticated) {
+      // Not authenticated - show "View Details"
+      return SizedBox(
+        width: double.infinity,
+        child: CustomButton(
+          text: 'View Details',
+          onPressed: () => _navigateToEventDetails(event),
+          backgroundColor: AppColors.primary,
+          textColor: Colors.white,
+        ),
+      );
+    }
+
+    if (!isRegistered) {
+      // Not registered - show "View Details & Register"
+      return SizedBox(
+        width: double.infinity,
+        child: CustomButton(
+          text: 'View Details & Register',
+          onPressed: () => _navigateToEventDetails(event),
+          backgroundColor: AppColors.primary,
+          textColor: Colors.white,
+        ),
+      );
+    }
+
+    // Registered - show status-based button
+    return FutureBuilder<String?>(
+      future: _getRegistrationStatusForEvent(event.id),
+      builder: (context, snapshot) {
+        final status = snapshot.data ?? 'pending';
+
+        String buttonText;
+        Color buttonColor;
+
+        switch (status.toLowerCase()) {
+          case 'approved':
+            buttonText = 'View Badge';
+            buttonColor = Colors.green;
+            break;
+          case 'rejected':
+            buttonText = 'Registration Rejected';
+            buttonColor = Colors.red;
+            break;
+          case 'pending':
+          default:
+            buttonText = 'Registration Pending';
+            buttonColor = Colors.orange;
+            break;
+        }
+
+        return SizedBox(
+          width: double.infinity,
+          child: CustomButton(
+            text: buttonText,
+            onPressed: () {
+              if (status.toLowerCase() == 'approved') {
+                // Navigate to badge page
+                Navigator.pushNamed(
+                  context,
+                  RouteNames.badgePage,
+                  arguments: {
+                    "event": event,
+                    "registrationData": {"status": status},
+                  },
+                );
+              } else {
+                // Navigate to registration status page
+                Navigator.pushNamed(
+                  context,
+                  RouteNames.eventRegistrationStatusPage,
+                  arguments: {"event": event},
+                );
+              }
+            },
+            backgroundColor: buttonColor,
+            textColor: Colors.white,
+          ),
+        );
+      },
+    );
+  }
+
+  // In lib/features/landing/presentation/pages/landing_page.dart
+
   Widget _buildEventsSection() {
-    // Filter available events to exclude already registered ones
+    // This logic is correct. It separates registered from unregistered events.
     final registeredEventIds = _registeredEvents.map((e) => e.id).toSet();
     final unregisteredEvents = _availableEvents
         .where((event) => !registeredEventIds.contains(event.id))
@@ -439,23 +475,16 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Registered Events Section (only show if authenticated and has registered events)
+          // Registered Events Section
           if (_isAuthenticated && _registeredEvents.isNotEmpty) ...[
-            Text(
-              'My Registered Events',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 16),
+            // ... your "My Registered Events" title ...
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _registeredEvents.length,
               itemBuilder: (context, index) {
                 final event = _registeredEvents[index];
+                // ✅ Correct: Using the card that checks status
                 return _buildRegisteredEventCard(event);
               },
             ),
@@ -463,52 +492,17 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
           ],
 
           // Available Events Section
-          Text(
-            _isAuthenticated ? 'Other Available Events' : 'Available Events',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
+          // ... your "Available Events" title ...
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: unregisteredEvents.length,
+            itemBuilder: (context, index) {
+              final event = unregisteredEvents[index];
+              // ✅ Correct: Using the simplified card that does NOT check status
+              return _buildEventCard(event);
+            },
           ),
-          const SizedBox(height: 16),
-
-          if (unregisteredEvents.isEmpty) ...[
-            Column(
-              children: [
-                Icon(
-                  Icons.event_busy,
-                  size: 48,
-                  color: AppColors.textSecondary,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'No Available Events',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Check back later for upcoming events',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.textSecondary),
-                ),
-              ],
-            ),
-          ] else ...[
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: unregisteredEvents.length,
-              itemBuilder: (context, index) {
-                final event = unregisteredEvents[index];
-                return _buildEventCard(event);
-              },
-            ),
-          ],
         ],
       ),
     );
@@ -879,6 +873,34 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
               Navigator.pushNamed(context, RouteNames.registrationPage);
             },
             child: Text('Register', style: TextStyle(color: AppColors.primary)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRoleSelectionDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Role'),
+        content: const Text(
+          'Please select your role to sign in.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, RouteNames.participantLoginPage);
+            },
+            child: const Text('Participant'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, RouteNames.adminLoginPage);
+            },
+            child: const Text('Admin'),
           ),
         ],
       ),

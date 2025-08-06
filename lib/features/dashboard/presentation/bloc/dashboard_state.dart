@@ -1,4 +1,6 @@
 
+
+// import 'package:equatable/equatable.dart';
 // import 'package:event_reg/core/shared/models/participant.dart';
 
 // import '../../data/models/dashboard_stats.dart';

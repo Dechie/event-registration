@@ -214,7 +214,7 @@ class _BadgePageState extends State<BadgePage> {
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: Image.file(
-                      File(badgeData.downloadedImagePath!),
+                      File(badgeData.downloadedImagePath),
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => _buildPhotoPlaceholder(),
                     ),
@@ -433,7 +433,7 @@ class _BadgePageState extends State<BadgePage> {
 
   Future<void> _loadUserData() async {
     try {
-      final userDataService = sl<UserDataService>();
+      final userDataService = di.sl<UserDataService>();
       final user = await userDataService.getCachedUser();
 
       setState(() {

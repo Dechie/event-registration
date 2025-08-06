@@ -35,6 +35,7 @@ abstract class AuthRepository {
     required String email,
     required String password,
     required String passwordConfirmation,
+    required String role,
   });
   Future<Either<Failure, String>> resendOTP(String email);
   Future<Either<Failure, User>> updateProfile({
@@ -273,6 +274,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
     required String passwordConfirmation,
+    required String role,
   }) async {
     try {
       if (!await networkInfo.isConnected) {
@@ -288,6 +290,7 @@ class AuthRepositoryImpl implements AuthRepository {
         email: email,
         password: password,
         passwordConfirmation: passwordConfirmation,
+        role: role,
       );
 
       final response = await remoteDatasource.registerUser(registrationRequest);

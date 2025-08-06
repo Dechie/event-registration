@@ -1,20 +1,21 @@
 // lib/features/landing/data/datasource/landing_remote_datasource.dart
 import 'package:dio/dio.dart';
-import 'package:event_reg/core/network/dio_client.dart';
 import 'package:event_reg/core/error/exceptions.dart';
+import 'package:event_reg/core/network/dio_client.dart';
 import 'package:event_reg/features/dashboard/data/models/event.dart';
-import 'package:event_reg/features/dashboard/data/models/session.dart';
+
+import '../../../attendance/data/models/session.dart';
 
 abstract class LandingRemoteDataSource {
-  Future<Event> getEventInfo();
-  Future<List<Session>> getFeaturedSessions();
-  Future<Map<String, dynamic>> getEventStats();
-  Future<List<Map<String, dynamic>>> getEventHighlights();
-  Future<Map<String, dynamic>> getEventSchedule();
-  Future<List<Map<String, dynamic>>> getSpeakers();
-  Future<Map<String, dynamic>> getVenueInfo();
-  Future<List<Map<String, dynamic>>> getSponsors();
   Future<Map<String, dynamic>> getContactInfo();
+  Future<List<Map<String, dynamic>>> getEventHighlights();
+  Future<Event> getEventInfo();
+  Future<Map<String, dynamic>> getEventSchedule();
+  Future<Map<String, dynamic>> getEventStats();
+  Future<List<Session>> getFeaturedSessions();
+  Future<List<Map<String, dynamic>>> getSpeakers();
+  Future<List<Map<String, dynamic>>> getSponsors();
+  Future<Map<String, dynamic>> getVenueInfo();
 }
 
 class LandingRemoteDataSourceImpl implements LandingRemoteDataSource {
@@ -23,57 +24,21 @@ class LandingRemoteDataSourceImpl implements LandingRemoteDataSource {
   LandingRemoteDataSourceImpl({required this.dioClient});
 
   @override
-  Future<Event> getEventInfo() async {
+  Future<Map<String, dynamic>> getContactInfo() async {
     try {
-      final response = await dioClient.get('/public/event');
-
-      if (response.statusCode == 200) {
-        return Event.fromJson(response.data['data']);
-      } else {
-        throw ServerException(
-          message: response.data['message'] ?? 'Failed to get event information',
-          code: 'EVENT_INFO_ERROR',
-        );
-      }
-    } on DioException catch (e) {
-      throw _handleDioException(e, 'EVENT_INFO_ERROR');
-    }
-  }
-
-  @override
-  Future<List<Session>> getFeaturedSessions() async {
-    try {
-      final response = await dioClient.get('/public/sessions/featured');
-
-      if (response.statusCode == 200) {
-        final List<dynamic> sessionsJson = response.data['data'] ?? [];
-        return sessionsJson.map((json) => Session.fromJson(json)).toList();
-      } else {
-        throw ServerException(
-          message: response.data['message'] ?? 'Failed to get featured sessions',
-          code: 'FEATURED_SESSIONS_ERROR',
-        );
-      }
-    } on DioException catch (e) {
-      throw _handleDioException(e, 'FEATURED_SESSIONS_ERROR');
-    }
-  }
-
-  @override
-  Future<Map<String, dynamic>> getEventStats() async {
-    try {
-      final response = await dioClient.get('/public/event/stats');
+      final response = await dioClient.get('/public/contact');
 
       if (response.statusCode == 200) {
         return response.data['data'] as Map<String, dynamic>;
       } else {
         throw ServerException(
-          message: response.data['message'] ?? 'Failed to get event stats',
-          code: 'EVENT_STATS_ERROR',
+          message:
+              response.data['message'] ?? 'Failed to get contact information',
+          code: 'CONTACT_INFO_ERROR',
         );
       }
     } on DioException catch (e) {
-      throw _handleDioException(e, 'EVENT_STATS_ERROR');
+      throw _handleDioException(e, 'CONTACT_INFO_ERROR');
     }
   }
 
@@ -84,7 +49,9 @@ class LandingRemoteDataSourceImpl implements LandingRemoteDataSource {
 
       if (response.statusCode == 200) {
         final List<dynamic> highlightsJson = response.data['data'] ?? [];
-        return highlightsJson.map((json) => json as Map<String, dynamic>).toList();
+        return highlightsJson
+            .map((json) => json as Map<String, dynamic>)
+            .toList();
       } else {
         throw ServerException(
           message: response.data['message'] ?? 'Failed to get event highlights',
@@ -93,6 +60,25 @@ class LandingRemoteDataSourceImpl implements LandingRemoteDataSource {
       }
     } on DioException catch (e) {
       throw _handleDioException(e, 'EVENT_HIGHLIGHTS_ERROR');
+    }
+  }
+
+  @override
+  Future<Event> getEventInfo() async {
+    try {
+      final response = await dioClient.get('/public/event');
+
+      if (response.statusCode == 200) {
+        return Event.fromJson(response.data['data']);
+      } else {
+        throw ServerException(
+          message:
+              response.data['message'] ?? 'Failed to get event information',
+          code: 'EVENT_INFO_ERROR',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'EVENT_INFO_ERROR');
     }
   }
 
@@ -115,13 +101,53 @@ class LandingRemoteDataSourceImpl implements LandingRemoteDataSource {
   }
 
   @override
+  Future<Map<String, dynamic>> getEventStats() async {
+    try {
+      final response = await dioClient.get('/public/event/stats');
+
+      if (response.statusCode == 200) {
+        return response.data['data'] as Map<String, dynamic>;
+      } else {
+        throw ServerException(
+          message: response.data['message'] ?? 'Failed to get event stats',
+          code: 'EVENT_STATS_ERROR',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'EVENT_STATS_ERROR');
+    }
+  }
+
+  @override
+  Future<List<Session>> getFeaturedSessions() async {
+    try {
+      final response = await dioClient.get('/public/sessions/featured');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> sessionsJson = response.data['data'] ?? [];
+        return sessionsJson.map((json) => Session.fromJson(json)).toList();
+      } else {
+        throw ServerException(
+          message:
+              response.data['message'] ?? 'Failed to get featured sessions',
+          code: 'FEATURED_SESSIONS_ERROR',
+        );
+      }
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'FEATURED_SESSIONS_ERROR');
+    }
+  }
+
+  @override
   Future<List<Map<String, dynamic>>> getSpeakers() async {
     try {
       final response = await dioClient.get('/public/speakers');
 
       if (response.statusCode == 200) {
         final List<dynamic> speakersJson = response.data['data'] ?? [];
-        return speakersJson.map((json) => json as Map<String, dynamic>).toList();
+        return speakersJson
+            .map((json) => json as Map<String, dynamic>)
+            .toList();
       } else {
         throw ServerException(
           message: response.data['message'] ?? 'Failed to get speakers',
@@ -134,31 +160,15 @@ class LandingRemoteDataSourceImpl implements LandingRemoteDataSource {
   }
 
   @override
-  Future<Map<String, dynamic>> getVenueInfo() async {
-    try {
-      final response = await dioClient.get('/public/venue');
-
-      if (response.statusCode == 200) {
-        return response.data['data'] as Map<String, dynamic>;
-      } else {
-        throw ServerException(
-          message: response.data['message'] ?? 'Failed to get venue information',
-          code: 'VENUE_INFO_ERROR',
-        );
-      }
-    } on DioException catch (e) {
-      throw _handleDioException(e, 'VENUE_INFO_ERROR');
-    }
-  }
-
-  @override
   Future<List<Map<String, dynamic>>> getSponsors() async {
     try {
       final response = await dioClient.get('/public/sponsors');
 
       if (response.statusCode == 200) {
         final List<dynamic> sponsorsJson = response.data['data'] ?? [];
-        return sponsorsJson.map((json) => json as Map<String, dynamic>).toList();
+        return sponsorsJson
+            .map((json) => json as Map<String, dynamic>)
+            .toList();
       } else {
         throw ServerException(
           message: response.data['message'] ?? 'Failed to get sponsors',
@@ -171,20 +181,21 @@ class LandingRemoteDataSourceImpl implements LandingRemoteDataSource {
   }
 
   @override
-  Future<Map<String, dynamic>> getContactInfo() async {
+  Future<Map<String, dynamic>> getVenueInfo() async {
     try {
-      final response = await dioClient.get('/public/contact');
+      final response = await dioClient.get('/public/venue');
 
       if (response.statusCode == 200) {
         return response.data['data'] as Map<String, dynamic>;
       } else {
         throw ServerException(
-          message: response.data['message'] ?? 'Failed to get contact information',
-          code: 'CONTACT_INFO_ERROR',
+          message:
+              response.data['message'] ?? 'Failed to get venue information',
+          code: 'VENUE_INFO_ERROR',
         );
       }
     } on DioException catch (e) {
-      throw _handleDioException(e, 'CONTACT_INFO_ERROR');
+      throw _handleDioException(e, 'VENUE_INFO_ERROR');
     }
   }
 

@@ -82,7 +82,6 @@ import 'package:flutter/material.dart';
 //     colors: [secondary, secondaryVariant],
 //   );
 // }
-import 'package:flutter/material.dart';
 
 class AppColors {
   // Primary Colors - Exact navy blue from web CSS

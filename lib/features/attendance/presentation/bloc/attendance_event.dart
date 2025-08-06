@@ -1,5 +1,8 @@
 import 'package:equatable/equatable.dart';
-import 'package:event_reg/features/dashboard/data/models/session.dart';
+
+import '../../data/models/session.dart';
+// import 'package:event_reg/features/dashboard/data/models/session.dart';
+
 
 abstract class AttendanceEvent extends Equatable {
   const AttendanceEvent();

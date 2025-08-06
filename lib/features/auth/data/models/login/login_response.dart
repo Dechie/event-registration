@@ -1,5 +1,4 @@
 import 'package:event_reg/features/auth/data/models/user.dart';
-import 'package:flutter/material.dart' show debugPrint;
 
 // class LoginResponse {
 //   final String id;

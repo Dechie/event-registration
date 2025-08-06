@@ -82,10 +82,10 @@ class AuthStatus {
 
   // Computed properties
   bool get isAuthenticated =>
-      Role != Role.none && token != null && token!.isNotEmpty;
+      role != Role.none && token != null && token!.isNotEmpty;
   bool get isFullySetup =>
       isAuthenticated && isEmailVerified && hasProfile && isProfileCompleted;
-  bool get isParticipant => Role == Role.participant;
+  bool get isParticipant => role == Role.participant;
 
   // Navigation decision helpers
   bool get needsEmailVerification => isAuthenticated && !isEmailVerified;
@@ -103,16 +103,20 @@ class AuthStatus {
       return NavDestination.emailVerification;
     }
 
-    if (needsProfileCreation || needsProfileCompletion) {
-      return NavDestination.profileCreation;
-    }
-
-    if (isAdmin) {
+    // For admins, skip profile creation and go directly to dashboard
+    if (isAdmin && isEmailVerified) {
       return NavDestination.adminDashboard;
     }
 
-    if (isParticipant && isFullySetup) {
-      return NavDestination.participantDashboard;
+    // For participants, check profile requirements
+    if (isParticipant) {
+      if (needsProfileCreation || needsProfileCompletion) {
+        return NavDestination.profileCreation;
+      }
+      
+      if (isFullySetup) {
+        return NavDestination.participantDashboard;
+      }
     }
 
     return NavDestination.landing;

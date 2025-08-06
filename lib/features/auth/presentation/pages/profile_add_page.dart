@@ -102,8 +102,17 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
                   backgroundColor: Colors.green,
                 ),
               );
-              // Navigate to landing page since profile is now complete
-              Navigator.pushReplacementNamed(context, RouteNames.landingPage);
+              // Navigate based on user role
+              final userData = state is AuthenticatedState ? state.userData : null;
+              final role = userData?['role'] ?? 'participant';
+              
+              if (role == 'admin') {
+                // Admin goes to admin dashboard
+                Navigator.pushReplacementNamed(context, RouteNames.adminDashboardPage);
+              } else {
+                // Participant goes to landing page
+                Navigator.pushReplacementNamed(context, RouteNames.landingPage);
+              }
             }
           }
         },

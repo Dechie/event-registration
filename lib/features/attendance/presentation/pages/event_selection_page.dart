@@ -1,9 +1,9 @@
 import 'package:event_reg/features/attendance/presentation/bloc/attendance_bloc.dart';
 import 'package:event_reg/features/attendance/presentation/bloc/attendance_event.dart';
-import 'package:event_reg/features/dashboard/data/models/session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../data/models/session.dart';
 import '../bloc/attendance_state.dart';
 
 class EventSelectionPage extends StatefulWidget {

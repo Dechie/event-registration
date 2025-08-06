@@ -20,9 +20,13 @@ class RouteNames {
   static const String participantLoginPage = '/participant-login';
   static const String adminLoginPage = '/admin-login';
 
+  // Event registration routes
+  static const String eventRegistrationStatusPage = '/event-registration-status';
+
   // Utility routes
   static const String contactPage = '/contact';
   static const String faqPage = '/faq';
   static const String eventAgendaPage = '/event-agenda';
   static const String myEventsPage = "/my-events";
+  static const String qrScannerPage = '/qr-scanner';
 }

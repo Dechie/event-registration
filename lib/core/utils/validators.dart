@@ -17,6 +17,19 @@ class Validators {
     return null;
   }
 
+  // Email validation (returns boolean)
+  static bool isValidEmail(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return false;
+    }
+
+    final emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+
+    return emailRegex.hasMatch(value.trim());
+  }
+
   // Password validation with requirements
   static String? validatePasswordWeak(String? value) {
     if (value == null || value.isEmpty) {
