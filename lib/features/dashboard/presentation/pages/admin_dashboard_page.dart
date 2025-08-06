@@ -145,7 +145,7 @@ class AdminDashboardPage extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: textTheme.titleMedium?.copyWith(
+                      style: textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
