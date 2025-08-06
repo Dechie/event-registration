@@ -1,14 +1,14 @@
+// lib/features/verification/data/datasource/verification_datasource.dart
+
 import 'package:event_reg/core/error/exceptions.dart';
 import 'package:event_reg/core/network/dio_client.dart';
 import 'package:event_reg/features/verification/data/models/verification_response.dart';
-// lib/features/verification/data/datasource/verification_remote_datasource.dart
-
 import 'package:flutter/material.dart' show debugPrint;
 
 import '../models/verification_request.dart';
 
 abstract class VerificationRemoteDataSource {
-  Future<VerificationResponse> verifyBadge(String badgeNumber);
+  Future<VerificationResponse> verifyBadge(String badgeNumber, String verificationType);
 }
 
 class VerificationRemoteDataSourceImpl implements VerificationRemoteDataSource {
@@ -17,12 +17,37 @@ class VerificationRemoteDataSourceImpl implements VerificationRemoteDataSource {
   VerificationRemoteDataSourceImpl({required this.dioClient});
 
   @override
-  Future<VerificationResponse> verifyBadge(String badgeNumber) async {
+  Future<VerificationResponse> verifyBadge(String badgeNumber, String verificationType) async {
     try {
-      debugPrint('🚀 DataSource: Verifying badge $badgeNumber');
+      debugPrint('🚀 DataSource: Verifying badge $badgeNumber for type: $verificationType');
 
-      // Create request object
-      final request = VerificationRequest(badgeNumber: badgeNumber);
+      // Create request based on verification type
+      VerificationRequest request;
+      
+      switch (verificationType.toLowerCase()) {
+        case 'attendance':
+          // For now, we'll use badge number as participant ID
+          // In a real implementation, you'd extract participant_id and eventsession_id from the QR code
+          request = VerificationRequest.attendance(
+            participantId: badgeNumber,
+            eventSessionId: '1', // You'll need to get this from QR code or context
+          );
+          break;
+        case 'coupon':
+          // For now, we'll use badge number as participant ID
+          // In a real implementation, you'd extract participant_id and coupon_id from the QR code
+          request = VerificationRequest.coupon(
+            participantId: badgeNumber,
+            couponId: '1', // You'll need to get this from QR code or context
+          );
+          break;
+        case 'security':
+        default:
+          request = VerificationRequest.security(badgeNumber: badgeNumber);
+          break;
+      }
+
+      debugPrint('📝 Request data: ${request.toJson()}');
 
       // Make API call to Laravel endpoint
       final response = await dioClient.post(

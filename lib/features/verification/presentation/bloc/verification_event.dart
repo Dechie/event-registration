@@ -1,7 +1,6 @@
-import 'package:equatable/equatable.dart';
-
 // lib/features/verification/presentation/bloc/verification_event.dart
 
+import 'package:equatable/equatable.dart';
 
 abstract class VerificationEvent extends Equatable {
   const VerificationEvent();
@@ -12,14 +11,18 @@ abstract class VerificationEvent extends Equatable {
 
 class VerifyBadgeRequested extends VerificationEvent {
   final String badgeNumber;
+  final String verificationType;
 
-  const VerifyBadgeRequested(this.badgeNumber);
+  const VerifyBadgeRequested(
+    this.badgeNumber, {
+    this.verificationType = 'security',
+  });
 
   @override
-  List<Object?> get props => [badgeNumber];
+  List<Object?> get props => [badgeNumber, verificationType];
 
   @override
-  String toString() => 'VerifyBadgeRequested(badgeNumber: $badgeNumber)';
+  String toString() => 'VerifyBadgeRequested(badgeNumber: $badgeNumber, type: $verificationType)';
 }
 
 class ResetVerificationState extends VerificationEvent {

@@ -1,6 +1,6 @@
 class AppUrls {
-  static const String baseUrl = 'http://localhost:8000/api';
-  static const String storageUrl = 'http://localhost:8000/storage';
+  static const String baseUrl = 'http://localhost:8001/api';
+  static const String storageUrl = 'http://localhost:8001/storage';
 
   // Auth endpoints
   static const String login = '/login';

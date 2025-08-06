@@ -9,7 +9,10 @@ import '../../../../core/network/network_info.dart';
 import '../models/verification_response.dart';
 
 abstract class VerificationRepository {
-  Future<Either<Failure, VerificationResponse>> verifyBadge(String badgeNumber);
+  Future<Either<Failure, VerificationResponse>> verifyBadge(
+    String badgeNumber, 
+    String verificationType,
+  );
 }
 
 class VerificationRepositoryImpl implements VerificationRepository {
@@ -22,9 +25,12 @@ class VerificationRepositoryImpl implements VerificationRepository {
   });
 
   @override
-  Future<Either<Failure, VerificationResponse>> verifyBadge(String badgeNumber) async {
+  Future<Either<Failure, VerificationResponse>> verifyBadge(
+    String badgeNumber, 
+    String verificationType,
+  ) async {
     try {
-      debugPrint('📡 Repository: Verifying badge $badgeNumber');
+      debugPrint('📡 Repository: Verifying badge $badgeNumber for type: $verificationType');
 
       // Check network connectivity
       if (!await networkInfo.isConnected) {
@@ -36,7 +42,7 @@ class VerificationRepositoryImpl implements VerificationRepository {
       }
 
       // Call remote data source
-      final response = await remoteDataSource.verifyBadge(badgeNumber);
+      final response = await remoteDataSource.verifyBadge(badgeNumber, verificationType);
       debugPrint('✅ Repository: Verification successful');
       
       return Right(response);

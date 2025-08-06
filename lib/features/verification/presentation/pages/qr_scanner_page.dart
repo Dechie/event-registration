@@ -1,3 +1,4 @@
+import 'package:event_reg/config/routes/route_names.dart';
 import 'package:event_reg/features/verification/data/models/verification_response.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,7 +8,6 @@ import '../bloc/verification_bloc.dart';
 import '../bloc/verification_event.dart';
 import '../bloc/verification_state.dart';
 
-// Custom overlay shape for QR scanner
 class QrScannerOverlayShape extends ShapeBorder {
   final Color borderColor;
   final double borderWidth;
@@ -183,7 +183,9 @@ class QrScannerOverlayShape extends ShapeBorder {
 }
 
 class QrScannerPage extends StatefulWidget {
-  const QrScannerPage({super.key});
+  final String verificationType;
+
+  const QrScannerPage({super.key, this.verificationType = 'security'});
 
   @override
   State<QrScannerPage> createState() => _QrScannerPageState();
@@ -198,7 +200,7 @@ class _QrScannerPageState extends State<QrScannerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scan QR Code'),
+        title: Text(_getAppBarTitle()),
         backgroundColor: Theme.of(context).colorScheme.onPrimary,
         foregroundColor: Theme.of(context).colorScheme.primary,
         actions: [
@@ -242,10 +244,7 @@ class _QrScannerPageState extends State<QrScannerPage> {
             _showLoadingDialog();
           } else if (state is VerificationSuccess) {
             _dismissDialog();
-            _showSuccessDialog(
-              state.response.message,
-              state.response.participant,
-            );
+            _navigateToResultPage(state.response, state.badgeNumber);
           } else if (state is VerificationFailure) {
             _dismissDialog();
             _showErrorDialog('Verification Failed', state.message);
@@ -258,7 +257,7 @@ class _QrScannerPageState extends State<QrScannerPage> {
             Container(
               decoration: ShapeDecoration(
                 shape: QrScannerOverlayShape(
-                  borderColor: Colors.green,
+                  borderColor: _getBorderColor(),
                   borderRadius: 16,
                   borderLength: 30,
                   borderWidth: 8,
@@ -281,9 +280,9 @@ class _QrScannerPageState extends State<QrScannerPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'Position the QR code within the frame',
-                      style: TextStyle(
+                    Text(
+                      _getInstructionText(),
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -315,60 +314,6 @@ class _QrScannerPageState extends State<QrScannerPage> {
     super.dispose();
   }
 
-  Widget _buildInfoRow(String label, String value, {Color? valueColor}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
-          ),
-          Expanded(
-            child: Text(value, style: TextStyle(color: valueColor)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildParticipantInfo(ParticipantInfo participant) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Participant Details',
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        _buildInfoRow('Name:', participant.fullName),
-        _buildInfoRow('Email:', participant.email),
-        if (participant.phoneNumber?.isNotEmpty == true)
-          _buildInfoRow('Phone:', participant.phoneNumber!),
-        if (participant.organization?.isNotEmpty == true)
-          _buildInfoRow('Organization:', participant.organization!),
-        if (participant.badgeNumber?.isNotEmpty == true)
-          _buildInfoRow('Badge Number:', participant.badgeNumber!),
-        _buildInfoRow(
-          'Status:',
-          participant.isVerified ? 'Verified' : 'Not Verified',
-          valueColor: participant.isVerified ? Colors.green : Colors.orange,
-        ),
-        if (participant.verifiedAt != null)
-          _buildInfoRow(
-            'Verified At:',
-            _formatDateTime(participant.verifiedAt!),
-          ),
-      ],
-    );
-  }
-
   void _dismissDialog() {
     if (Navigator.canPop(context)) {
       Navigator.pop(context);
@@ -381,8 +326,71 @@ class _QrScannerPageState extends State<QrScannerPage> {
     return qrCode.trim();
   }
 
-  String _formatDateTime(DateTime dateTime) {
-    return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+  String _getAppBarTitle() {
+    switch (widget.verificationType.toLowerCase()) {
+      case 'attendance':
+        return 'Scan for Attendance';
+      case 'security':
+        return 'Security Check';
+      case 'coupon':
+        return 'Scan Coupon';
+      default:
+        return 'Scan QR Code';
+    }
+  }
+
+  Color _getBorderColor() {
+    switch (widget.verificationType.toLowerCase()) {
+      case 'attendance':
+        return Colors.green;
+      case 'security':
+        return Colors.blue;
+      case 'coupon':
+        return Colors.orange;
+      default:
+        return Colors.green;
+    }
+  }
+
+  String _getInstructionText() {
+    switch (widget.verificationType.toLowerCase()) {
+      case 'attendance':
+        return 'Position the attendance QR code within the frame';
+      case 'security':
+        return 'Position the badge QR code within the frame';
+      case 'coupon':
+        return 'Position the coupon QR code within the frame';
+      default:
+        return 'Position the QR code within the frame';
+    }
+  }
+
+  String _getLoadingText() {
+    switch (widget.verificationType.toLowerCase()) {
+      case 'attendance':
+        return 'Checking attendance...';
+      case 'security':
+        return 'Verifying credentials...';
+      case 'coupon':
+        return 'Validating coupon...';
+      default:
+        return 'Verifying...';
+    }
+  }
+
+  void _navigateToResultPage(
+    VerificationResponse response,
+    String badgeNumber,
+  ) {
+    Navigator.pushReplacementNamed(
+      context,
+      RouteNames.verificationResultPage,
+      arguments: {
+        'type': widget.verificationType,
+        'response': response,
+        'badgeNumber': badgeNumber,
+      },
+    );
   }
 
   void _onDetect(BarcodeCapture capture) {
@@ -401,7 +409,10 @@ class _QrScannerPageState extends State<QrScannerPage> {
         final badgeNumber = _extractBadgeNumber(code);
         if (badgeNumber.isNotEmpty) {
           context.read<VerificationBloc>().add(
-            VerifyBadgeRequested(badgeNumber),
+            VerifyBadgeRequested(
+              badgeNumber,
+              verificationType: widget.verificationType,
+            ),
           );
         } else {
           _showErrorDialog(
@@ -452,59 +463,20 @@ class _QrScannerPageState extends State<QrScannerPage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
+      builder: (context) => Center(
         child: Card(
           child: Padding(
-            padding: EdgeInsets.all(24.0),
+            padding: const EdgeInsets.all(24.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Verifying participant...'),
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                Text(_getLoadingText()),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  void _showSuccessDialog(String message, ParticipantInfo? participant) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        icon: const Icon(Icons.check_circle, color: Colors.green, size: 48),
-        title: const Text('Verification Successful'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(message),
-            if (participant != null) ...[
-              const SizedBox(height: 16),
-              const Divider(),
-              const SizedBox(height: 8),
-              _buildParticipantInfo(participant),
-            ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _resetScanner();
-            },
-            child: const Text('Scan Another'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context); // Go back to dashboard
-            },
-            child: const Text('Done'),
-          ),
-        ],
       ),
     );
   }

@@ -12,6 +12,7 @@ import 'package:event_reg/features/dashboard/presentation/pages/admin_dashboard_
 import 'package:event_reg/features/landing/presentation/pages/landing_page.dart';
 import 'package:event_reg/features/splash/presentation/pages/splash_page.dart';
 import 'package:event_reg/features/verification/presentation/pages/qr_scanner_page.dart';
+import 'package:event_reg/features/verification/presentation/pages/verification_result_page.dart';
 import 'package:event_reg/injection_container.dart' as di;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -86,31 +87,25 @@ class AppRouter {
           ),
         );
 
-      // case RouteNames.participantDashboardPage:
-      //   final args = settings.arguments as Map<String, dynamic>?;
-      //   return MaterialPageRoute(
-      //     builder: (_) => AuthGuard(
-      //       requiredrole: 'participant',
-      //       child: BlocProvider(
-      //         create: (context) => di.sl<DashboardBloc>()
-      //           ..add(
-      //             LoadParticipantDashboardEvent(
-      //                   email: args?['email'] as String? ?? '',
-      //                 )
-      //                 as DashboardEvent,
-      //           ),
-      //         child: ParticipantDashboardPage(email: args?['email'] ?? ''),
-      //       ),
-      //     ),
-      //   );
-
-      // Uncomment and modify this section:
       case RouteNames.adminDashboardPage:
         return MaterialPageRoute(builder: (_) => const AdminDashboardPage());
 
       case RouteNames.qrScannerPage:
+        final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
-          builder: (_) => const QrScannerPage(), 
+          builder: (_) => QrScannerPage(
+            verificationType: args?['type'] ?? 'security',
+          ),
+        );
+
+      case RouteNames.verificationResultPage:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => VerificationResultPage(
+            verificationType: args['type'],
+            response: args['response'],
+            badgeNumber: args['badgeNumber'],
+          ),
         );
 
       case RouteNames.eventAgendaPage:
@@ -129,6 +124,7 @@ class AppRouter {
     }
   }
 }
+
 
 // Auth Guard Widget to protect routes
 class AuthGuard extends StatelessWidget {
