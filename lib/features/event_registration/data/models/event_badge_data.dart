@@ -38,7 +38,7 @@ class EventBadgeData {
       organizationName: event['organization']['name'],
       eventDate: DateTime.parse(event['start_time']),
       eventLocation: event['location'],
-      downloadedImagePath: eventDetails["downloaded_image_path"] ?? "",
+      downloadedImagePath: eventDetails["downloaded_image_path"] ?? participant["downloaded_image_path"] ?? "",
     );
   }
 }

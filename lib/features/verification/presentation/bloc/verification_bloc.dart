@@ -21,7 +21,7 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
     Emitter<VerificationState> emit,
   ) async {
     try {
-      debugPrint('🔍 Starting verification for badge: ${event.badgeNumber} (type: ${event.verificationType})');
+      debugPrint('🔍 Starting verification for badge:  [32m${event.badgeNumber} [0m (type: ${event.verificationType})');
       
       // Validate badge number
       if (event.badgeNumber.trim().isEmpty) {
@@ -37,10 +37,12 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
       // Emit loading state
       emit(VerificationLoading(event.badgeNumber));
 
-      // Call repository to verify badge
+      // Call repository to verify badge, passing extra data if present
       final result = await repository.verifyBadge(
         event.badgeNumber.trim(),
         event.verificationType,
+        eventSessionId: event.eventSessionId,
+        couponId: event.couponId,
       );
 
       result.fold(

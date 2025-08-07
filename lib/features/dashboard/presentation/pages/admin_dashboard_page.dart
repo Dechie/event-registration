@@ -1,3 +1,4 @@
+// lib/features/dashboard/presentation/pages/admin_dashboard_page.dart
 import 'package:event_reg/config/routes/route_names.dart';
 import 'package:flutter/material.dart';
 
@@ -62,7 +63,7 @@ class AdminDashboardPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // QR Scanner buttons
+            // QR Scanner buttons - Updated to show 4 options
             Expanded(
               child: GridView.count(
                 crossAxisCount: 1,
@@ -84,7 +85,7 @@ class AdminDashboardPage extends StatelessWidget {
                     colorScheme: colorScheme,
                     context,
                     icon: Icons.security,
-                    title: 'Check Security',
+                    title: 'Security Check',
                     description: 'Verify participant credentials and access',
                     color: Colors.blue,
                     onTap: () => _navigateToScanner(context, 'security'),
@@ -98,6 +99,16 @@ class AdminDashboardPage extends StatelessWidget {
                     description: 'Scan and validate participant coupons',
                     color: Colors.orange,
                     onTap: () => _navigateToScanner(context, 'coupon'),
+                  ),
+                  _buildActionCard(
+                    textTheme: textTheme,
+                    colorScheme: colorScheme,
+                    context,
+                    icon: Icons.info_outline,
+                    title: 'Participant Info',
+                    description: 'View detailed participant information',
+                    color: Colors.purple,
+                    onTap: () => _navigateToScanner(context, 'info'),
                   ),
                 ],
               ),
@@ -140,8 +151,7 @@ class AdminDashboardPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize:
-                      MainAxisSize.min, // Changed to `min` to prevent overflow
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       title,
@@ -150,13 +160,12 @@ class AdminDashboardPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    // This is the fix for the overflow error
                     Text(
                       description,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
+                       color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],

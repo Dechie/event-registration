@@ -509,7 +509,7 @@ class _BadgePageState extends State<BadgePage> {
                         border: Border.all(color: Colors.grey[300]!),
                       ),
                       child: QrImageView(
-                        data: badgeData.badgeNumber,
+                        data: badgeData.badgeNumber, // Always use badge number for QR code
                         version: QrVersions.auto,
                         backgroundColor: Colors.white,
                         padding: const EdgeInsets.all(4),
@@ -607,13 +607,42 @@ class _BadgePageState extends State<BadgePage> {
     });
 
     try {
-      // Capture both badges as images
-      final frontBoundary =
-          _frontBadgeKey.currentContext!.findRenderObject()
-              as RenderRepaintBoundary;
-      final backBoundary =
-          _backBadgeKey.currentContext!.findRenderObject()
-              as RenderRepaintBoundary;
+      // Wait for the widget tree to build
+      await Future.delayed(Duration.zero);
+
+      final frontContext = _frontBadgeKey.currentContext;
+      final backContext = _backBadgeKey.currentContext;
+      if (frontContext == null || backContext == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Badge is not visible. Please make sure the badge is displayed before downloading.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        setState(() {
+          _isGeneratingPdf = false;
+        });
+        return;
+      }
+
+      final frontBoundary = frontContext.findRenderObject() as RenderRepaintBoundary?;
+      final backBoundary = backContext.findRenderObject() as RenderRepaintBoundary?;
+      if (frontBoundary == null || backBoundary == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Could not capture badge image. Please try again.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        setState(() {
+          _isGeneratingPdf = false;
+        });
+        return;
+      }
 
       final frontImage = await frontBoundary.toImage(pixelRatio: 3.0);
       final backImage = await backBoundary.toImage(pixelRatio: 3.0);
@@ -625,8 +654,23 @@ class _BadgePageState extends State<BadgePage> {
         format: ui.ImageByteFormat.png,
       );
 
-      final frontPngBytes = frontByteData!.buffer.asUint8List();
-      final backPngBytes = backByteData!.buffer.asUint8List();
+      if (frontByteData == null || backByteData == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to capture badge image data.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        setState(() {
+          _isGeneratingPdf = false;
+        });
+        return;
+      }
+
+      final frontPngBytes = frontByteData.buffer.asUint8List();
+      final backPngBytes = backByteData.buffer.asUint8List();
 
       // Create PDF
       final pdf = pw.Document();

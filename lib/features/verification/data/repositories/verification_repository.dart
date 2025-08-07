@@ -10,9 +10,11 @@ import '../models/verification_response.dart';
 
 abstract class VerificationRepository {
   Future<Either<Failure, VerificationResponse>> verifyBadge(
-    String badgeNumber, 
-    String verificationType,
-  );
+    String badgeNumber,
+    String verificationType, {
+    String? eventSessionId,
+    String? couponId,
+  });
 }
 
 class VerificationRepositoryImpl implements VerificationRepository {
@@ -26,9 +28,11 @@ class VerificationRepositoryImpl implements VerificationRepository {
 
   @override
   Future<Either<Failure, VerificationResponse>> verifyBadge(
-    String badgeNumber, 
-    String verificationType,
-  ) async {
+    String badgeNumber,
+    String verificationType, {
+    String? eventSessionId,
+    String? couponId,
+  }) async {
     try {
       debugPrint('📡 Repository: Verifying badge $badgeNumber for type: $verificationType');
 
@@ -42,7 +46,12 @@ class VerificationRepositoryImpl implements VerificationRepository {
       }
 
       // Call remote data source
-      final response = await remoteDataSource.verifyBadge(badgeNumber, verificationType);
+      final response = await remoteDataSource.verifyBadge(
+        badgeNumber,
+        verificationType,
+        eventSessionId: eventSessionId,
+        couponId: couponId,
+      );
       debugPrint('✅ Repository: Verification successful');
       
       return Right(response);

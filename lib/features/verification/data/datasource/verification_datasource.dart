@@ -8,7 +8,12 @@ import 'package:flutter/material.dart' show debugPrint;
 import '../models/verification_request.dart';
 
 abstract class VerificationRemoteDataSource {
-  Future<VerificationResponse> verifyBadge(String badgeNumber, String verificationType);
+  Future<VerificationResponse> verifyBadge(
+    String badgeNumber,
+    String verificationType, {
+    String? eventSessionId,
+    String? couponId,
+  });
 }
 
 class VerificationRemoteDataSourceImpl implements VerificationRemoteDataSource {
@@ -17,63 +22,55 @@ class VerificationRemoteDataSourceImpl implements VerificationRemoteDataSource {
   VerificationRemoteDataSourceImpl({required this.dioClient});
 
   @override
-  Future<VerificationResponse> verifyBadge(String badgeNumber, String verificationType) async {
+  Future<VerificationResponse> verifyBadge(
+    String badgeNumber,
+    String verificationType, {
+    String? eventSessionId,
+    String? couponId,
+  }) async {
     try {
       debugPrint('🚀 DataSource: Verifying badge $badgeNumber for type: $verificationType');
-
-      // Create request based on verification type
       VerificationRequest request;
-      
       switch (verificationType.toLowerCase()) {
         case 'attendance':
-          // For now, we'll use badge number as participant ID
-          // In a real implementation, you'd extract participant_id and eventsession_id from the QR code
           request = VerificationRequest.attendance(
-            participantId: badgeNumber,
-            eventSessionId: '1', // You'll need to get this from QR code or context
+            badgeNumber: badgeNumber,
+            eventSessionId: eventSessionId ?? '1',
           );
           break;
         case 'coupon':
-          // For now, we'll use badge number as participant ID
-          // In a real implementation, you'd extract participant_id and coupon_id from the QR code
           request = VerificationRequest.coupon(
-            participantId: badgeNumber,
-            couponId: '1', // You'll need to get this from QR code or context
+            badgeNumber: badgeNumber,
+            couponId: couponId ?? '1',
           );
+          break;
+        case 'info':
+          request = VerificationRequest.info(badgeNumber: badgeNumber);
           break;
         case 'security':
         default:
           request = VerificationRequest.security(badgeNumber: badgeNumber);
           break;
       }
-
-      debugPrint('📝 Request data: ${request.toJson()}');
-
-      // Make API call to Laravel endpoint
+      debugPrint('📝 Request data:  [36m${request.toJson()} [0m');
       final response = await dioClient.post(
-        "/qr/check/from-center",
+        "/qr/check",
         data: request.toJson(),
       );
-
       debugPrint('📥 DataSource: Response status ${response.statusCode}');
       debugPrint('📥 DataSource: Response data ${response.data}');
-
       if (response.statusCode == 200) {
         final data = response.data;
-
-        // Handle nested data response or direct response
         final responseData = data is Map<String, dynamic>
             ? (data["data"] ?? data)
             : data;
-
         if (responseData is! Map<String, dynamic>) {
-          debugPrint('❌ Invalid response format: ${responseData.runtimeType}');
+          debugPrint('❌ Invalid response format:  [31m${responseData.runtimeType} [0m');
           throw ServerException(
             message: "Invalid response format from server",
             code: "INVALID_RESPONSE_FORMAT",
           );
         }
-
         try {
           final verificationResponse = VerificationResponse.fromJson(
             responseData,
@@ -94,29 +91,14 @@ class VerificationRemoteDataSourceImpl implements VerificationRemoteDataSource {
         final errorCode = response.data is Map<String, dynamic>
             ? response.data["code"] ?? "VERIFICATION_FAILED"
             : "VERIFICATION_FAILED";
-
-        debugPrint(
-          '❌ API Error: $errorMessage (Status: ${response.statusCode})',
+        throw ServerException(
+          message: errorMessage,
+          code: errorCode,
         );
-        throw ServerException(message: errorMessage, code: errorCode);
       }
-    } on ApiError catch (e) {
-      debugPrint('❌ API Error during verification: ${e.message}');
-      _handleApiError(e, "VERIFICATION_ERROR");
-    } on FormatException catch (e) {
-      debugPrint('❌ Format/Parse error during verification: $e');
-      throw ServerException(
-        message: "Invalid response format from server: $e",
-        code: "PARSE_ERROR",
-      );
-    } catch (e, stackTrace) {
-      debugPrint('❌ Unexpected error during verification: $e');
-      debugPrint('❌ Stack trace: $stackTrace');
-      if (e is ServerException) rethrow;
-      throw ServerException(
-        message: "An unexpected error occurred during verification: $e",
-        code: "UNEXPECTED_VERIFICATION_ERROR",
-      );
+    } catch (e) {
+      debugPrint('❌ DataSource: Unexpected error - $e');
+      rethrow;
     }
   }
 
