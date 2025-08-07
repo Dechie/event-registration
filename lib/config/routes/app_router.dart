@@ -8,7 +8,7 @@ import 'package:event_reg/features/auth/presentation/pages/login/participant_log
 import 'package:event_reg/features/auth/presentation/pages/profile_add_page.dart';
 import 'package:event_reg/features/auth/presentation/pages/user_registration.dart';
 import 'package:event_reg/features/badge/presentation/pages/badge_page.dart';
-import 'package:event_reg/features/dashboard/presentation/pages/admin_dashboard_page.dart';
+import 'package:event_reg/features/admin_dashboard/presentation/pages/admin_dashboard_page.dart';
 import 'package:event_reg/features/landing/presentation/pages/landing_page.dart';
 import 'package:event_reg/features/splash/presentation/pages/splash_page.dart';
 import 'package:event_reg/features/verification/presentation/pages/qr_scanner_page.dart';

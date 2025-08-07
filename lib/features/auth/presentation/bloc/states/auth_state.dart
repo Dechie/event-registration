@@ -39,6 +39,11 @@ class AuthLoadingState extends AuthState {
   const AuthLoadingState();
 }
 
+class AuthLoggedOutState extends AuthState {
+  @override
+  List<Object?> get props => [];
+}
+
 class AuthOTPSentState extends AuthState {
   final String message;
   final String email;

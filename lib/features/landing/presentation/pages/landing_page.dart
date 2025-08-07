@@ -10,6 +10,7 @@ import 'package:event_reg/features/event_registration/presentation/bloc/event_re
 import 'package:event_reg/features/event_registration/presentation/pages/event_details_page.dart';
 import 'package:event_reg/features/event_registration/presentation/pages/event_registration_status_page.dart';
 import 'package:event_reg/features/landing/data/models/event.dart';
+import 'package:event_reg/features/landing/presentation/widgets/participant_drawer.dart';
 import 'package:event_reg/injection_container.dart' as di;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -35,6 +36,7 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Events")),
+      drawer: ParticipantLandingDrawer(),
       body: RefreshIndicator(
         onRefresh: () async {
           context.read<EventRegistrationBloc>().add(

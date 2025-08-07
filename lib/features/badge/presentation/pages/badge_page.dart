@@ -275,14 +275,14 @@ class _BadgePageState extends State<BadgePage> {
                         letterSpacing: 2,
                       ),
                     ),
-                    Text(
-                      'EVENT ORG NAME',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.orange.shade600,
-                        letterSpacing: 1,
-                      ),
-                    ),
+                    // Text(
+                    //   'EVENT ORG NAME',
+                    //   style: TextStyle(
+                    //     fontSize: 12,
+                    //     color: AppColors.secondary,
+                    //     letterSpacing: 1,
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
@@ -303,7 +303,7 @@ class _BadgePageState extends State<BadgePage> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.indigo.shade800,
+                    color: AppColors.primary,
                   ),
                 ),
               ),
@@ -321,6 +321,63 @@ class _BadgePageState extends State<BadgePage> {
               ),
 
               const Spacer(),
+              Text(
+                "For Technical Support",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+              //SizedBox(height: 4),
+              SizedBox(
+                height: 25,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 6,
+                  children: [
+                    Icon(
+                      Icons.email,
+                      color: AppColors.primaryVariant,
+                      size: 14,
+                    ),
+                    Text(
+                      "icteventhub@gmail.com",
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 25,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 6,
+                  children: [
+                    Icon(
+                      Icons.email,
+                      color: AppColors.primaryVariant,
+                      size: 14,
+                    ),
+                    Text(
+                      "+ 251 9 10 21 08 14",
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 12),
             ],
           ),
         ],
@@ -482,7 +539,7 @@ class _BadgePageState extends State<BadgePage> {
 
               // Occupation/Role
               Text(
-                'OCCUPATION', // Replace with actual occupation if available
+                'PARTICIPANT',
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.indigo.shade800,
@@ -509,7 +566,8 @@ class _BadgePageState extends State<BadgePage> {
                         border: Border.all(color: Colors.grey[300]!),
                       ),
                       child: QrImageView(
-                        data: badgeData.badgeNumber, // Always use badge number for QR code
+                        data: badgeData
+                            .badgeNumber, // Always use badge number for QR code
                         version: QrVersions.auto,
                         backgroundColor: Colors.white,
                         padding: const EdgeInsets.all(4),
@@ -616,7 +674,9 @@ class _BadgePageState extends State<BadgePage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Badge is not visible. Please make sure the badge is displayed before downloading.'),
+              content: Text(
+                'Badge is not visible. Please make sure the badge is displayed before downloading.',
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -627,8 +687,10 @@ class _BadgePageState extends State<BadgePage> {
         return;
       }
 
-      final frontBoundary = frontContext.findRenderObject() as RenderRepaintBoundary?;
-      final backBoundary = backContext.findRenderObject() as RenderRepaintBoundary?;
+      final frontBoundary =
+          frontContext.findRenderObject() as RenderRepaintBoundary?;
+      final backBoundary =
+          backContext.findRenderObject() as RenderRepaintBoundary?;
       if (frontBoundary == null || backBoundary == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

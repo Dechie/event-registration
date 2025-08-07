@@ -1,5 +1,6 @@
 // lib/features/dashboard/presentation/pages/admin_dashboard_page.dart
 import 'package:event_reg/config/routes/route_names.dart';
+import 'package:event_reg/features/admin_dashboard/presentation/widgets/admin_dashboard_drawer.dart';
 import 'package:flutter/material.dart';
 
 class AdminDashboardPage extends StatelessWidget {
@@ -16,6 +17,7 @@ class AdminDashboardPage extends StatelessWidget {
         centerTitle: true,
         elevation: 2,
       ),
+      drawer: AdminDashboardDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
