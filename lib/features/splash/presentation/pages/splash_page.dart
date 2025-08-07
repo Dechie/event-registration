@@ -51,41 +51,26 @@ class SplashPage extends StatelessWidget {
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.primary,
+        backgroundColor: Colors.white,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // App Logo
-              Container(
+              SizedBox(
                 width: 120,
                 height: 120,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.event,
-                  size: 60,
-                  color: AppColors.primary,
-                ),
+                child: Image.asset("assets/logo.png"),
               ),
               const SizedBox(height: 24),
 
               // App Name
               const Text(
-                'Event Registration',
+                'EventHub',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.primary,
                 ),
               ),
               const SizedBox(height: 8),
@@ -95,15 +80,14 @@ class SplashPage extends StatelessWidget {
                 'Connect. Learn. Grow.',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.white.withOpacity(0.8),
+                  color: AppColors.primaryVariant,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 40),
 
               // Loading Indicator
-              const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
+              const CircularProgressIndicator(color: AppColors.primary),
               const SizedBox(height: 16),
 
               // Loading text

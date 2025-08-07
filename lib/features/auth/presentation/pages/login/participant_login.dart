@@ -41,7 +41,7 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
             final userData = state.userData;
             final hasProfile = userData?['hasProfile'] ?? false;
             final isProfileCompleted = userData?['isProfileCompleted'] ?? false;
-            
+
             if (!hasProfile || !isProfileCompleted) {
               // User needs to complete profile
               Navigator.of(context).pushNamedAndRemoveUntil(
@@ -52,7 +52,7 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
             } else {
               // User has complete profile, go to participant dashboard
               Navigator.of(context).pushNamedAndRemoveUntil(
-                RouteNames.participantDashboardPage,
+                RouteNames.landingPage,
                 arguments: {"email": state.email},
                 (route) => false,
               );

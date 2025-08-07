@@ -59,9 +59,11 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
                     );
                   } else if (state is AvailableEventsLoaded) {
                     _availableEvents = state.events;
+
                     return _buildEventsSection();
                   } else if (state is MyEventsLoaded) {
                     _registeredEvents = state.events;
+
                     return _buildEventsSection();
                   } else if (state is EventRegistrationError) {
                     return Padding(
@@ -108,6 +110,7 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
                       ),
                     );
                   }
+
                   return _buildEventsSection();
                 },
               ),
@@ -116,24 +119,24 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
               //const EventHighlightsCard(),
 
               // Action Buttons Section
-              _buildActionButtons(),
+              //_buildActionButtons(),
 
               // Admin Access (Hidden/Small Link)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 32.0),
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, RouteNames.adminLoginPage);
-                  },
-                  child: Text(
-                    'Admin Access',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ),
+              // Padding(
+              //   padding: const EdgeInsets.only(bottom: 32.0),
+              //   child: TextButton(
+              //     onPressed: () {
+              //       Navigator.pushNamed(context, RouteNames.adminLoginPage);
+              //     },
+              //     child: Text(
+              //       'Admin Access',
+              //       style: TextStyle(
+              //         color: AppColors.textSecondary,
+              //         fontSize: 12,
+              //       ),
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ),
@@ -239,6 +242,93 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildEventActionButton(Event event) {
+    // Check if user is registered for this event
+    final isRegistered = _registeredEvents.any((e) => e.id == event.id);
+
+    if (!_isAuthenticated) {
+      // Not authenticated - show "View Details"
+      return SizedBox(
+        width: double.infinity,
+        child: CustomButton(
+          text: 'View Details',
+          onPressed: () => _navigateToEventDetails(event),
+          backgroundColor: AppColors.primary,
+          textColor: Colors.white,
+        ),
+      );
+    }
+
+    if (!isRegistered) {
+      // Not registered - show "View Details & Register"
+      return SizedBox(
+        width: double.infinity,
+        child: CustomButton(
+          text: 'View Details & Register',
+          onPressed: () => _navigateToEventDetails(event),
+          backgroundColor: AppColors.primary,
+          textColor: Colors.white,
+        ),
+      );
+    }
+
+    // Registered - show status-based button
+    return FutureBuilder<String?>(
+      future: _getRegistrationStatusForEvent(event.id),
+      builder: (context, snapshot) {
+        final status = snapshot.data ?? 'pending';
+
+        String buttonText;
+        Color buttonColor;
+
+        switch (status.toLowerCase()) {
+          case 'approved':
+            buttonText = 'View Badge';
+            buttonColor = Colors.green;
+            break;
+          case 'rejected':
+            buttonText = 'Registration Rejected';
+            buttonColor = Colors.red;
+            break;
+          case 'pending':
+          default:
+            buttonText = 'Registration Pending';
+            buttonColor = Colors.orange;
+            break;
+        }
+
+        return SizedBox(
+          width: double.infinity,
+          child: CustomButton(
+            text: buttonText,
+            onPressed: () {
+              if (status.toLowerCase() == 'approved') {
+                // Navigate to badge page
+                Navigator.pushNamed(
+                  context,
+                  RouteNames.badgePage,
+                  arguments: {
+                    "event": event,
+                    "registrationData": {"status": status},
+                  },
+                );
+              } else {
+                // Navigate to registration status page
+                Navigator.pushNamed(
+                  context,
+                  RouteNames.eventRegistrationStatusPage,
+                  arguments: {"event": event},
+                );
+              }
+            },
+            backgroundColor: buttonColor,
+            textColor: Colors.white,
+          ),
+        );
+      },
     );
   }
 
@@ -374,93 +464,6 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
     );
   }
 
-  Widget _buildEventActionButton(Event event) {
-    // Check if user is registered for this event
-    final isRegistered = _registeredEvents.any((e) => e.id == event.id);
-    
-    if (!_isAuthenticated) {
-      // Not authenticated - show "View Details"
-      return SizedBox(
-        width: double.infinity,
-        child: CustomButton(
-          text: 'View Details',
-          onPressed: () => _navigateToEventDetails(event),
-          backgroundColor: AppColors.primary,
-          textColor: Colors.white,
-        ),
-      );
-    }
-
-    if (!isRegistered) {
-      // Not registered - show "View Details & Register"
-      return SizedBox(
-        width: double.infinity,
-        child: CustomButton(
-          text: 'View Details & Register',
-          onPressed: () => _navigateToEventDetails(event),
-          backgroundColor: AppColors.primary,
-          textColor: Colors.white,
-        ),
-      );
-    }
-
-    // Registered - show status-based button
-    return FutureBuilder<String?>(
-      future: _getRegistrationStatusForEvent(event.id),
-      builder: (context, snapshot) {
-        final status = snapshot.data ?? 'pending';
-
-        String buttonText;
-        Color buttonColor;
-
-        switch (status.toLowerCase()) {
-          case 'approved':
-            buttonText = 'View Badge';
-            buttonColor = Colors.green;
-            break;
-          case 'rejected':
-            buttonText = 'Registration Rejected';
-            buttonColor = Colors.red;
-            break;
-          case 'pending':
-          default:
-            buttonText = 'Registration Pending';
-            buttonColor = Colors.orange;
-            break;
-        }
-
-        return SizedBox(
-          width: double.infinity,
-          child: CustomButton(
-            text: buttonText,
-            onPressed: () {
-              if (status.toLowerCase() == 'approved') {
-                // Navigate to badge page
-                Navigator.pushNamed(
-                  context,
-                  RouteNames.badgePage,
-                  arguments: {
-                    "event": event,
-                    "registrationData": {"status": status},
-                  },
-                );
-              } else {
-                // Navigate to registration status page
-                Navigator.pushNamed(
-                  context,
-                  RouteNames.eventRegistrationStatusPage,
-                  arguments: {"event": event},
-                );
-              }
-            },
-            backgroundColor: buttonColor,
-            textColor: Colors.white,
-          ),
-        );
-      },
-    );
-  }
-
   // In lib/features/landing/presentation/pages/landing_page.dart
 
   Widget _buildEventsSection() {
@@ -485,6 +488,7 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
               itemBuilder: (context, index) {
                 final event = _registeredEvents[index];
                 // ✅ Correct: Using the card that checks status
+
                 return _buildRegisteredEventCard(event);
               },
             ),
@@ -500,6 +504,7 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
             itemBuilder: (context, index) {
               final event = unregisteredEvents[index];
               // ✅ Correct: Using the simplified card that does NOT check status
+
               return _buildEventCard(event);
             },
           ),
@@ -884,9 +889,7 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Select Role'),
-        content: const Text(
-          'Please select your role to sign in.',
-        ),
+        content: const Text('Please select your role to sign in.'),
         actions: [
           TextButton(
             onPressed: () {

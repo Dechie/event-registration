@@ -227,12 +227,43 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         },
         (loginResponse) {
           debugPrint(
-            "at auth bloc: login successful. role: ${loginResponse.user.role}",
+            "at auth bloc: login successful. role:  ${loginResponse.user.role}",
           );
 
           var user = loginResponse.user;
-          debugPrint("inside result.fold((success){}): user role: ${user.role}");
-          
+          debugPrint(
+            "inside result.fold((success){}): user role:  ${user.role}",
+          );
+
+          // New logic for participant profile flags
+          if (user.role == 'participant') {
+            final hasProfile = user.hasProfile;
+            final profileRequired = user.profileRequired;
+            final userDataValue = user.toJson();
+            if (profileRequired) {
+              userDataService.setHasProfile(hasProfile);
+              userDataService.setProfileCompleted(hasProfile);
+
+              userDataValue["hasProfile"] = hasProfile;
+              userDataValue["isProfileCompleted"] = hasProfile;
+
+              emit(
+                AuthenticatedState(
+                  userId: user.id,
+                  email: user.email,
+                  role: user.role,
+                  token: loginResponse.token,
+                  userData: userDataValue,
+                ),
+              );
+
+              // The UI should check hasProfile/isProfileCompleted and route accordingly
+
+              return;
+            }
+          }
+
+          // For admin or if profileRequired is false, proceed as before
           emit(
             AuthenticatedState(
               userId: user.id,
