@@ -1,6 +1,8 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class AppUrls {
-  static const String baseUrl = 'http://localhost:8001/api';
-  static const String storageUrl = 'http://localhost:8001/storage';
+  static String baseUrl = dotenv.env["BASE_URL"]!;
+  static String storageUrl = dotenv.env["STORAGE_URL"]!;
 
   // Auth endpoints
   static const String login = '/login';
