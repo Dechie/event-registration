@@ -30,6 +30,7 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
           badgeNumber: event.badgeNumber,
           code: 'INVALID_BADGE_NUMBER',
         ));
+
         return;
       }
 

@@ -26,3 +26,5 @@ class SplashNavigateToParticipantDashboard extends SplashState {
 }
 
 class SplashNavigateToAdminDashboard extends SplashState {}
+class SplashNavigateToAdminLogin extends SplashState {}
+class SplashNavigateToParticipantLogin extends SplashState {}

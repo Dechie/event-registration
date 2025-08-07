@@ -61,6 +61,16 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
           debugPrint("📍 → Admin Dashboard");
           emit(SplashNavigateToAdminDashboard());
           break;
+
+        case NavDestination.participantLogin:
+          debugPrint("📍 → Participant Login");
+          emit(SplashNavigateToParticipantLogin());
+          break;
+
+        case NavDestination.adminLogin:
+          debugPrint("📍 → Admin Login");
+          emit(SplashNavigateToAdminLogin());
+          break;
       }
     } catch (e) {
       debugPrint("❌ Error during authentication check: $e");

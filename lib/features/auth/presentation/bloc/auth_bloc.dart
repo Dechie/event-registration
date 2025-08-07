@@ -183,7 +183,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               ),
             );
 
-            userDataService.setHasProfile(true);
+            userDataService.setHasProfile(false);
+            userDataService.setProfileCompleted(true);
           }
         },
         (obtainedResult) {
@@ -196,6 +197,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           );
 
           userDataService.setHasProfile(true);
+          userDataService.setProfileCompleted(true);
         },
       );
     } catch (e) {
@@ -212,6 +214,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         password: event.password,
         role: event.role,
       );
+      debugPrint("auth bloc _onLogin(): role: ${event.role}");
 
       result.fold(
         (failure) {
@@ -226,13 +229,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           debugPrint(
             "at auth bloc: login successful. role: ${loginResponse.user.role}",
           );
+
+          var user = loginResponse.user;
+          debugPrint("inside result.fold((success){}): user role: ${user.role}");
+          
           emit(
             AuthenticatedState(
-              userId: loginResponse.user.id,
-              email: loginResponse.user.email,
-              role: loginResponse.user.role,
+              userId: user.id,
+              email: user.email,
+              role: user.role,
               token: loginResponse.token,
-              userData: loginResponse.user.toJson(),
+              userData: user.toJson(),
             ),
           );
         },
@@ -379,6 +386,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         },
         (obtainedResult) async {
           await userDataService.setHasProfile(true);
+          await userDataService.setProfileCompleted(true);
           emit(
             AuthProfileUpdatedState(
               message: 'Profile updated successfully',

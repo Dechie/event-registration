@@ -33,6 +33,9 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
       debugPrint("fullname: ${profileData["fullName"]}");
       profileData.forEach((key, value) {
         var keyV = mapJavaCaseToSnakeCase(key);
+        if (keyV == "full_name") {
+          keyV = "name";
+        }
         debugPrint("key: [$key/$keyV], value: $value");
         formData.fields.add(MapEntry(key, value.toString()));
         if (value != null && key != 'photo') {}

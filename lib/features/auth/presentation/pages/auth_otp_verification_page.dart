@@ -77,7 +77,7 @@ class _AuthOTPVerificationPageState extends State<AuthOTPVerificationPage>
             if (role == 'admin') {
               // Admin goes directly to admin dashboard
               Navigator.of(context).pushNamedAndRemoveUntil(
-                RouteNames.adminDashboardPage,
+                RouteNames.adminLoginPage,
                 (route) => false,
               );
             } else {

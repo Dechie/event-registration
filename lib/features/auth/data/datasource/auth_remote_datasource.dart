@@ -48,6 +48,8 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         final loginData = data is Map<String, dynamic>
             ? (data["data"] ?? data)
             : data;
+
+        loginData["user"]["role"] = loginRequest.role;
         debugPrint("at auth remote datasoruce, login response:");
         debugPrint(jsonEncode(loginData));
         if (loginData is! Map<String, dynamic>) {

@@ -232,25 +232,11 @@ class AuthRepositoryImpl implements AuthRepository {
       final loginResponse = await remoteDatasource.login(loginRequest);
 
       debugPrint('✅ Login successful, caching user data...');
-      if (loginResponse.user.role == "no-role" ||
-          loginResponse.user.role == "") {
-        LoginResponse loginResponseCopy = loginResponse.copyWithForceUserRole(
-          role: role,
-        );
-        await localDataSource.cacheUserData(loginResponseCopy);
+      await localDataSource.cacheUserData(loginResponse);
+      // Cache the user data locally
+      debugPrint('✅ User data cached successfully');
 
-        // Cache the user data locally
-        debugPrint('✅ User data cached successfully');
-
-        return Right(loginResponseCopy);
-      } else {
-        await localDataSource.cacheUserData(loginResponse);
-
-        // Cache the user data locally
-        debugPrint('✅ User data cached successfully');
-
-        return Right(loginResponse);
-      }
+      return Right(loginResponse);
     } on NetworkException catch (e) {
       debugPrint('❌ Network error during login: ${e.message}');
 

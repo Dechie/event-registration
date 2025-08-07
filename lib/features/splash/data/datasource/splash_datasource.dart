@@ -94,6 +94,7 @@ class SplashLocalDataSourceImpl implements SplashLocalDataSource {
       // Save additional status flags
       await userDataService.setEmailVerified(authStatus.isEmailVerified);
       await userDataService.setHasProfile(authStatus.hasProfile);
+      await userDataService.setProfileCompleted(authStatus.hasProfile);
 
       debugPrint("✅ Auth status saved successfully");
     } catch (e) {

@@ -150,7 +150,11 @@ class UserDataServiceImpl implements UserDataService {
   @override
   Future<AuthenticationStatus> getAuthenticationStatus() async {
     final token = await getAuthToken();
+
     final role = await getRole();
+    debugPrint(
+      "in user dataservice: result of getRole in getAuthenticationStatus: $role",
+    );
     final email = await getUserEmail();
     final userId = await getUserId();
     final isEmailVerified = await getEmailVerified();
@@ -314,7 +318,10 @@ class UserDataServiceImpl implements UserDataService {
 
   @override
   Future<String?> getRole() async {
-    return sharedPreferences.getString(_roleKey);
+    final String? role = sharedPreferences.getString(_roleKey);
+    debugPrint("userdataservice: getRole: $role");
+
+    return role;
   }
 
   @override
@@ -348,8 +355,14 @@ class UserDataServiceImpl implements UserDataService {
       "auth datas: {hasProfile: ${authStat.hasProfile}, isAuthed: ${authStat.hasProfile}, isProfileCompleted: ${authStat.isProfileCompleted}}",
     );
 
-    return authStat.isAuthenticated &&
-        (authStat.role != "participant" || authStat.hasProfile);
+    debugPrint("role: ${authStat.role}");
+    // For participants, they need to have profile to be considered fully authenticated
+    // For admins, just being authenticated is enough
+    if (authStat.role == "participant") {
+      return authStat.isAuthenticated && authStat.hasProfile;
+    } else {
+      return authStat.isAuthenticated;
+    }
   }
 
   @override
@@ -435,7 +448,11 @@ class UserDataServiceImpl implements UserDataService {
 
   @override
   Future<void> setRole(String role) async {
+    debugPrint("userdataservice, setRole: role to be set: $role");
+
     await sharedPreferences.setString(_roleKey, role);
+
+    //debugPrint("userdataservice, set rol");
   }
 
   @override

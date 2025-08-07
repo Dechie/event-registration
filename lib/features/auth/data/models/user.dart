@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart' show debugPrint;
+
 class User {
   final String id;
   final String email;
@@ -208,21 +210,33 @@ class User {
   static String _determinerole(Map<String, dynamic> json) {
     // Check if there's an explicit user_type field
     if (json['user_type'] != null) {
+      debugPrint(
+        "at user model's determinerole: checking if ther'es an explicit user_type field}",
+      );
+
       return json['user_type'].toString();
     }
 
     // Check if there's a role field
     if (json['role'] != null) {
+      debugPrint(
+        "at user model's determinerole: checking if there's a role field}",
+      );
+
       return json['role'].toString();
     }
 
     // Check organization_id to determine if admin
     if (json['organization_id'] != null) {
+      debugPrint(
+        "at user model's determinerole: checking organization_id to determine if admin: org id: ${json["organization_id"]}}",
+      );
+
       return 'admin';
     }
 
     // Default to participant
-    return 'no-role';
+    return 'participant';
   }
 
   /// Helper method to safely parse DateTime

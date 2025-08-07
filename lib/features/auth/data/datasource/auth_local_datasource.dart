@@ -53,6 +53,13 @@ class AuthLocalDatasourceImpl implements AuthLocalDatasource {
         loginResponse.user.yearsOfExperience ?? 0,
       );
       await userDataService.setPhotoPath(loginResponse.user.photoPath ?? '');
+      await userDataService.setHasProfile(
+        loginResponse.user.hasCompletedProfile,
+      );
+      await userDataService.setProfileCompleted(
+        loginResponse.user.hasCompletedProfile,
+      );
+
     } on CacheException {
       rethrow;
     } catch (e) {
