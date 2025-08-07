@@ -4,6 +4,8 @@ import 'package:event_reg/config/themes/app_colors.dart';
 import 'package:event_reg/core/network/dio_client.dart';
 import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:event_reg/core/shared/widgets/custom_button.dart';
+import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:event_reg/features/auth/presentation/bloc/states/auth_state.dart';
 import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_bloc.dart';
 import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_event.dart';
 import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_state.dart';
@@ -37,109 +39,140 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
     return Scaffold(
       appBar: AppBar(title: Text("Events")),
       drawer: ParticipantLandingDrawer(),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          context.read<EventRegistrationBloc>().add(
-            FetchAvailableEventsRequested(),
-          );
-          await _checkAuthStatus();
-          if (_isAuthenticated && context.mounted) {
-            context.read<EventRegistrationBloc>().add(FetchMyEventsRequested());
+      body: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthLoggedOutState) {
+            // Close drawer if it's open
+            debugPrint("state is logged out state.");
+            if (Scaffold.of(context).isDrawerOpen) {
+              debugPrint("drawer is open");
+              Navigator.of(context).pop();
+            }
+
+            // Navigate to login page after successful logout
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              RouteNames.participantLoginPage,
+              (route) => false,
+            );
           }
-          // Clear cached statuses to refresh them
-          _registrationStatuses.clear();
+
+          if (state is AuthErrorState) {
+            // Show error message
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         },
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              BlocBuilder<EventRegistrationBloc, EventRegistrationState>(
-                builder: (context, state) {
-                  if (state is EventRegistrationLoading) {
-                    return const Padding(
-                      padding: EdgeInsets.all(24.0),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  } else if (state is AvailableEventsLoaded) {
-                    _availableEvents = state.events;
 
-                    return _buildEventsSection();
-                  } else if (state is MyEventsLoaded) {
-                    _registeredEvents = state.events;
+        child: RefreshIndicator(
+          onRefresh: () async {
+            context.read<EventRegistrationBloc>().add(
+              FetchAvailableEventsRequested(),
+            );
+            await _checkAuthStatus();
+            if (_isAuthenticated && context.mounted) {
+              context.read<EventRegistrationBloc>().add(
+                FetchMyEventsRequested(),
+              );
+            }
+            // Clear cached statuses to refresh them
+            _registrationStatuses.clear();
+          },
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                BlocBuilder<EventRegistrationBloc, EventRegistrationState>(
+                  builder: (context, state) {
+                    if (state is EventRegistrationLoading) {
+                      return const Padding(
+                        padding: EdgeInsets.all(24.0),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    } else if (state is AvailableEventsLoaded) {
+                      _availableEvents = state.events;
 
-                    return _buildEventsSection();
-                  } else if (state is EventRegistrationError) {
-                    return Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.error_outline,
-                            size: 48,
-                            color: AppColors.error,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Failed to load events',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                      return _buildEventsSection();
+                    } else if (state is MyEventsLoaded) {
+                      _registeredEvents = state.events;
+
+                      return _buildEventsSection();
+                    } else if (state is EventRegistrationError) {
+                      return Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              size: 48,
                               color: AppColors.error,
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            state.message,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: AppColors.textSecondary),
-                          ),
-                          const SizedBox(height: 16),
-                          CustomButton(
-                            text: 'Retry',
-                            onPressed: () {
-                              context.read<EventRegistrationBloc>().add(
-                                FetchAvailableEventsRequested(),
-                              );
-                              if (_isAuthenticated) {
+                            const SizedBox(height: 16),
+                            Text(
+                              'Failed to load events',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.error,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              state.message,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                            const SizedBox(height: 16),
+                            CustomButton(
+                              text: 'Retry',
+                              onPressed: () {
                                 context.read<EventRegistrationBloc>().add(
-                                  FetchMyEventsRequested(),
+                                  FetchAvailableEventsRequested(),
                                 );
-                              }
-                            },
-                            backgroundColor: AppColors.primary,
-                            textColor: Colors.white,
-                          ),
-                        ],
-                      ),
-                    );
-                  }
+                                if (_isAuthenticated) {
+                                  context.read<EventRegistrationBloc>().add(
+                                    FetchMyEventsRequested(),
+                                  );
+                                }
+                              },
+                              backgroundColor: AppColors.primary,
+                              textColor: Colors.white,
+                            ),
+                          ],
+                        ),
+                      );
+                    }
 
-                  return _buildEventsSection();
-                },
-              ),
+                    return _buildEventsSection();
+                  },
+                ),
 
-              // Event Highlights
-              //const EventHighlightsCard(),
+                // Event Highlights
+                //const EventHighlightsCard(),
 
-              // Action Buttons Section
-              //_buildActionButtons(),
+                // Action Buttons Section
+                //_buildActionButtons(),
 
-              // Admin Access (Hidden/Small Link)
-              // Padding(
-              //   padding: const EdgeInsets.only(bottom: 32.0),
-              //   child: TextButton(
-              //     onPressed: () {
-              //       Navigator.pushNamed(context, RouteNames.adminLoginPage);
-              //     },
-              //     child: Text(
-              //       'Admin Access',
-              //       style: TextStyle(
-              //         color: AppColors.textSecondary,
-              //         fontSize: 12,
-              //       ),
-              //     ),
-              //   ),
-              // ),
-            ],
+                // Admin Access (Hidden/Small Link)
+                // Padding(
+                //   padding: const EdgeInsets.only(bottom: 32.0),
+                //   child: TextButton(
+                //     onPressed: () {
+                //       Navigator.pushNamed(context, RouteNames.adminLoginPage);
+                //     },
+                //     child: Text(
+                //       'Admin Access',
+                //       style: TextStyle(
+                //         color: AppColors.textSecondary,
+                //         fontSize: 12,
+                //       ),
+                //     ),
+                //   ),
+                // ),
+              ],
+            ),
           ),
         ),
       ),

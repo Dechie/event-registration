@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart' show debugPrint;
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../data/repositories/verification_repository.dart';
 import 'verification_event.dart';
 import 'verification_state.dart';
@@ -9,11 +10,18 @@ import 'verification_state.dart';
 class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
   final VerificationRepository repository;
 
-  VerificationBloc({
-    required this.repository,
-  }) : super(const VerificationInitial()) {
+  VerificationBloc({required this.repository})
+    : super(const VerificationInitial()) {
     on<VerifyBadgeRequested>(_onVerifyBadgeRequested);
     on<ResetVerificationState>(_onResetVerificationState);
+  }
+
+  void _onResetVerificationState(
+    ResetVerificationState event,
+    Emitter<VerificationState> emit,
+  ) {
+    debugPrint('🔄 Resetting verification state');
+    emit(const VerificationInitial());
   }
 
   Future<void> _onVerifyBadgeRequested(
@@ -21,15 +29,19 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
     Emitter<VerificationState> emit,
   ) async {
     try {
-      debugPrint('🔍 Starting verification for badge:  [32m${event.badgeNumber} [0m (type: ${event.verificationType})');
-      
+      debugPrint(
+        '🔍 Starting verification for badge:  ${event.badgeNumber} (type: ${event.verificationType})',
+      );
+
       // Validate badge number
       if (event.badgeNumber.trim().isEmpty) {
-        emit(VerificationFailure(
-          message: 'Badge number cannot be empty',
-          badgeNumber: event.badgeNumber,
-          code: 'INVALID_BADGE_NUMBER',
-        ));
+        emit(
+          VerificationFailure(
+            message: 'Badge number cannot be empty',
+            badgeNumber: event.badgeNumber,
+            code: 'INVALID_BADGE_NUMBER',
+          ),
+        );
 
         return;
       }
@@ -38,6 +50,9 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
       emit(VerificationLoading(event.badgeNumber));
 
       // Call repository to verify badge, passing extra data if present
+      debugPrint(
+        "verification bloc: data: badgeNumber: ${event.badgeNumber}, type: ${event.verificationType}",
+      );
       final result = await repository.verifyBadge(
         event.badgeNumber.trim(),
         event.verificationType,
@@ -49,40 +64,40 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
         // Handle failure
         (failure) {
           debugPrint('❌ Verification failed: ${failure.message}');
-          emit(VerificationFailure(
-            message: failure.message,
-            badgeNumber: event.badgeNumber,
-            code: failure.code,
-          ));
+          emit(
+            VerificationFailure(
+              message: failure.message,
+              badgeNumber: event.badgeNumber,
+              code: failure.code,
+            ),
+          );
         },
         // Handle success
         (response) {
-          debugPrint('✅ Verification successful for badge: ${event.badgeNumber}');
+          debugPrint(
+            '✅ Verification successful for badge: ${event.badgeNumber}',
+          );
           debugPrint('✅ Response: $response');
-          
-          emit(VerificationSuccess(
-            response: response,
-            badgeNumber: event.badgeNumber,
-          ));
+
+          emit(
+            VerificationSuccess(
+              response: response,
+              badgeNumber: event.badgeNumber,
+            ),
+          );
         },
       );
     } catch (e, stackTrace) {
       debugPrint('❌ Unexpected error during verification: $e');
       debugPrint('❌ Stack trace: $stackTrace');
-      
-      emit(VerificationFailure(
-        message: 'An unexpected error occurred. Please try again.',
-        badgeNumber: event.badgeNumber,
-        code: 'UNEXPECTED_ERROR',
-      ));
-    }
-  }
 
-  void _onResetVerificationState(
-    ResetVerificationState event,
-    Emitter<VerificationState> emit,
-  ) {
-    debugPrint('🔄 Resetting verification state');
-    emit(const VerificationInitial());
+      emit(
+        VerificationFailure(
+          message: 'An unexpected error occurred. Please try again.',
+          badgeNumber: event.badgeNumber,
+          code: 'UNEXPECTED_ERROR',
+        ),
+      );
+    }
   }
 }

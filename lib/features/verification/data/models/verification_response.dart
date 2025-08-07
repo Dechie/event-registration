@@ -1,5 +1,9 @@
 // lib/features/verification/data/models/verification_response.dart
 
+import 'dart:convert';
+
+import 'package:flutter/material.dart' show debugPrint;
+
 class ParticipantInfo {
   final String id;
   final String fullName;
@@ -99,11 +103,14 @@ class VerificationResponse {
   });
 
   factory VerificationResponse.fromJson(Map<String, dynamic> json) {
+    debugPrint("verification response json: ${jsonEncode(json)}");
+    bool success = json["message"] == "Security check successful.";
+    String status = success ? "Verified" : "Not Verified";
     try {
       return VerificationResponse(
-        success: json['success'] ?? false,
+        success: success,
         message: json['message'] ?? '',
-        status: json['status'],
+        status: status,
         participant: json['participant'] != null
             ? ParticipantInfo.fromJson(json['participant'])
             : null,

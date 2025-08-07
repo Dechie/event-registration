@@ -262,29 +262,10 @@ class _BadgePageState extends State<BadgePage> {
               const SizedBox(height: 20),
 
               // Organization logo/name area
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    Text(
-                      'NETCOM',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.indigo.shade800,
-                        letterSpacing: 2,
-                      ),
-                    ),
-                    // Text(
-                    //   'EVENT ORG NAME',
-                    //   style: TextStyle(
-                    //     fontSize: 12,
-                    //     color: AppColors.secondary,
-                    //     letterSpacing: 1,
-                    //   ),
-                    // ),
-                  ],
-                ),
+              SizedBox(
+                height: 60,
+                width: 60,
+                child: Image.asset("assets/logo.png"),
               ),
 
               const SizedBox(height: 24),
@@ -325,7 +306,7 @@ class _BadgePageState extends State<BadgePage> {
                 "For Technical Support",
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: AppColors.primary,
                 ),
@@ -341,13 +322,13 @@ class _BadgePageState extends State<BadgePage> {
                     Icon(
                       Icons.email,
                       color: AppColors.primaryVariant,
-                      size: 14,
+                      size: 11,
                     ),
                     Text(
                       "icteventhub@gmail.com",
                       style: TextStyle(
                         color: AppColors.primary,
-                        fontSize: 14,
+                        fontSize: 11,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -364,13 +345,13 @@ class _BadgePageState extends State<BadgePage> {
                     Icon(
                       Icons.email,
                       color: AppColors.primaryVariant,
-                      size: 14,
+                      size: 11,
                     ),
                     Text(
                       "+ 251 9 10 21 08 14",
                       style: TextStyle(
                         color: AppColors.primary,
-                        fontSize: 14,
+                        fontSize: 11,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -487,6 +468,8 @@ class _BadgePageState extends State<BadgePage> {
                 child: Text(
                   badgeData.eventTitle,
                   textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

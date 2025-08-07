@@ -1,5 +1,5 @@
-// import 'package:event_reg/config/routes/route_names.dart';
-// import 'package:event_reg/features/verification/data/models/verification_response.dart';
+// import 'dart:convert'; // Added for jsonDecode
+
 // import 'package:flutter/material.dart';
 // import 'package:flutter_bloc/flutter_bloc.dart';
 // import 'package:mobile_scanner/mobile_scanner.dart';
@@ -184,9 +184,7 @@
 
 // class QrScannerPage extends StatefulWidget {
 //   final String verificationType;
-
 //   const QrScannerPage({super.key, this.verificationType = 'security'});
-
 //   @override
 //   State<QrScannerPage> createState() => _QrScannerPageState();
 // }
@@ -320,10 +318,22 @@
 //     }
 //   }
 
-//   String _extractBadgeNumber(String qrCode) {
-//     // Assuming QR code contains just the badge number
-//     // Modify this logic based on your QR code format
-//     return qrCode.trim();
+//   Map<String, dynamic> _extractQrData(String qrCode) {
+//     // For attendance/coupon, expect JSON: {"badge_number":"...","eventsession_id":1} or {"badge_number":"...","coupon_id":1}
+//     // For security/info, expect just the badge number string
+//     try {
+//       final data = qrCode.trim();
+//       if (data.startsWith('{') && data.endsWith('}')) {
+//         // JSON format
+//         return Map<String, dynamic>.from(jsonDecode(data));
+//       } else {
+//         // Just badge number
+//         return {'badge_number': data};
+//       }
+//     } catch (_) {
+//       // Fallback: treat as plain badge number
+//       return {'badge_number': qrCode.trim()};
+//     }
 //   }
 
 //   String _getAppBarTitle() {
@@ -334,6 +344,8 @@
 //         return 'Security Check';
 //       case 'coupon':
 //         return 'Scan Coupon';
+//       case 'info':
+//         return 'Participant Info';
 //       default:
 //         return 'Scan QR Code';
 //     }
@@ -347,6 +359,8 @@
 //         return Colors.blue;
 //       case 'coupon':
 //         return Colors.orange;
+//       case 'info':
+//         return Colors.purple;
 //       default:
 //         return Colors.green;
 //     }
@@ -360,31 +374,17 @@
 //         return 'Position the badge QR code within the frame';
 //       case 'coupon':
 //         return 'Position the coupon QR code within the frame';
+//       case 'info':
+//         return 'Position the badge QR code within the frame';
 //       default:
 //         return 'Position the QR code within the frame';
 //     }
 //   }
 
-//   String _getLoadingText() {
-//     switch (widget.verificationType.toLowerCase()) {
-//       case 'attendance':
-//         return 'Checking attendance...';
-//       case 'security':
-//         return 'Verifying credentials...';
-//       case 'coupon':
-//         return 'Validating coupon...';
-//       default:
-//         return 'Verifying...';
-//     }
-//   }
-
-//   void _navigateToResultPage(
-//     VerificationResponse response,
-//     String badgeNumber,
-//   ) {
+//   void _navigateToResultPage(dynamic response, String badgeNumber) {
 //     Navigator.pushReplacementNamed(
 //       context,
-//       RouteNames.verificationResultPage,
+//       '/verification-result',
 //       arguments: {
 //         'type': widget.verificationType,
 //         'response': response,
@@ -395,7 +395,6 @@
 
 //   void _onDetect(BarcodeCapture capture) {
 //     if (!isScanning) return;
-
 //     final List<Barcode> barcodes = capture.barcodes;
 //     if (barcodes.isNotEmpty) {
 //       final String? code = barcodes.first.rawValue;
@@ -404,14 +403,18 @@
 //         setState(() {
 //           isScanning = false;
 //         });
-
-//         // Extract badge number from QR code
-//         final badgeNumber = _extractBadgeNumber(code);
-//         if (badgeNumber.isNotEmpty) {
+//         // Extract badge number and extra data if present
+//         final badgeData = _extractQrData(code);
+//         debugPrint("badgeData: ${jsonEncode(badgeData)}");
+//         if (badgeData['badge_number'] != null &&
+//             badgeData['badge_number'].toString().isNotEmpty) {
+//           // Pass extra data for attendance/coupon
 //           context.read<VerificationBloc>().add(
 //             VerifyBadgeRequested(
-//               badgeNumber,
+//               badgeData['badge_number'],
 //               verificationType: widget.verificationType,
+//               eventSessionId: badgeData['eventsession_id']?.toString(),
+//               couponId: badgeData['coupon_id']?.toString(),
 //             ),
 //           );
 //         } else {
@@ -448,10 +451,7 @@
 //             child: const Text('Try Again'),
 //           ),
 //           ElevatedButton(
-//             onPressed: () {
-//               Navigator.pop(context);
-//               Navigator.pop(context); // Go back to dashboard
-//             },
+//             onPressed: () => Navigator.pop(context),
 //             child: const Text('Cancel'),
 //           ),
 //         ],
@@ -463,29 +463,13 @@
 //     showDialog(
 //       context: context,
 //       barrierDismissible: false,
-//       builder: (context) => Center(
-//         child: Card(
-//           child: Padding(
-//             padding: const EdgeInsets.all(24.0),
-//             child: Column(
-//               mainAxisSize: MainAxisSize.min,
-//               children: [
-//                 const CircularProgressIndicator(),
-//                 const SizedBox(height: 16),
-//                 Text(_getLoadingText()),
-//               ],
-//             ),
-//           ),
-//         ),
-//       ),
+//       builder: (context) => const Center(child: CircularProgressIndicator()),
 //     );
 //   }
-// }
 
-import 'dart:convert'; // Added for jsonDecode
+import 'dart:async';
+import 'dart:convert';
 
-import 'package:event_reg/config/routes/route_names.dart';
-import 'package:event_reg/features/verification/data/models/verification_response.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -568,7 +552,6 @@ class QrScannerOverlayShape extends ShapeBorder {
       cutOutSize - borderOffset * 2,
     );
 
-    // Draw overlay with cut out
     canvas.drawPath(
       Path.combine(
         PathOperation.difference,
@@ -582,13 +565,11 @@ class QrScannerOverlayShape extends ShapeBorder {
       backgroundPaint,
     );
 
-    // Draw border
     canvas.drawRRect(
       RRect.fromRectAndRadius(cutOutRect, Radius.circular(borderRadius)),
       borderPaint,
     );
 
-    // Draw corner indicators
     final cornerLength = borderLength > cutOutSize / 2
         ? cutOutSize / 2
         : borderLength;
@@ -597,7 +578,6 @@ class QrScannerOverlayShape extends ShapeBorder {
       ..style = PaintingStyle.stroke
       ..strokeWidth = borderWidth * 2;
 
-    // Top left corner
     canvas.drawPath(
       Path()
         ..moveTo(cutOutRect.left, cutOutRect.top + cornerLength)
@@ -612,7 +592,6 @@ class QrScannerOverlayShape extends ShapeBorder {
       cornerPaint,
     );
 
-    // Top right corner
     canvas.drawPath(
       Path()
         ..moveTo(cutOutRect.right - cornerLength, cutOutRect.top)
@@ -627,7 +606,6 @@ class QrScannerOverlayShape extends ShapeBorder {
       cornerPaint,
     );
 
-    // Bottom left corner
     canvas.drawPath(
       Path()
         ..moveTo(cutOutRect.left, cutOutRect.bottom - cornerLength)
@@ -642,7 +620,6 @@ class QrScannerOverlayShape extends ShapeBorder {
       cornerPaint,
     );
 
-    // Bottom right corner
     canvas.drawPath(
       Path()
         ..moveTo(cutOutRect.right - cornerLength, cutOutRect.bottom)
@@ -675,8 +652,17 @@ class QrScannerPage extends StatefulWidget {
   State<QrScannerPage> createState() => _QrScannerPageState();
 }
 
-class _QrScannerPageState extends State<QrScannerPage> {
-  MobileScannerController cameraController = MobileScannerController();
+class _QrScannerPageState extends State<QrScannerPage>
+    with WidgetsBindingObserver {
+  final MobileScannerController controller = MobileScannerController(
+    autoStart: false,
+    formats: const [BarcodeFormat.qrCode],
+    detectionSpeed: DetectionSpeed.normal,
+    detectionTimeoutMs: 500,
+    autoZoom: true,
+  );
+
+  StreamSubscription<BarcodeCapture>? _subscription;
   bool isScanning = true;
   String? lastScannedCode;
 
@@ -689,9 +675,9 @@ class _QrScannerPageState extends State<QrScannerPage> {
         foregroundColor: Theme.of(context).colorScheme.primary,
         actions: [
           IconButton(
-            onPressed: () => cameraController.toggleTorch(),
+            onPressed: () => controller.toggleTorch(),
             icon: ValueListenableBuilder<MobileScannerState>(
-              valueListenable: cameraController,
+              valueListenable: controller,
               builder: (context, state, child) {
                 switch (state.torchState) {
                   case TorchState.off:
@@ -705,9 +691,9 @@ class _QrScannerPageState extends State<QrScannerPage> {
             ),
           ),
           IconButton(
-            onPressed: () => cameraController.switchCamera(),
+            onPressed: () => controller.switchCamera(),
             icon: ValueListenableBuilder<MobileScannerState>(
-              valueListenable: cameraController,
+              valueListenable: controller,
               builder: (context, state, child) {
                 switch (state.cameraDirection) {
                   case CameraFacing.front:
@@ -727,6 +713,7 @@ class _QrScannerPageState extends State<QrScannerPage> {
           if (state is VerificationLoading) {
             _showLoadingDialog();
           } else if (state is VerificationSuccess) {
+            debugPrint("state is verification success.");
             _dismissDialog();
             _navigateToResultPage(state.response, state.badgeNumber);
           } else if (state is VerificationFailure) {
@@ -736,8 +723,7 @@ class _QrScannerPageState extends State<QrScannerPage> {
         },
         child: Stack(
           children: [
-            MobileScanner(controller: cameraController, onDetect: _onDetect),
-            // Overlay with scanning area
+            MobileScanner(controller: controller),
             Container(
               decoration: ShapeDecoration(
                 shape: QrScannerOverlayShape(
@@ -749,7 +735,6 @@ class _QrScannerPageState extends State<QrScannerPage> {
                 ),
               ),
             ),
-            // Instructions at the bottom
             Positioned(
               bottom: 100,
               left: 0,
@@ -793,9 +778,45 @@ class _QrScannerPageState extends State<QrScannerPage> {
   }
 
   @override
-  void dispose() {
-    cameraController.dispose();
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!controller.value.hasCameraPermission) {
+      return;
+    }
+
+    switch (state) {
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+        return;
+      case AppLifecycleState.resumed:
+        unawaited(_subscription?.cancel());
+        _subscription = controller.barcodes.listen(_handleBarcode);
+        unawaited(controller.start());
+        _resetScanner();
+        break;
+      case AppLifecycleState.inactive:
+        unawaited(_subscription?.cancel());
+        _subscription = null;
+        unawaited(controller.stop());
+        break;
+    }
+  }
+
+  @override
+  Future<void> dispose() async {
+    WidgetsBinding.instance.removeObserver(this);
+    unawaited(_subscription?.cancel());
+    _subscription = null;
     super.dispose();
+    await controller.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _subscription = controller.barcodes.listen(_handleBarcode);
+    unawaited(controller.start());
   }
 
   void _dismissDialog() {
@@ -804,109 +825,31 @@ class _QrScannerPageState extends State<QrScannerPage> {
     }
   }
 
-  void _onDetect(BarcodeCapture capture) {
-    if (!isScanning) return;
-    final List<Barcode> barcodes = capture.barcodes;
-    if (barcodes.isNotEmpty) {
-      final String? code = barcodes.first.rawValue;
-      if (code != null && code != lastScannedCode) {
-        lastScannedCode = code;
-        setState(() {
-          isScanning = false;
-        });
-        // Extract badge number and extra data if present
-        final badgeData = _extractQrData(code);
-        if (badgeData['badge_number'] != null && badgeData['badge_number'].toString().isNotEmpty) {
-          // Pass extra data for attendance/coupon
-          context.read<VerificationBloc>().add(
-            VerifyBadgeRequested(
-              badgeData['badge_number'],
-              verificationType: widget.verificationType,
-              eventSessionId: badgeData['eventsession_id']?.toString(),
-              couponId: badgeData['coupon_id']?.toString(),
-            ),
-          );
-        } else {
-          _showErrorDialog(
-            'Invalid QR Code',
-            'Could not extract badge number from QR code.',
-          );
-          _resetScanner();
-        }
-      }
-    }
-  }
-
   Map<String, dynamic> _extractQrData(String qrCode) {
-    // For attendance/coupon, expect JSON: {"badge_number":"...","eventsession_id":1} or {"badge_number":"...","coupon_id":1}
-    // For security/info, expect just the badge number string
+    debugPrint(
+      'Step 1: Starting to extract QR data from raw string: "$qrCode"',
+    );
     try {
       final data = qrCode.trim();
       if (data.startsWith('{') && data.endsWith('}')) {
-        // JSON format
-        return Map<String, dynamic>.from(jsonDecode(data));
+        debugPrint(
+          'Step 2: Raw data appears to be JSON. Attempting to decode.',
+        );
+        final decodedData = jsonDecode(data);
+        debugPrint('Step 3: Successfully decoded JSON. Result: $decodedData');
+        return Map<String, dynamic>.from(decodedData);
       } else {
-        // Just badge number
+        debugPrint(
+          'Step 2: Raw data is not JSON. Treating as a plain badge number.',
+        );
         return {'badge_number': data};
       }
-    } catch (_) {
-      // Fallback: treat as plain badge number
+    } catch (e) {
+      debugPrint(
+        'Step 2: Failed to decode JSON. Error: $e. Falling back to plain badge number.',
+      );
       return {'badge_number': qrCode.trim()};
     }
-  }
-
-  void _resetScanner() {
-    setState(() {
-      isScanning = true;
-      lastScannedCode = null;
-    });
-  }
-
-  void _showErrorDialog(String title, String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        icon: const Icon(Icons.error, color: Colors.red, size: 48),
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _resetScanner();
-            },
-            child: const Text('Try Again'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showLoadingDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
-    );
-  }
-
-  void _navigateToResultPage(
-    dynamic response,
-    String badgeNumber,
-  ) {
-    Navigator.pushReplacementNamed(
-      context,
-      '/verification-result',
-      arguments: {
-        'type': widget.verificationType,
-        'response': response,
-        'badgeNumber': badgeNumber,
-      },
-    );
   }
 
   String _getAppBarTitle() {
@@ -952,5 +895,102 @@ class _QrScannerPageState extends State<QrScannerPage> {
       default:
         return 'Position the QR code within the frame';
     }
+  }
+
+  void _handleBarcode(BarcodeCapture capture) {
+    if (!isScanning) return;
+    final List<Barcode> barcodes = capture.barcodes;
+    if (barcodes.isNotEmpty) {
+      final String? code = barcodes.first.rawValue;
+      if (code != null && code != lastScannedCode) {
+        lastScannedCode = code;
+        setState(() {
+          isScanning = false;
+        });
+
+        debugPrint('Step 4: Barcode detected with raw value: "$code"');
+        final badgeData = _extractQrData(code);
+        debugPrint('Step 5: Extracted badge data: $badgeData');
+
+        if (badgeData['badge_number'] != null &&
+            badgeData['badge_number'].toString().isNotEmpty) {
+          debugPrint(
+            'Step 6: Found a valid badge number. Adding event to Bloc.',
+          );
+          final badgeNumber = badgeData['badge_number'].toString();
+          context.read<VerificationBloc>().add(
+            VerifyBadgeRequested(
+              badgeNumber,
+              verificationType: widget.verificationType,
+              eventSessionId: badgeData['eventsession_id']?.toString(),
+              couponId: badgeData['coupon_id']?.toString(),
+            ),
+          );
+        } else {
+          debugPrint(
+            'Step 6: Extracted badge number is null or empty. Showing error.',
+          );
+          _showErrorDialog(
+            'Invalid QR Code',
+            'Could not extract badge number from QR code.',
+          );
+          _resetScanner();
+        }
+      }
+    }
+  }
+
+  void _navigateToResultPage(dynamic response, String badgeNumber) {
+    Navigator.pushReplacementNamed(
+      context,
+      '/verification-result',
+      arguments: {
+        'type': widget.verificationType,
+        'response': response,
+        'badgeNumber': badgeNumber,
+      },
+    );
+  }
+
+  void _resetScanner() {
+    if (mounted) {
+      setState(() {
+        isScanning = true;
+        lastScannedCode = null;
+      });
+    }
+    debugPrint('Scanner reset. Ready for the next scan.');
+  }
+
+  void _showErrorDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.error, color: Colors.red, size: 48),
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _resetScanner();
+            },
+            child: const Text('Try Again'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
   }
 }

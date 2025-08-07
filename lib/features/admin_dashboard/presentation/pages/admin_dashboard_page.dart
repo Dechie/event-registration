@@ -1,7 +1,10 @@
 // lib/features/dashboard/presentation/pages/admin_dashboard_page.dart
 import 'package:event_reg/config/routes/route_names.dart';
 import 'package:event_reg/features/admin_dashboard/presentation/widgets/admin_dashboard_drawer.dart';
+import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:event_reg/features/auth/presentation/bloc/states/auth_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AdminDashboardPage extends StatelessWidget {
   const AdminDashboardPage({super.key});
@@ -18,104 +21,126 @@ class AdminDashboardPage extends StatelessWidget {
         elevation: 2,
       ),
       drawer: AdminDashboardDrawer(),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Welcome section
-            Card(
-              elevation: 4,
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
+      body: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthLoggedOutState) {
+            // Navigate to landing page after successful logout
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              RouteNames.adminLoginPage,
+              (route) => false,
+            );
+          }
+
+          if (state is AuthErrorState) {
+            // Show error message
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Welcome section
+              Card(
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.admin_panel_settings,
+                        size: 48,
+                        color: colorScheme.primary,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Welcome, Admin',
+                        style: textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Choose an action below to get started',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Quick Actions section
+              Text(
+                'Quick Actions',
+                style: textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // QR Scanner buttons - Updated to show 4 options
+              Expanded(
+                child: GridView.count(
+                  crossAxisCount: 1,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 3.2,
                   children: [
-                    Icon(
-                      Icons.admin_panel_settings,
-                      size: 48,
-                      color: colorScheme.primary,
+                    _buildActionCard(
+                      textTheme: textTheme,
+                      colorScheme: colorScheme,
+                      context,
+                      icon: Icons.fact_check,
+                      title: 'Take Attendance',
+                      description:
+                          'Scan QR codes to mark attendance for events',
+                      color: Colors.green,
+                      onTap: () => _navigateToScanner(context, 'attendance'),
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Welcome, Admin',
-                      style: textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    _buildActionCard(
+                      textTheme: textTheme,
+                      colorScheme: colorScheme,
+                      context,
+                      icon: Icons.security,
+                      title: 'Security Check',
+                      description: 'Verify participant credentials and access',
+                      color: Colors.blue,
+                      onTap: () => _navigateToScanner(context, 'security'),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Choose an action below to get started',
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+                    _buildActionCard(
+                      textTheme: textTheme,
+                      colorScheme: colorScheme,
+                      context,
+                      icon: Icons.local_offer,
+                      title: 'Validate Coupon',
+                      description: 'Scan and validate participant coupons',
+                      color: Colors.orange,
+                      onTap: () => _navigateToScanner(context, 'coupon'),
+                    ),
+                    _buildActionCard(
+                      textTheme: textTheme,
+                      colorScheme: colorScheme,
+                      context,
+                      icon: Icons.info_outline,
+                      title: 'Participant Info',
+                      description: 'View detailed participant information',
+                      color: Colors.purple,
+                      onTap: () => _navigateToScanner(context, 'info'),
                     ),
                   ],
                 ),
               ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Quick Actions section
-            Text(
-              'Quick Actions',
-              style: textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // QR Scanner buttons - Updated to show 4 options
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 1,
-                mainAxisSpacing: 16,
-                childAspectRatio: 3.2,
-                children: [
-                  _buildActionCard(
-                    textTheme: textTheme,
-                    colorScheme: colorScheme,
-                    context,
-                    icon: Icons.fact_check,
-                    title: 'Take Attendance',
-                    description: 'Scan QR codes to mark attendance for events',
-                    color: Colors.green,
-                    onTap: () => _navigateToScanner(context, 'attendance'),
-                  ),
-                  _buildActionCard(
-                    textTheme: textTheme,
-                    colorScheme: colorScheme,
-                    context,
-                    icon: Icons.security,
-                    title: 'Security Check',
-                    description: 'Verify participant credentials and access',
-                    color: Colors.blue,
-                    onTap: () => _navigateToScanner(context, 'security'),
-                  ),
-                  _buildActionCard(
-                    textTheme: textTheme,
-                    colorScheme: colorScheme,
-                    context,
-                    icon: Icons.local_offer,
-                    title: 'Validate Coupon',
-                    description: 'Scan and validate participant coupons',
-                    color: Colors.orange,
-                    onTap: () => _navigateToScanner(context, 'coupon'),
-                  ),
-                  _buildActionCard(
-                    textTheme: textTheme,
-                    colorScheme: colorScheme,
-                    context,
-                    icon: Icons.info_outline,
-                    title: 'Participant Info',
-                    description: 'View detailed participant information',
-                    color: Colors.purple,
-                    onTap: () => _navigateToScanner(context, 'info'),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -167,7 +192,7 @@ class AdminDashboardPage extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                       color: colorScheme.onSurfaceVariant,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],

@@ -13,6 +13,7 @@ abstract class VerificationRemoteDataSource {
     String verificationType, {
     String? eventSessionId,
     String? couponId,
+    required String token,
   });
 }
 
@@ -27,9 +28,12 @@ class VerificationRemoteDataSourceImpl implements VerificationRemoteDataSource {
     String verificationType, {
     String? eventSessionId,
     String? couponId,
+    required String token,
   }) async {
     try {
-      debugPrint('🚀 DataSource: Verifying badge $badgeNumber for type: $verificationType');
+      debugPrint(
+        '🚀 DataSource: Verifying badge $badgeNumber for type: $verificationType',
+      );
       VerificationRequest request;
       switch (verificationType.toLowerCase()) {
         case 'attendance':
@@ -52,11 +56,15 @@ class VerificationRemoteDataSourceImpl implements VerificationRemoteDataSource {
           request = VerificationRequest.security(badgeNumber: badgeNumber);
           break;
       }
-      debugPrint('📝 Request data:  [36m${request.toJson()} [0m');
+      var dataJson = request.toJson();
+      debugPrint('📝 Request data:  $dataJson');
+
       final response = await dioClient.post(
         "/qr/check",
-        data: request.toJson(),
+        data: dataJson,
+        token: token,
       );
+
       debugPrint('📥 DataSource: Response status ${response.statusCode}');
       debugPrint('📥 DataSource: Response data ${response.data}');
       if (response.statusCode == 200) {
@@ -65,7 +73,9 @@ class VerificationRemoteDataSourceImpl implements VerificationRemoteDataSource {
             ? (data["data"] ?? data)
             : data;
         if (responseData is! Map<String, dynamic>) {
-          debugPrint('❌ Invalid response format:  [31m${responseData.runtimeType} [0m');
+          debugPrint(
+            '❌ Invalid response format:  [31m${responseData.runtimeType} [0m',
+          );
           throw ServerException(
             message: "Invalid response format from server",
             code: "INVALID_RESPONSE_FORMAT",
@@ -76,6 +86,7 @@ class VerificationRemoteDataSourceImpl implements VerificationRemoteDataSource {
             responseData,
           );
           debugPrint('✅ DataSource: Successfully parsed response');
+
           return verificationResponse;
         } catch (e) {
           debugPrint('❌ Error parsing VerificationResponse: $e');
@@ -91,10 +102,7 @@ class VerificationRemoteDataSourceImpl implements VerificationRemoteDataSource {
         final errorCode = response.data is Map<String, dynamic>
             ? response.data["code"] ?? "VERIFICATION_FAILED"
             : "VERIFICATION_FAILED";
-        throw ServerException(
-          message: errorMessage,
-          code: errorCode,
-        );
+        throw ServerException(message: errorMessage, code: errorCode);
       }
     } catch (e) {
       debugPrint('❌ DataSource: Unexpected error - $e');
