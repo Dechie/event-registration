@@ -3,6 +3,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:event_reg/features/verification/data/datasource/verification_datasource.dart';
+import 'package:event_reg/features/verification/data/models/coupon.dart';
 import 'package:event_reg/injection_container.dart' as di;
 import 'package:flutter/material.dart' show debugPrint;
 
@@ -12,6 +13,10 @@ import '../../../../core/network/network_info.dart';
 import '../models/verification_response.dart';
 
 abstract class VerificationRepository {
+  Future<Either<Failure, List<Coupon>>> fetchParticipantCoupons(
+    String participantId,
+  );
+
   Future<Either<Failure, VerificationResponse>> verifyBadge(
     String badgeNumber,
     String verificationType, {
@@ -28,6 +33,44 @@ class VerificationRepositoryImpl implements VerificationRepository {
     required this.remoteDataSource,
     required this.networkInfo,
   });
+
+  @override
+  Future<Either<Failure, List<Coupon>>> fetchParticipantCoupons(
+    String participantId,
+  ) async {
+    try {
+      debugPrint(
+        '📡 Repository: Fetching coupons for participant: $participantId',
+      );
+
+      if (!await networkInfo.isConnected) {
+        return const Left(
+          NetworkFailure(
+            message:
+                'No internet connection. Please check your network and try again.',
+            code: 'NO_INTERNET',
+          ),
+        );
+      }
+
+      final token = await di.sl<UserDataService>().getAuthToken() ?? "";
+      final coupons = await remoteDataSource.fetchParticipantCoupons(
+        participantId,
+        token,
+      );
+
+      return Right(coupons);
+    } catch (e) {
+      debugPrint('❌ Repository: Error fetching coupons - $e');
+
+      return Left(
+        ServerFailure(
+          message: 'Failed to fetch coupons. Please try again.',
+          code: 'FETCH_COUPONS_ERROR',
+        ),
+      );
+    }
+  }
 
   @override
   Future<Either<Failure, VerificationResponse>> verifyBadge(

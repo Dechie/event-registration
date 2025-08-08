@@ -13,6 +13,7 @@ class RouteNames {
   static const String profileAddPage = "/profile-add";
 
   static const String badgePage = "/badge";
+  static const String couponSelectionPage = '/coupon-selection';
 
   // Dashboard routes
   static const String adminDashboardPage = '/admin-dashboard';

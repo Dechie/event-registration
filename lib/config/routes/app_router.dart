@@ -11,7 +11,8 @@ import 'package:event_reg/features/badge/presentation/pages/badge_page.dart';
 import 'package:event_reg/features/admin_dashboard/presentation/pages/admin_dashboard_page.dart';
 import 'package:event_reg/features/landing/presentation/pages/landing_page.dart';
 import 'package:event_reg/features/splash/presentation/pages/splash_page.dart';
-import 'package:event_reg/features/verification/presentation/pages/qr_scanner_page.dart';
+import 'package:event_reg/features/verification/presentation/pages/coupon_selection_page.dart';
+import 'package:event_reg/features/verification/presentation/pages/qr_scanner/qr_scanner_page.dart';
 import 'package:event_reg/features/verification/presentation/pages/verification_result_page.dart';
 import 'package:event_reg/injection_container.dart' as di;
 import 'package:flutter/material.dart';
@@ -97,6 +98,20 @@ class AppRouter {
             verificationType: args?['type'] ?? 'security',
           ),
         );
+      
+      case RouteNames.couponSelectionPage:
+  final args = settings.arguments as Map<String, dynamic>;
+  return MaterialPageRoute(
+    builder: (_) => BlocProvider.value(
+      value: args['bloc'],
+      child: CouponSelectionPage(
+        coupons: args['coupons'],
+        participant: args['participant'],
+        badgeNumber: args['badgeNumber'],
+      ),
+    ),
+  );
+
 
       case RouteNames.verificationResultPage:
         final args = settings.arguments as Map<String, dynamic>;

@@ -14,7 +14,58 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
     : super(const VerificationInitial()) {
     on<VerifyBadgeRequested>(_onVerifyBadgeRequested);
     on<ResetVerificationState>(_onResetVerificationState);
+    on<FetchParticipantCoupons>(_onFetchParticipantCoupons);
   }
+
+  Future<void> _onFetchParticipantCoupons(
+    FetchParticipantCoupons event,
+    Emitter<VerificationState> emit,
+  ) async {
+    try {
+      debugPrint('🔍 Fetching coupons for participant: ${event.participantId}');
+
+      emit(VerificationLoading(event.participantId));
+
+      final result = await repository.fetchParticipantCoupons(
+        event.participantId,
+      );
+
+      result.fold(
+        (failure) {
+          debugPrint('❌ Failed to fetch coupons: ${failure.message}');
+          emit(
+            VerificationFailure(
+              message: failure.message,
+              badgeNumber: event.participantId,
+              code: failure.code,
+            ),
+          );
+        },
+        (coupons) {
+          debugPrint(
+            '✅ Coupons fetched successfully: ${coupons.length} coupons',
+          );
+          emit(
+            CouponsFetched(
+              coupons: coupons,
+              participantId: event.participantId,
+              participant: event.participant, // Add this line
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      debugPrint('❌ Unexpected error fetching coupons: $e');
+      emit(
+        VerificationFailure(
+          message: 'Failed to fetch coupons. Please try again.',
+          badgeNumber: event.participantId,
+          code: 'UNEXPECTED_ERROR',
+        ),
+      );
+    }
+  }
+  // Add this method
 
   void _onResetVerificationState(
     ResetVerificationState event,
@@ -77,7 +128,6 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
           debugPrint(
             '✅ Verification successful for badge: ${event.badgeNumber}',
           );
-          debugPrint('✅ Response: $response');
 
           emit(
             VerificationSuccess(
