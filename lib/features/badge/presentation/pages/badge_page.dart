@@ -189,7 +189,7 @@ class _BadgePageState extends State<BadgePage> {
 
     return Container(
       width: 300,
-      height: 420,
+      height: 450,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
@@ -219,9 +219,9 @@ class _BadgePageState extends State<BadgePage> {
             top: 0,
             bottom: 0,
             child: Container(
-              width: 8,
+              width: 12,
               decoration: BoxDecoration(
-                color: Colors.orange.shade400,
+                color: AppColors.primary,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(12),
                   bottomLeft: Radius.circular(12),
@@ -234,9 +234,9 @@ class _BadgePageState extends State<BadgePage> {
             top: 0,
             bottom: 0,
             child: Container(
-              width: 8,
+              width: 12,
               decoration: BoxDecoration(
-                color: Colors.orange.shade400,
+                color: AppColors.primary,
                 borderRadius: const BorderRadius.only(
                   topRight: Radius.circular(12),
                   bottomRight: Radius.circular(12),
@@ -302,63 +302,62 @@ class _BadgePageState extends State<BadgePage> {
               ),
 
               const Spacer(),
-              Text(
-                "For Technical Support",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
-                ),
-              ),
-              //SizedBox(height: 4),
               SizedBox(
-                height: 25,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: 6,
+                height: 40,
+                child: Column(
                   children: [
-                    Icon(
-                      Icons.email,
-                      color: AppColors.primaryVariant,
-                      size: 11,
-                    ),
                     Text(
-                      "icteventhub@gmail.com",
+                      "For Technical Support",
+                      textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textDisabledDark,
                       ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      spacing: 6,
+                      children: [
+                        Icon(
+                          Icons.email,
+                          color: AppColors.textDisabledDark,
+                          size: 8,
+                        ),
+                        Text(
+                          "icteventhub@gmail.com",
+                          style: TextStyle(
+                            color: AppColors.textDisabledDark,
+                            fontSize: 8,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      spacing: 6,
+                      children: [
+                        Icon(
+                          Icons.email,
+                          color: AppColors.textDisabledDark,
+                          size: 8,
+                        ),
+                        Text(
+                          "+ 251 9 10 21 08 14",
+                          style: TextStyle(
+                            color: AppColors.textDisabledDark,
+                            fontSize: 8,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-              SizedBox(
-                height: 25,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: 6,
-                  children: [
-                    Icon(
-                      Icons.email,
-                      color: AppColors.primaryVariant,
-                      size: 11,
-                    ),
-                    Text(
-                      "+ 251 9 10 21 08 14",
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 12),
             ],
           ),
         ],
@@ -420,9 +419,9 @@ class _BadgePageState extends State<BadgePage> {
             top: 0,
             bottom: 0,
             child: Container(
-              width: 8,
+              width: 12,
               decoration: BoxDecoration(
-                color: Colors.orange.shade400,
+                color: AppColors.primary,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(12),
                   bottomLeft: Radius.circular(12),
@@ -435,9 +434,9 @@ class _BadgePageState extends State<BadgePage> {
             top: 0,
             bottom: 0,
             child: Container(
-              width: 8,
+              width: 12,
               decoration: BoxDecoration(
-                color: Colors.orange.shade400,
+                color: AppColors.primary,
                 borderRadius: const BorderRadius.only(
                   topRight: Radius.circular(12),
                   bottomRight: Radius.circular(12),
@@ -478,12 +477,12 @@ class _BadgePageState extends State<BadgePage> {
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 7),
 
               // Participant Photo (Square)
               Container(
-                width: 120,
-                height: 120,
+                width: 130,
+                height: 130,
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(8),
@@ -502,7 +501,7 @@ class _BadgePageState extends State<BadgePage> {
                     : _buildPhotoPlaceholder(),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 8),
 
               // Participant Name (Orange, Large)
               Padding(
@@ -511,7 +510,7 @@ class _BadgePageState extends State<BadgePage> {
                   badgeData.participantName,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 22,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.orange.shade600,
                   ),
@@ -522,11 +521,11 @@ class _BadgePageState extends State<BadgePage> {
 
               // Occupation/Role
               Text(
-                'PARTICIPANT',
+                'TRAINEE',
                 style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.indigo.shade800,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
+                  color: AppColors.eccBlue,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
 
@@ -541,8 +540,8 @@ class _BadgePageState extends State<BadgePage> {
                   children: [
                     // QR Code (Larger)
                     Container(
-                      width: 100,
-                      height: 100,
+                      width: 120,
+                      height: 120,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
@@ -560,13 +559,10 @@ class _BadgePageState extends State<BadgePage> {
                     // Participant Info Box
                     Container(
                       width: 120,
-                      height: 100,
+                      height: 120,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.orange.shade400,
-                          width: 2,
-                        ),
+                        border: Border.all(color: AppColors.eccBlue, width: 2),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Column(
@@ -577,14 +573,14 @@ class _BadgePageState extends State<BadgePage> {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
-                              color: Colors.indigo.shade800,
+                              color: AppColors.eccBlue,
                             ),
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            badgeData.participantId,
+                            badgeData.badgeNumber,
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 12,
                               fontWeight: FontWeight.bold,
                               color: Colors.orange.shade600,
                             ),

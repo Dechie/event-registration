@@ -1,4 +1,5 @@
 import 'package:event_reg/config/routes/route_names.dart';
+import 'package:event_reg/features/admin_dashboard/presentation/bloc/admin_dashboard_bloc.dart';
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_bloc.dart';
 import 'package:event_reg/features/splash/presentation/bloc/splash_bloc.dart';
@@ -21,6 +22,7 @@ class EventRegistrationApp extends StatelessWidget {
         BlocProvider(create: (_) => di.sl<AuthBloc>()),
         BlocProvider(create: (_) => di.sl<EventRegistrationBloc>()),
         BlocProvider(create: (_) => di.sl<VerificationBloc>()),
+        BlocProvider(create: (_) => di.sl<AdminDashboardBloc>()),
       ],
       child: MaterialApp(
         title: "Event Registration",

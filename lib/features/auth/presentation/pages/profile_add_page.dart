@@ -49,7 +49,7 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
   int? _yearsOfExperience;
   File? _profileImage;
 
-  final List<String> _genders = ['Male', 'Female', 'Other'];
+  final List<String> _genders = ['Male', 'Female'];
   final List<String> _nationalities = ['Ethiopian', 'Other'];
   final List<String> _industries = [
     'Education',

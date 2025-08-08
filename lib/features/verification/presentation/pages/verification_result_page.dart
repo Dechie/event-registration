@@ -178,8 +178,10 @@ class VerificationResultPage extends StatelessWidget {
             _buildInfoRow(
               context,
               'Verification Status',
-              participant.isVerified ? 'Verified' : 'Not Verified',
-              valueColor: participant.isVerified ? Colors.green : Colors.orange,
+              response.status ?? "Not Verified",
+              valueColor: response.status == "Verified"
+                  ? Colors.green
+                  : Colors.orange,
               textTheme: textTheme,
             ),
             if (participant.verifiedAt != null)

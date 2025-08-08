@@ -84,18 +84,26 @@ import 'package:flutter/material.dart';
 // }
 
 class AppColors {
+  // extract ecc blue
+  static const Color eccBlue = Color(0xff003399);
   // Primary Colors - Exact navy blue from web CSS
   static const Color primary = Color(0xFF05014A); // rgb(5, 1, 74) from web
-  static const Color primaryVariant = Color(0xFF020047); // rgb(2, 0, 71) from web  
+  static const Color primaryVariant = Color(
+    0xFF020047,
+  ); // rgb(2, 0, 71) from web
   static const Color onPrimary = Color(0xFFFFFFFF);
 
   // Secondary Colors - Exact orange from web CSS
-  static const Color secondary = Color(0xFFf88333); // rgb(248, 131, 51) from web
+  static const Color secondary = Color(
+    0xFFf88333,
+  ); // rgb(248, 131, 51) from web
   static const Color secondaryVariant = Color(0xFFe6741f); // Darker orange
   static const Color onSecondary = Color(0xFFFFFFFF);
 
   // Background Colors - Light Theme (from web CSS)
-  static const Color background = Color(0xFFf3f4f6); // rgb(243, 244, 246) from web
+  static const Color background = Color(
+    0xFFf3f4f6,
+  ); // rgb(243, 244, 246) from web
   static const Color onBackground = Color(0xFF213547); // From web root color
   static const Color surface = Color(0xFFFFFFFF); // Clean white
   static const Color onSurface = Color(0xFF213547);
@@ -169,18 +177,12 @@ class AppColors {
   static const LinearGradient heroGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [
-      Color(0xFFf8fafc),
-      Color(0xFFe2e8f0),
-    ],
+    colors: [Color(0xFFf8fafc), Color(0xFFe2e8f0)],
   );
 
   static const LinearGradient cardGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0xFFFFFFFF),
-      Color(0xFFf8fafc),
-    ],
+    colors: [Color(0xFFFFFFFF), Color(0xFFf8fafc)],
   );
 }

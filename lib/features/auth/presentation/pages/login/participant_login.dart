@@ -150,26 +150,6 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
         ),
         const SizedBox(height: 12),
 
-        // Back to Landing
-        TextButton(
-          onPressed: () {
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              RouteNames.landingPage,
-              (route) => false,
-            );
-          },
-          child: Text(
-            'Back to Home',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
         // Admin Login Link
         Container(
           padding: const EdgeInsets.all(16),

@@ -3,7 +3,9 @@ import 'dart:convert';
 
 import 'package:event_reg/core/error/exceptions.dart';
 import 'package:event_reg/core/network/dio_client.dart';
+import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:event_reg/features/auth/data/models/registration/user_registration_response.dart';
+import 'package:event_reg/injection_container.dart' as di;
 import 'package:flutter/material.dart' show debugPrint;
 
 import '../models/login/login_request.dart';
@@ -108,7 +110,8 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   @override
   Future<void> logout() async {
     try {
-      await dioClient.post("/logout");
+      final token = await di.sl<UserDataService>().getAuthToken();
+      await dioClient.post("/logout", token: token);
       debugPrint('Logout successful');
     } on ApiError catch (e) {
       debugPrint("Server logout failed: ${e.message}");
