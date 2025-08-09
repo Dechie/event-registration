@@ -40,6 +40,7 @@ class SplashLocalDataSourceImpl implements SplashLocalDataSource {
             role = Role.participant;
             break;
           case 'admin':
+          case 'org_admin': // Handle the backend's org_admin role
             role = Role.admin;
             break;
           default:
@@ -88,7 +89,7 @@ class SplashLocalDataSourceImpl implements SplashLocalDataSource {
       }
 
       if (authStatus.userId != null) {
-        await userDataService.setUserEmail(authStatus.userId!);
+        await userDataService.setUserId(authStatus.userId!);
       }
 
       // Save additional status flags

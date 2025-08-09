@@ -111,13 +111,21 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   Future<void> logout() async {
     try {
       final token = await di.sl<UserDataService>().getAuthToken();
-      await dioClient.post("/logout", token: token);
-      debugPrint('Logout successful');
+      debugPrint("🔐 Logout - Token retrieved: ${token != null ? 'Present' : 'Null'}");
+      
+      if (token == null || token.isEmpty) {
+        debugPrint("⚠️ Logout - No token found, skipping server logout");
+        return;
+      }
+      
+      debugPrint("🔐 Logout - Calling server logout endpoint");
+      final response = await dioClient.post("/logout", token: token);
+      debugPrint("✅ Logout successful - Server response: ${response.statusCode}");
     } on ApiError catch (e) {
-      debugPrint("Server logout failed: ${e.message}");
+      debugPrint("❌ Server logout failed: ${e.message} (Status: ${e.statusCode})");
       // Don't throw error for logout as local cleanup is more important
     } catch (e) {
-      debugPrint("Server logout failed: $e");
+      debugPrint("❌ Unexpected error during logout: $e");
       // Don't throw error for logout as local cleanup is more important
     }
   }

@@ -284,18 +284,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthLoadingState());
 
     try {
+      debugPrint("🔐 Attempting logout...");
       final result = await authRepository.logout();
 
       result.fold(
         (failure) {
-          emit(const UnauthenticatedState());
+          debugPrint("❌ Logout failed: ${failure.message}");
+          // Even if server logout fails, we should still clear local data and logout
+          emit(AuthLoggedOutState());
         },
         (_) {
-          emit(const UnauthenticatedState());
+          debugPrint("✅ Logout successful");
+          emit(AuthLoggedOutState());
         },
       );
     } catch (e) {
-      emit(const UnauthenticatedState());
+      debugPrint("❌ Unexpected error during logout: $e");
+      // Even if there's an error, we should still logout locally
+      emit(AuthLoggedOutState());
     }
   }
 

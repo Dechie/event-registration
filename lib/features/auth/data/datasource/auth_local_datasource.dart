@@ -53,12 +53,17 @@ class AuthLocalDatasourceImpl implements AuthLocalDatasource {
         loginResponse.user.yearsOfExperience ?? 0,
       );
       await userDataService.setPhotoPath(loginResponse.user.photoPath ?? '');
-      await userDataService.setHasProfile(
-        loginResponse.user.hasCompletedProfile,
-      );
-      await userDataService.setProfileCompleted(
-        loginResponse.user.hasCompletedProfile,
-      );
+      
+      // Handle profile status based on user role
+      if (loginResponse.user.role == 'admin') {
+        // Admin users don't need participant profile fields, so set hasProfile to true
+        await userDataService.setHasProfile(true);
+        await userDataService.setProfileCompleted(true);
+      } else {
+        // For participants, check if they have completed their profile
+        await userDataService.setHasProfile(loginResponse.user.hasCompletedProfile);
+        await userDataService.setProfileCompleted(loginResponse.user.hasCompletedProfile);
+      }
 
     } on CacheException {
       rethrow;

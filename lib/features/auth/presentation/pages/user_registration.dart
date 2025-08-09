@@ -395,14 +395,28 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Row(
+          children: [
+            Icon(Icons.account_circle, color: Theme.of(context).primaryColor, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              'Account Type',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[800],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
         Text(
-          'Account Type',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: Colors.grey[800],
+          'Choose your account type to register for the appropriate features',
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey[600],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey.shade300),
@@ -488,6 +502,34 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
             ],
           ),
         ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.info_outline,
+                size: 16,
+                color: Theme.of(context).primaryColor,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'You\'ll be registering as a ${_selectedRole == 'participant' ? 'Participant' : 'Admin'}. You can change this selection before creating your account.',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(context).primaryColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -502,11 +544,7 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
         ),
         GestureDetector(
           onTap: () {
-            if (_selectedRole == "participant") {
-              Navigator.pushNamed(context, RouteNames.participantLoginPage);
-            } else if (_selectedRole == "admin") {
-              Navigator.pushNamed(context, RouteNames.adminLoginPage);
-            }
+            _showSignInDialog(context);
           },
           child: Text(
             'Sign In',
@@ -518,6 +556,54 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
           ),
         ),
       ],
+    );
+  }
+
+  void _showSignInDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.login, color: Theme.of(context).primaryColor),
+              const SizedBox(width: 8),
+              const Text('Sign In'),
+            ],
+          ),
+          content: const Text('Choose your account type to sign in:'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                Navigator.pushNamed(context, RouteNames.participantLoginPage);
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.person, color: Colors.blue, size: 20),
+                  const SizedBox(width: 8),
+                  const Text('Participant'),
+                ],
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                Navigator.pushNamed(context, RouteNames.adminLoginPage);
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.admin_panel_settings, color: Colors.green, size: 20),
+                  const SizedBox(width: 8),
+                  const Text('Admin'),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

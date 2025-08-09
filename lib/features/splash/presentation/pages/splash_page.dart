@@ -48,6 +48,12 @@ class SplashPage extends StatelessWidget {
             RouteNames.profileAddPage,
             arguments: {'email': state.email},
           );
+        } else if (state is SplashNavigateToAdminLogin) {
+          debugPrint("📍 Navigating to Admin Login");
+          Navigator.pushReplacementNamed(context, RouteNames.adminLoginPage);
+        } else if (state is SplashNavigateToParticipantLogin) {
+          debugPrint("📍 Navigating to Participant Login");
+          Navigator.pushReplacementNamed(context, RouteNames.participantLoginPage);
         }
       },
       child: Scaffold(
