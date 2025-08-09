@@ -3,6 +3,9 @@ import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:event_reg/features/admin_dashboard/data/datasource/admin_dashboard_datasource.dart';
 import 'package:event_reg/features/admin_dashboard/data/repositories/admin_dashboard_repository.dart';
 import 'package:event_reg/features/admin_dashboard/presentation/bloc/admin_dashboard_bloc.dart';
+import 'package:event_reg/features/attendance/data/datasource/attendance_datasource.dart';
+import 'package:event_reg/features/attendance/data/repositories/attendance_repository.dart';
+import 'package:event_reg/features/attendance/presentation/bloc/attendance_bloc.dart';
 import 'package:event_reg/features/auth/data/datasource/auth_local_datasource.dart';
 import 'package:event_reg/features/auth/data/datasource/auth_remote_datasource.dart';
 import 'package:event_reg/features/auth/data/datasource/profile_remote_datasource.dart';
@@ -132,19 +135,23 @@ Future<void> init() async {
   sl.registerFactory(() => VerificationBloc(repository: sl()));
 
   sl.registerFactory(() => AdminDashboardBloc(repository: sl()));
-  
+
   sl.registerLazySingleton<AdminDashboardRepository>(
-    () => AdminDashboardRepositoryImpl(
-      dataSource: sl(),
-      networkInfo: sl(),
-    ),
+    () => AdminDashboardRepositoryImpl(dataSource: sl(), networkInfo: sl()),
   );
-  
+
   sl.registerLazySingleton<AdminDashboardDataSource>(
-    () => AdminDashboardDataSourceImpl(
-      dioClient: sl(),
-      userDataService: sl(),
-    ),
+    () => AdminDashboardDataSourceImpl(dioClient: sl(), userDataService: sl()),
+  );
+
+  sl.registerLazySingleton<AttendanceRepository>(
+    () => AttendanceRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
+
+  sl.registerFactory(() => AttendanceBloc(repository: sl()));
+  sl.registerLazySingleton<AttendanceRemoteDataSource>(
+    () =>
+        AttendanceRemoteDataSourceImpl(dioClient: sl(), userDataService: sl()),
   );
   // ! Features - Dashboard
   // DataSources

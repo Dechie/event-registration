@@ -1,4 +1,7 @@
 import 'package:equatable/equatable.dart';
+import 'package:event_reg/features/attendance/data/models/attendance_event_model.dart';
+import '../../data/models/attendance_room.dart';
+import '../../data/models/attendance_session.dart';
 import '../pages/event_list_page.dart';
 import '../pages/session_list_page.dart';
 import '../pages/room_list_page.dart';
@@ -41,7 +44,7 @@ class AttendanceError extends AttendanceState {
 }
 
 class EventsLoaded extends AttendanceState {
-  final List<AttendanceEvent> events;
+  final List<AttendanceEventModel> events;
 
   const EventsLoaded(this.events);
 

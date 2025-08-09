@@ -15,6 +15,10 @@ class RouteNames {
   static const String badgePage = "/badge";
   static const String couponSelectionPage = '/coupon-selection';
 
+  static const String eventListPage = '/attendance/events';
+  static const String sessionListPage = '/attendance/sessions';
+  static const String roomListPage = '/attendance/rooms';
+
   // Dashboard routes
   static const String adminDashboardPage = '/admin-dashboard';
   static const String participantDashboardPage = '/participant-dashboard';

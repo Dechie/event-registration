@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../data/models/attendance_event_model.dart';
+import '../../data/models/attendance_room.dart';
 import '../../data/models/attendance_session.dart';
 import '../bloc/attendance_bloc.dart';
 import '../bloc/attendance_event.dart';

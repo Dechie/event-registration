@@ -1,4 +1,5 @@
 import 'package:event_reg/config/routes/route_names.dart';
+import 'package:event_reg/features/admin_dashboard/presentation/pages/admin_dashboard_page.dart';
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:event_reg/features/auth/presentation/bloc/events/auth_event.dart';
 import 'package:event_reg/features/auth/presentation/bloc/states/auth_state.dart';
@@ -8,7 +9,6 @@ import 'package:event_reg/features/auth/presentation/pages/login/participant_log
 import 'package:event_reg/features/auth/presentation/pages/profile_add_page.dart';
 import 'package:event_reg/features/auth/presentation/pages/user_registration.dart';
 import 'package:event_reg/features/badge/presentation/pages/badge_page.dart';
-import 'package:event_reg/features/admin_dashboard/presentation/pages/admin_dashboard_page.dart';
 import 'package:event_reg/features/landing/presentation/pages/landing_page.dart';
 import 'package:event_reg/features/splash/presentation/pages/splash_page.dart';
 import 'package:event_reg/features/verification/presentation/pages/coupon_selection_page.dart';
@@ -17,6 +17,11 @@ import 'package:event_reg/features/verification/presentation/pages/verification_
 import 'package:event_reg/injection_container.dart' as di;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../features/attendance/presentation/bloc/attendance_bloc.dart';
+import '../../features/attendance/presentation/pages/event_list_page.dart';
+import '../../features/attendance/presentation/pages/room_list_page.dart';
+import '../../features/attendance/presentation/pages/session_list_page.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -94,24 +99,22 @@ class AppRouter {
       case RouteNames.qrScannerPage:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
-          builder: (_) => QrScannerPage(
-            verificationType: args?['type'] ?? 'security',
+          builder: (_) =>
+              QrScannerPage(verificationType: args?['type'] ?? 'security'),
+        );
+
+      case RouteNames.couponSelectionPage:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: args['bloc'],
+            child: CouponSelectionPage(
+              coupons: args['coupons'],
+              participant: args['participant'],
+              badgeNumber: args['badgeNumber'],
+            ),
           ),
         );
-      
-      case RouteNames.couponSelectionPage:
-  final args = settings.arguments as Map<String, dynamic>;
-  return MaterialPageRoute(
-    builder: (_) => BlocProvider.value(
-      value: args['bloc'],
-      child: CouponSelectionPage(
-        coupons: args['coupons'],
-        participant: args['participant'],
-        badgeNumber: args['badgeNumber'],
-      ),
-    ),
-  );
-
 
       case RouteNames.verificationResultPage:
         final args = settings.arguments as Map<String, dynamic>;
@@ -122,7 +125,31 @@ class AppRouter {
             badgeNumber: args['badgeNumber'],
           ),
         );
+      case RouteNames.eventListPage:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (context) => di.sl<AttendanceBloc>(),
+            child: const EventListPage(),
+          ),
+        );
 
+      case RouteNames.sessionListPage:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: args['bloc'],
+            child: SessionListPage(event: args['event']),
+          ),
+        );
+
+      case RouteNames.roomListPage:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: args['bloc'],
+            child: RoomListPage(event: args['event'], session: args['session']),
+          ),
+        );
       case RouteNames.eventAgendaPage:
         return MaterialPageRoute(builder: (_) => const EventAgendaPage());
 
@@ -139,7 +166,6 @@ class AppRouter {
     }
   }
 }
-
 
 // Auth Guard Widget to protect routes
 class AuthGuard extends StatelessWidget {
