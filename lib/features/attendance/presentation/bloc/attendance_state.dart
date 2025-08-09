@@ -1,23 +1,7 @@
 import 'package:equatable/equatable.dart';
-
-import '../../data/models/session.dart';
-
-class AttendanceErrorState extends AttendanceState {
-  final String message;
-  const AttendanceErrorState({required this.message});
-  @override
-  List<Object?> get props => [message];
-}
-
-class AttendanceInitialState extends AttendanceState {
-  @override
-  List<Object?> get props => [];
-}
-
-class AttendanceLoadingState extends AttendanceState {
-  @override
-  List<Object?> get props => [];
-}
+import '../pages/event_list_page.dart';
+import '../pages/session_list_page.dart';
+import '../pages/room_list_page.dart';
 
 abstract class AttendanceState extends Equatable {
   const AttendanceState();
@@ -26,15 +10,96 @@ abstract class AttendanceState extends Equatable {
   List<Object?> get props => [];
 }
 
-class AvailableSessionsLoadedState extends AttendanceState {
-  final List<Session> sessions;
-  const AvailableSessionsLoadedState({required this.sessions});
+class AttendanceInitial extends AttendanceState {
+  const AttendanceInitial();
 
   @override
-  List<Object?> get props => [sessions];
+  String toString() => 'AttendanceInitial()';
 }
 
-class SessionsRegistrationErrorState extends AttendanceState {
+class AttendanceLoading extends AttendanceState {
+  const AttendanceLoading();
+
   @override
-  List<Object?> get props => [];
+  String toString() => 'AttendanceLoading()';
 }
+
+class AttendanceError extends AttendanceState {
+  final String message;
+  final String? code;
+
+  const AttendanceError({
+    required this.message,
+    this.code,
+  });
+
+  @override
+  List<Object?> get props => [message, code];
+
+  @override
+  String toString() => 'AttendanceError(message: $message, code: $code)';
+}
+
+class EventsLoaded extends AttendanceState {
+  final List<AttendanceEvent> events;
+
+  const EventsLoaded(this.events);
+
+  @override
+  List<Object?> get props => [events];
+
+  @override
+  String toString() => 'EventsLoaded(events: ${events.length})';
+}
+
+class SessionsLoaded extends AttendanceState {
+  final List<AttendanceSession> sessions;
+  final String eventId;
+
+  const SessionsLoaded({
+    required this.sessions,
+    required this.eventId,
+  });
+
+  @override
+  List<Object?> get props => [sessions, eventId];
+
+  @override
+  String toString() => 'SessionsLoaded(eventId: $eventId, sessions: ${sessions.length})';
+}
+
+class RoomsLoaded extends AttendanceState {
+  final List<AttendanceRoom> rooms;
+  final String sessionId;
+
+  const RoomsLoaded({
+    required this.rooms,
+    required this.sessionId,
+  });
+
+  @override
+  List<Object?> get props => [rooms, sessionId];
+
+  @override
+  String toString() => 'RoomsLoaded(sessionId: $sessionId, rooms: ${rooms.length})';
+}
+
+class AttendanceMarked extends AttendanceState {
+  final String participantId;
+  final String sessionId;
+  final String roomId;
+  final String message;
+
+  const AttendanceMarked({
+    required this.participantId,
+    required this.sessionId,
+    required this.roomId,
+    required this.message,
+  });
+
+  @override
+  List<Object?> get props => [participantId, sessionId, roomId, message];
+
+  @override
+  String toString() => 'AttendanceMarked(participantId: $participantId, sessionId: $sessionId, roomId: $roomId)';
+} 

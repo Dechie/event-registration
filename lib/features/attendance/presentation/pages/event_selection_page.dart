@@ -74,6 +74,7 @@ class _EventSelectionPageState extends State<EventSelectionPage> {
             if (state is AvailableSessionsLoadedState) {
               _availableSessions = state.sessions;
             }
+
             return Column(
               children: [
                 _buildHeader(),

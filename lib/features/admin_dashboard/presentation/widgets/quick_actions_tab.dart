@@ -1,7 +1,11 @@
 // lib/features/admin_dashboard/presentation/widgets/quick_actions_tab.dart
 import 'package:event_reg/config/routes/route_names.dart';
+import 'package:event_reg/features/attendance/presentation/bloc/attendance_bloc.dart';
+import 'package:event_reg/features/attendance/presentation/pages/event_list_page.dart';
 import 'package:event_reg/features/landing/data/models/event_session.dart';
+import 'package:event_reg/injection_container.dart' as di;
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class QuickActionsTab extends StatefulWidget {
   const QuickActionsTab({super.key});
@@ -86,7 +90,7 @@ class _QuickActionsTabState extends State<QuickActionsTab> {
                   title: 'Take Attendance',
                   description: 'Scan QR codes to mark attendance for events',
                   color: Colors.green,
-                  onTap: () => _showSessionsDialog(context),
+                  onTap: () => _navigateToAttendanceFlow(context),
                 ),
                 _buildActionCard(
                   textTheme: textTheme,
@@ -180,6 +184,94 @@ class _QuickActionsTabState extends State<QuickActionsTab> {
     );
   }
 
+  Widget _buildSessionTile(
+    BuildContext context,
+    EventSession session,
+    BuildContext dialogContext,
+  ) {
+    return ListTile(
+      leading: Icon(
+        Icons.schedule,
+        color: session.isActive ? Colors.green : Colors.grey,
+      ),
+      title: Text(
+        session.title,
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: session.isActive ? Colors.black : Colors.grey,
+        ),
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (session.description != null)
+            Text(
+              session.description!,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12,
+                color: session.isActive ? Colors.grey[600] : Colors.grey,
+              ),
+            ),
+          if (session.startTime != null)
+            Text(
+              '${_formatDateTime(session.startTime!)} - ${session.endTime != null ? _formatTime(session.endTime!) : ''}',
+              style: TextStyle(
+                fontSize: 11,
+                color: session.isActive ? Colors.blue : Colors.grey,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+        ],
+      ),
+      trailing: session.isActive
+          ? Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                'Active',
+                style: TextStyle(
+                  color: Colors.green,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            )
+          : null,
+      onTap: session.isActive
+          ? () {
+              Navigator.of(dialogContext).pop();
+              _navigateToScannerWithSession(context, 'attendance', session);
+            }
+          : null,
+    );
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+  }
+
+  String _formatTime(DateTime dateTime) {
+    return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+  }
+
+  void _navigateToAttendanceFlow(BuildContext context) {
+    // Navigate to the event list page with a new AttendanceBloc instance
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BlocProvider(
+          create: (context) => di.sl<AttendanceBloc>(),
+          child: const EventListPage(),
+        ),
+      ),
+    );
+  }
+
   void _navigateToScanner(BuildContext context, String type) {
     Navigator.pushNamed(
       context,
@@ -188,7 +280,11 @@ class _QuickActionsTabState extends State<QuickActionsTab> {
     );
   }
 
-  void _navigateToScannerWithSession(BuildContext context, String type, EventSession session) {
+  void _navigateToScannerWithSession(
+    BuildContext context,
+    String type,
+    EventSession session,
+  ) {
     Navigator.pushNamed(
       context,
       RouteNames.qrScannerPage,
@@ -273,76 +369,5 @@ class _QuickActionsTabState extends State<QuickActionsTab> {
         );
       },
     );
-  }
-
-  Widget _buildSessionTile(BuildContext context, EventSession session, BuildContext dialogContext) {
-    return ListTile(
-      leading: Icon(
-        Icons.schedule,
-        color: session.isActive ? Colors.green : Colors.grey,
-      ),
-      title: Text(
-        session.title,
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          color: session.isActive ? Colors.black : Colors.grey,
-        ),
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (session.description != null)
-            Text(
-              session.description!,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 12,
-                color: session.isActive ? Colors.grey[600] : Colors.grey,
-              ),
-            ),
-          if (session.startTime != null)
-            Text(
-              '${_formatDateTime(session.startTime!)} - ${session.endTime != null ? _formatTime(session.endTime!) : ''}',
-              style: TextStyle(
-                fontSize: 11,
-                color: session.isActive ? Colors.blue : Colors.grey,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-        ],
-      ),
-      trailing: session.isActive
-          ? Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                'Active',
-                style: TextStyle(
-                  color: Colors.green,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            )
-          : null,
-      onTap: session.isActive
-          ? () {
-              Navigator.of(dialogContext).pop();
-              _navigateToScannerWithSession(context, 'attendance', session);
-            }
-          : null,
-    );
-  }
-
-  String _formatDateTime(DateTime dateTime) {
-    return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-  }
-
-  String _formatTime(DateTime dateTime) {
-    return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 }

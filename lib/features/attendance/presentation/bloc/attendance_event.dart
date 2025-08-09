@@ -1,53 +1,57 @@
 import 'package:equatable/equatable.dart';
 
-import '../../data/models/session.dart';
-// import 'package:event_reg/features/dashboard/data/models/session.dart';
-
-
 abstract class AttendanceEvent extends Equatable {
   const AttendanceEvent();
-  @override
-  List<Object?> get props => [];
-} 
-
-class LoadAvailableSessionsEvent extends AttendanceEvent {
-  const LoadAvailableSessionsEvent();
 
   @override
   List<Object?> get props => [];
 }
 
-class RegisterForSessionsEvent extends AttendanceEvent {
-  final List<Session> selectedSessions;
-  final Map<String, dynamic>? profileData;
-
-  const RegisterForSessionsEvent({
-    required this.selectedSessions,
-    this.profileData,
-  });
+class LoadEventsForAttendance extends AttendanceEvent {
+  const LoadEventsForAttendance();
 
   @override
-  List<Object?> get props => [selectedSessions, profileData];
+  String toString() => 'LoadEventsForAttendance()';
 }
 
-class UpdateSessionSelectionEvent extends AttendanceEvent {
-  final List<Session> selectedSessions;
+class LoadSessionsForEvent extends AttendanceEvent {
+  final String eventId;
 
-  const UpdateSessionSelectionEvent({
-    required this.selectedSessions,
-  });
+  const LoadSessionsForEvent(this.eventId);
 
   @override
-  List<Object?> get props => [selectedSessions];
+  List<Object?> get props => [eventId];
+
+  @override
+  String toString() => 'LoadSessionsForEvent(eventId: $eventId)';
 }
 
-class GetParticipantSessionsEvent extends AttendanceEvent {
+class LoadRoomsForSession extends AttendanceEvent {
+  final String sessionId;
+
+  const LoadRoomsForSession(this.sessionId);
+
+  @override
+  List<Object?> get props => [sessionId];
+
+  @override
+  String toString() => 'LoadRoomsForSession(sessionId: $sessionId)';
+}
+
+class MarkAttendance extends AttendanceEvent {
   final String participantId;
+  final String sessionId;
+  final String roomId;
 
-  const GetParticipantSessionsEvent({
+  const MarkAttendance({
     required this.participantId,
+    required this.sessionId,
+    required this.roomId,
   });
 
   @override
-  List<Object?> get props => [participantId];
+  List<Object?> get props => [participantId, sessionId, roomId];
+
+  @override
+  String toString() => 'MarkAttendance(participantId: $participantId, sessionId: $sessionId, roomId: $roomId)';
 }

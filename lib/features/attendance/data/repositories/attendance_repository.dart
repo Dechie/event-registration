@@ -1,10 +1,20 @@
 import 'package:dartz/dartz.dart';
-import 'package:event_reg/core/error/failures.dart';
 import 'package:event_reg/core/network/network_info.dart';
+import '../../../../core/error/failures.dart';
+import '../../presentation/pages/event_list_page.dart';
+import '../../presentation/pages/session_list_page.dart';
+import '../../presentation/pages/room_list_page.dart';
+import '../models/attendance_event_model.dart';
 
 abstract class AttendanceRepository {
-  Future<Either<Failure, bool>> checkInParticipant(String qrCodeId);
-  Future<Either<Failure, bool>> manualCheckIn(String email);
+  Future<Either<Failure, List<AttendanceEventModel>>> getEventsForAttendance();
+  Future<Either<Failure, List<AttendanceSession>>> getSessionsForEvent(String eventId);
+  Future<Either<Failure, List<AttendanceRoom>>> getRoomsForSession(String sessionId);
+  Future<Either<Failure, String>> markAttendance({
+    required String participantId,
+    required String sessionId,
+    required String roomId,
+  });
 }
 
 class AttendanceRepositoryImpl implements AttendanceRepository {
@@ -17,33 +27,90 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
   });
 
   @override
-  Future<Either<Failure, bool>> checkInParticipant(String qrCodeId) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final result = await remoteDataSource.checkInParticipant(qrCodeId);
-        return Right(result);
-      } catch (e) {
-        return Left(
-          ServerFailure(message: e.toString(), code: 'CHECK_IN_ERROR'),
-        );
+  Future<Either<Failure, List<AttendanceEventModel>>> getEventsForAttendance() async {
+    try {
+      if (!await networkInfo.isConnected) {
+        return const Left(NetworkFailure(
+          message: 'No internet connection. Please check your network and try again.',
+          code: 'NO_INTERNET',
+        ));
       }
+
+      final events = await remoteDataSource.getEventsForAttendance();
+      return Right(events);
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'Failed to load events. Please try again.',
+        code: 'LOAD_EVENTS_ERROR',
+      ));
     }
-    return const Left(
-      NetworkFailure(message: 'No internet connection', code: 'NETWORK_ERROR'),
-    );
   }
 
-  Future<Either<Failure, bool>> manualChekIn(String email) async {
-    return Right<Failure, bool>(true);
-  }
-  
   @override
-  Future<Either<Failure, bool>> manualCheckIn(String email) {
-    // TODO: implement manualCheckIn
-    throw UnimplementedError();
-  }
-}
+  Future<Either<Failure, List<AttendanceSession>>> getSessionsForEvent(String eventId) async {
+    try {
+      if (!await networkInfo.isConnected) {
+        return const Left(NetworkFailure(
+          message: 'No internet connection. Please check your network and try again.',
+          code: 'NO_INTERNET',
+        ));
+      }
 
-class AttendanceRemoteDataSource {
-  Future checkInParticipant(String qrCodeId) async {}
+      final sessions = await remoteDataSource.getSessionsForEvent(eventId);
+      return Right(sessions);
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'Failed to load sessions. Please try again.',
+        code: 'LOAD_SESSIONS_ERROR',
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<AttendanceRoom>>> getRoomsForSession(String sessionId) async {
+    try {
+      if (!await networkInfo.isConnected) {
+        return const Left(NetworkFailure(
+          message: 'No internet connection. Please check your network and try again.',
+          code: 'NO_INTERNET',
+        ));
+      }
+
+      final rooms = await remoteDataSource.getRoomsForSession(sessionId);
+      return Right(rooms);
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'Failed to load rooms. Please try again.',
+        code: 'LOAD_ROOMS_ERROR',
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> markAttendance({
+    required String participantId,
+    required String sessionId,
+    required String roomId,
+  }) async {
+    try {
+      if (!await networkInfo.isConnected) {
+        return const Left(NetworkFailure(
+          message: 'No internet connection. Please check your network and try again.',
+          code: 'NO_INTERNET',
+        ));
+      }
+
+      final message = await remoteDataSource.markAttendance(
+        participantId: participantId,
+        sessionId: sessionId,
+        roomId: roomId,
+      );
+      return Right(message);
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'Failed to mark attendance. Please try again.',
+        code: 'MARK_ATTENDANCE_ERROR',
+      ));
+    }
+  }
 }
