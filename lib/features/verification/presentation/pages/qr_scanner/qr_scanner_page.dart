@@ -16,7 +16,16 @@ part 'qr_overlay_shape.dart';
 
 class QrScannerPage extends StatefulWidget {
   final String verificationType;
-  const QrScannerPage({super.key, this.verificationType = 'security'});
+  final String? eventSessionId;
+  final String? sessionTitle;
+  
+  const QrScannerPage({
+    super.key, 
+    this.verificationType = 'security',
+    this.eventSessionId,
+    this.sessionTitle,
+  });
+  
   @override
   State<QrScannerPage> createState() => _QrScannerPageState();
 }
@@ -41,6 +50,10 @@ class _QrScannerPageState extends State<QrScannerPage>
     debugPrint(
       "qrscanner page: verification type is: ${widget.verificationType}",
     );
+    if (widget.eventSessionId != null) {
+      debugPrint("qrscanner page: eventSessionId is: ${widget.eventSessionId}");
+      debugPrint("qrscanner page: sessionTitle is: ${widget.sessionTitle}");
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -143,6 +156,18 @@ class _QrScannerPageState extends State<QrScannerPage>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    if (widget.sessionTitle != null) ...[
+                      Text(
+                        'Session: ${widget.sessionTitle}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                     Text(
                       _getInstructionText(),
                       style: const TextStyle(
@@ -249,7 +274,9 @@ class _QrScannerPageState extends State<QrScannerPage>
   String _getAppBarTitle() {
     switch (widget.verificationType.toLowerCase()) {
       case 'attendance':
-        return 'Scan for Attendance';
+        return widget.sessionTitle != null 
+            ? 'Attendance - ${widget.sessionTitle}'
+            : 'Scan for Attendance';
       case 'security':
         return 'Security Check';
       case 'coupon':
@@ -312,11 +339,15 @@ class _QrScannerPageState extends State<QrScannerPage>
             'Step 6: Found a valid badge number. Adding event to Bloc.',
           );
           final badgeNumber = badgeData['badge_number'].toString();
+          
+          // Use the session ID from widget if available, otherwise from QR data
+          final eventSessionId = widget.eventSessionId ?? badgeData['eventsession_id']?.toString();
+          
           context.read<VerificationBloc>().add(
             VerifyBadgeRequested(
               badgeNumber,
               verificationType: widget.verificationType,
-              eventSessionId: badgeData['eventsession_id']?.toString(),
+              eventSessionId: eventSessionId,
               couponId: badgeData['coupon_id']?.toString(),
             ),
           );
@@ -361,6 +392,7 @@ class _QrScannerPageState extends State<QrScannerPage>
         'type': widget.verificationType,
         'response': response,
         'badgeNumber': badgeNumber,
+        'sessionTitle': widget.sessionTitle,
       },
     );
   }

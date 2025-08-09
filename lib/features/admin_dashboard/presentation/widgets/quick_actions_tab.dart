@@ -1,10 +1,16 @@
 // lib/features/admin_dashboard/presentation/widgets/quick_actions_tab.dart
 import 'package:event_reg/config/routes/route_names.dart';
+import 'package:event_reg/features/landing/data/models/event_session.dart';
 import 'package:flutter/material.dart';
 
-class QuickActionsTab extends StatelessWidget {
+class QuickActionsTab extends StatefulWidget {
   const QuickActionsTab({super.key});
 
+  @override
+  State<QuickActionsTab> createState() => _QuickActionsTabState();
+}
+
+class _QuickActionsTabState extends State<QuickActionsTab> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -80,7 +86,7 @@ class QuickActionsTab extends StatelessWidget {
                   title: 'Take Attendance',
                   description: 'Scan QR codes to mark attendance for events',
                   color: Colors.green,
-                  onTap: () => _navigateToScanner(context, 'attendance'),
+                  onTap: () => _showSessionsDialog(context),
                 ),
                 _buildActionCard(
                   textTheme: textTheme,
@@ -180,5 +186,163 @@ class QuickActionsTab extends StatelessWidget {
       RouteNames.qrScannerPage,
       arguments: {'type': type},
     );
+  }
+
+  void _navigateToScannerWithSession(BuildContext context, String type, EventSession session) {
+    Navigator.pushNamed(
+      context,
+      RouteNames.qrScannerPage,
+      arguments: {
+        'type': type,
+        'eventSessionId': session.id,
+        'sessionTitle': session.title,
+      },
+    );
+  }
+
+  void _showSessionsDialog(BuildContext context) {
+    // For now, show a simple dialog with mock sessions
+    // TODO: Replace with actual API call to fetch sessions
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.fact_check, color: Colors.green),
+              const SizedBox(width: 8),
+              const Text('Select Session'),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Choose a session for attendance tracking:'),
+                const SizedBox(height: 16),
+                // Mock sessions - replace with actual API data
+                _buildSessionTile(
+                  context,
+                  EventSession(
+                    id: '1',
+                    eventId: '1',
+                    title: 'Opening Ceremony',
+                    description: 'Welcome and introduction to the event',
+                    startTime: DateTime.now().add(const Duration(hours: 1)),
+                    endTime: DateTime.now().add(const Duration(hours: 2)),
+                    isActive: true,
+                  ),
+                  dialogContext,
+                ),
+                _buildSessionTile(
+                  context,
+                  EventSession(
+                    id: '2',
+                    eventId: '1',
+                    title: 'Technical Workshop',
+                    description: 'Hands-on technical training session',
+                    startTime: DateTime.now().add(const Duration(hours: 3)),
+                    endTime: DateTime.now().add(const Duration(hours: 5)),
+                    isActive: true,
+                  ),
+                  dialogContext,
+                ),
+                _buildSessionTile(
+                  context,
+                  EventSession(
+                    id: '3',
+                    eventId: '1',
+                    title: 'Closing Session',
+                    description: 'Wrap-up and networking',
+                    startTime: DateTime.now().add(const Duration(hours: 6)),
+                    endTime: DateTime.now().add(const Duration(hours: 7)),
+                    isActive: false,
+                  ),
+                  dialogContext,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildSessionTile(BuildContext context, EventSession session, BuildContext dialogContext) {
+    return ListTile(
+      leading: Icon(
+        Icons.schedule,
+        color: session.isActive ? Colors.green : Colors.grey,
+      ),
+      title: Text(
+        session.title,
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: session.isActive ? Colors.black : Colors.grey,
+        ),
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (session.description != null)
+            Text(
+              session.description!,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12,
+                color: session.isActive ? Colors.grey[600] : Colors.grey,
+              ),
+            ),
+          if (session.startTime != null)
+            Text(
+              '${_formatDateTime(session.startTime!)} - ${session.endTime != null ? _formatTime(session.endTime!) : ''}',
+              style: TextStyle(
+                fontSize: 11,
+                color: session.isActive ? Colors.blue : Colors.grey,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+        ],
+      ),
+      trailing: session.isActive
+          ? Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                'Active',
+                style: TextStyle(
+                  color: Colors.green,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            )
+          : null,
+      onTap: session.isActive
+          ? () {
+              Navigator.of(dialogContext).pop();
+              _navigateToScannerWithSession(context, 'attendance', session);
+            }
+          : null,
+    );
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+  }
+
+  String _formatTime(DateTime dateTime) {
+    return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 }
