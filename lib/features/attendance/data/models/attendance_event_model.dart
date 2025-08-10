@@ -1,3 +1,5 @@
+import 'attendance_session.dart';
+
 class AttendanceEventModel {
   final String id;
   final String title;
@@ -8,7 +10,7 @@ class AttendanceEventModel {
   final bool isActive;
   final String? banner;
   final String organizationId;
-  final int sessionsCount;
+  final List<AttendanceSession> sessions;
 
   AttendanceEventModel({
     required this.id,
@@ -20,7 +22,7 @@ class AttendanceEventModel {
     required this.isActive,
     this.banner,
     required this.organizationId,
-    required this.sessionsCount,
+    required this.sessions,
   });
 
   factory AttendanceEventModel.fromJson(Map<String, dynamic> json) {
@@ -28,7 +30,14 @@ class AttendanceEventModel {
     final startTimeField = json['start_time'] ?? json['startTime'] ?? json['start_date'] ?? json['startDate'];
     final endTimeField = json['end_time'] ?? json['endTime'] ?? json['end_date'] ?? json['endDate'];
     final isActiveField = json['is_active'] ?? json['isActive'] ?? false;
-    final sessionsCountField = json['sessions_count'] ?? json['sessionsCount'] ?? json['sessions']?.length ?? 0;
+    
+    // Parse nested sessions
+    List<AttendanceSession> sessionsList = [];
+    if (json['sessions'] != null && json['sessions'] is List) {
+      sessionsList = (json['sessions'] as List)
+          .map((sessionJson) => AttendanceSession.fromJson(sessionJson))
+          .toList();
+    }
     
     return AttendanceEventModel(
       id: json['id'].toString(),
@@ -48,7 +57,7 @@ class AttendanceEventModel {
       isActive: isActiveField is bool ? isActiveField : (isActiveField == 1),
       banner: json['banner'],
       organizationId: json['organization_id']?.toString() ?? '',
-      sessionsCount: sessionsCountField is int ? sessionsCountField : 0,
+      sessions: sessionsList,
     );
   }
 
@@ -63,13 +72,15 @@ class AttendanceEventModel {
       'is_active': isActive,
       'banner': banner,
       'organization_id': organizationId,
-      'sessions_count': sessionsCount,
+      'sessions': sessions.map((session) => session.toJson()).toList(),
     };
   }
 
+  int get sessionsCount => sessions.length;
+
   @override
   String toString() {
-    return 'AttendanceEventModel(id: $id, title: $title, location: $location, isActive: $isActive, sessionsCount: $sessionsCount)';
+    return 'AttendanceEventModel(id: $id, title: $title, location: $location, isActive: $isActive, sessionsCount: ${sessions.length})';
   }
 
   @override

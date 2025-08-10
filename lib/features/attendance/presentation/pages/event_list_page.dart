@@ -1,10 +1,11 @@
 import 'package:event_reg/features/attendance/data/models/attendance_event_model.dart';
+import 'package:event_reg/features/attendance/data/models/attendance_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/attendance_bloc.dart';
 import '../bloc/attendance_event.dart';
 import '../bloc/attendance_state.dart';
-import 'session_list_page.dart';
+import 'room_list_page.dart';
 
 class EventListPage extends StatefulWidget {
   const EventListPage({super.key});
@@ -14,11 +15,19 @@ class EventListPage extends StatefulWidget {
 }
 
 class _EventListPageState extends State<EventListPage> {
+  final Map<String, bool> _expandedEvents = {};
+
   @override
   void initState() {
     super.initState();
     // Load events when page initializes
     context.read<AttendanceBloc>().add(LoadEventsForAttendance());
+  }
+
+  void _toggleEventExpansion(String eventId) {
+    setState(() {
+      _expandedEvents[eventId] = !(_expandedEvents[eventId] ?? false);
+    });
   }
 
   @override
@@ -128,7 +137,7 @@ class _EventListPageState extends State<EventListPage> {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(0.1),
+                              color: Colors.green.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Icon(
@@ -143,14 +152,14 @@ class _EventListPageState extends State<EventListPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Select Event',
+                                  'Select Event & Session',
                                   style: textTheme.titleLarge?.copyWith(
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Choose an event to take attendance for',
+                                  'Choose an event and session to take attendance for',
                                   style: textTheme.bodyMedium?.copyWith(
                                     color: colorScheme.onSurfaceVariant,
                                   ),
@@ -201,27 +210,23 @@ class _EventListPageState extends State<EventListPage> {
     TextTheme textTheme,
     ColorScheme colorScheme,
   ) {
+    final isExpanded = _expandedEvents[event.id] ?? false;
+    final hasSessions = event.sessions.isNotEmpty;
+
     return Card(
       elevation: 2,
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => BlocProvider.value(
-                value: context.read<AttendanceBloc>(),
-                child: SessionListPage(event: event),
-              ),
+      child: Column(
+        children: [
+          // Event header - always clickable to expand/collapse
+          InkWell(
+            onTap: hasSessions ? () => _toggleEventExpansion(event.id) : null,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(12),
+              topRight: Radius.circular(12),
             ),
-          );
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
                 children: [
                   Container(
                     width: 4,
@@ -255,7 +260,7 @@ class _EventListPageState extends State<EventListPage> {
                               ),
                               decoration: BoxDecoration(
                                 color: _getEventStatusColor(event.isActive)
-                                    .withOpacity(0.1),
+                                    .withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -334,13 +339,204 @@ class _EventListPageState extends State<EventListPage> {
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: colorScheme.onSurfaceVariant,
-                    size: 16,
-                  ),
+                  if (hasSessions) ...[
+                    Icon(
+                      isExpanded ? Icons.expand_less : Icons.expand_more,
+                      color: colorScheme.onSurfaceVariant,
+                      size: 24,
+                    ),
+                  ],
                 ],
               ),
+            ),
+          ),
+
+          // Collapsible sessions list
+          if (hasSessions && isExpanded) ...[
+            const Divider(height: 1),
+            _buildSessionsList(context, event, textTheme, colorScheme),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSessionsList(
+    BuildContext context,
+    AttendanceEventModel event,
+    TextTheme textTheme,
+    ColorScheme colorScheme,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Sessions (${event.sessions.length})',
+            style: textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: event.sessions.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 8),
+            itemBuilder: (context, index) {
+              final session = event.sessions[index];
+              return _buildSessionCard(context, session, event, textTheme, colorScheme);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSessionCard(
+    BuildContext context,
+    AttendanceSession session,
+    AttendanceEventModel event,
+    TextTheme textTheme,
+    ColorScheme colorScheme,
+  ) {
+    return Card(
+      elevation: 1,
+      margin: EdgeInsets.zero,
+      child: InkWell(
+        onTap: session.isActive
+            ? () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BlocProvider.value(
+                      value: context.read<AttendanceBloc>(),
+                      child: RoomListPage(
+                        event: event,
+                        session: session,
+                      ),
+                    ),
+                  ),
+                );
+              }
+            : null,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            children: [
+              Container(
+                width: 3,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: _getSessionStatusColor(session.isActive),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            session.title,
+                            style: textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: session.isActive ? null : Colors.grey[600],
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getSessionStatusColor(session.isActive)
+                                .withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            _getSessionStatusText(session.isActive),
+                            style: TextStyle(
+                              color: _getSessionStatusColor(session.isActive),
+                              fontSize: 8,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    if (session.description != null) ...[
+                      Text(
+                        session.description!,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: session.isActive 
+                              ? colorScheme.onSurfaceVariant 
+                              : Colors.grey[500],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                    ],
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.access_time,
+                          size: 12,
+                          color: session.isActive 
+                              ? colorScheme.onSurfaceVariant 
+                              : Colors.grey[500],
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${_formatTime(session.startTime)} - ${_formatTime(session.endTime)}',
+                          style: textTheme.bodySmall?.copyWith(
+                            color: session.isActive 
+                                ? colorScheme.onSurfaceVariant 
+                                : Colors.grey[500],
+                            fontSize: 11,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Icon(
+                          Icons.meeting_room,
+                          size: 12,
+                          color: session.isActive 
+                              ? colorScheme.onSurfaceVariant 
+                              : Colors.grey[500],
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${session.roomsCount} rooms',
+                          style: textTheme.bodySmall?.copyWith(
+                            color: session.isActive 
+                                ? colorScheme.onSurfaceVariant 
+                                : Colors.grey[500],
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              if (session.isActive) ...[
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: colorScheme.onSurfaceVariant,
+                  size: 14,
+                ),
+              ],
             ],
           ),
         ),
@@ -360,8 +556,20 @@ class _EventListPageState extends State<EventListPage> {
     return isActive ? 'Active' : 'Inactive';
   }
 
+  Color _getSessionStatusColor(bool isActive) {
+    return isActive ? Colors.green : Colors.grey;
+  }
+
+  String _getSessionStatusText(bool isActive) {
+    return isActive ? 'Active' : 'Inactive';
+  }
+
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
+  }
+
+  String _formatTime(DateTime dateTime) {
+    return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 }
 

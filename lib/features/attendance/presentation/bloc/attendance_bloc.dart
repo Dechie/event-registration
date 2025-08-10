@@ -9,8 +9,8 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
 
   AttendanceBloc({required this.repository}) : super(const AttendanceInitial()) {
     on<LoadEventsForAttendance>(_onLoadEventsForAttendance);
-    on<LoadSessionsForEvent>(_onLoadSessionsForEvent);
     on<LoadRoomsForSession>(_onLoadRoomsForSession);
+    on<LoadSessionsForEvent>(_onLoadSessionsForEvent);
     on<MarkAttendance>(_onMarkAttendance);
   }
 
@@ -43,35 +43,6 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
     }
   }
 
-  Future<void> _onLoadSessionsForEvent(
-    LoadSessionsForEvent event,
-    Emitter<AttendanceState> emit,
-  ) async {
-    try {
-      debugPrint('🔍 Loading sessions for event: ${event.eventId}');
-      emit(const AttendanceLoading());
-
-      final result = await repository.getSessionsForEvent(event.eventId);
-
-      result.fold(
-        (failure) {
-          debugPrint('❌ Failed to load sessions: ${failure.message}');
-          emit(AttendanceError(message: failure.message, code: failure.code));
-        },
-        (sessions) {
-          debugPrint('✅ Sessions loaded successfully: ${sessions.length} sessions');
-          emit(SessionsLoaded(sessions: sessions, eventId: event.eventId));
-        },
-      );
-    } catch (e) {
-      debugPrint('❌ Unexpected error loading sessions: $e');
-      emit(const AttendanceError(
-        message: 'Failed to load sessions. Please try again.',
-        code: 'UNEXPECTED_ERROR',
-      ));
-    }
-  }
-
   Future<void> _onLoadRoomsForSession(
     LoadRoomsForSession event,
     Emitter<AttendanceState> emit,
@@ -96,6 +67,35 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
       debugPrint('❌ Unexpected error loading rooms: $e');
       emit(const AttendanceError(
         message: 'Failed to load rooms. Please try again.',
+        code: 'UNEXPECTED_ERROR',
+      ));
+    }
+  }
+
+  Future<void> _onLoadSessionsForEvent(
+    LoadSessionsForEvent event,
+    Emitter<AttendanceState> emit,
+  ) async {
+    try {
+      debugPrint('🔍 Loading sessions for event: ${event.eventId}');
+      emit(const AttendanceLoading());
+
+      final result = await repository.getSessionsForEvent(event.eventId);
+
+      result.fold(
+        (failure) {
+          debugPrint('❌ Failed to load sessions: ${failure.message}');
+          emit(AttendanceError(message: failure.message, code: failure.code));
+        },
+        (sessions) {
+          debugPrint('✅ Sessions loaded successfully: ${sessions.length} sessions');
+          emit(SessionsLoaded(sessions: sessions, eventId: event.eventId));
+        },
+      );
+    } catch (e) {
+      debugPrint('❌ Unexpected error loading sessions: $e');
+      emit(const AttendanceError(
+        message: 'Failed to load sessions. Please try again.',
         code: 'UNEXPECTED_ERROR',
       ));
     }

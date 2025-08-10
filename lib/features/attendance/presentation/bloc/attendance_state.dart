@@ -52,22 +52,6 @@ class EventsLoaded extends AttendanceState {
   String toString() => 'EventsLoaded(events: ${events.length})';
 }
 
-class SessionsLoaded extends AttendanceState {
-  final List<AttendanceSession> sessions;
-  final String eventId;
-
-  const SessionsLoaded({
-    required this.sessions,
-    required this.eventId,
-  });
-
-  @override
-  List<Object?> get props => [sessions, eventId];
-
-  @override
-  String toString() => 'SessionsLoaded(eventId: $eventId, sessions: ${sessions.length})';
-}
-
 class RoomsLoaded extends AttendanceState {
   final List<AttendanceRoom> rooms;
   final String sessionId;
@@ -82,6 +66,22 @@ class RoomsLoaded extends AttendanceState {
 
   @override
   String toString() => 'RoomsLoaded(sessionId: $sessionId, rooms: ${rooms.length})';
+}
+
+class SessionsLoaded extends AttendanceState {
+  final List<AttendanceSession> sessions;
+  final String eventId;
+
+  const SessionsLoaded({
+    required this.sessions,
+    required this.eventId,
+  });
+
+  @override
+  List<Object?> get props => [sessions, eventId];
+
+  @override
+  String toString() => 'SessionsLoaded(eventId: $eventId, sessions: ${sessions.length})';
 }
 
 class AttendanceMarked extends AttendanceState {

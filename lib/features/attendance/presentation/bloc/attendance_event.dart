@@ -14,18 +14,6 @@ class LoadEventsForAttendance extends AttendanceEvent {
   String toString() => 'LoadEventsForAttendance()';
 }
 
-class LoadSessionsForEvent extends AttendanceEvent {
-  final String eventId;
-
-  const LoadSessionsForEvent(this.eventId);
-
-  @override
-  List<Object?> get props => [eventId];
-
-  @override
-  String toString() => 'LoadSessionsForEvent(eventId: $eventId)';
-}
-
 class LoadRoomsForSession extends AttendanceEvent {
   final String sessionId;
 
@@ -36,6 +24,18 @@ class LoadRoomsForSession extends AttendanceEvent {
 
   @override
   String toString() => 'LoadRoomsForSession(sessionId: $sessionId)';
+}
+
+class LoadSessionsForEvent extends AttendanceEvent {
+  final String eventId;
+
+  const LoadSessionsForEvent(this.eventId);
+
+  @override
+  List<Object?> get props => [eventId];
+
+  @override
+  String toString() => 'LoadSessionsForEvent(eventId: $eventId)';
 }
 
 class MarkAttendance extends AttendanceEvent {

@@ -8,8 +8,8 @@ import '../models/attendance_session.dart';
 
 abstract class AttendanceRepository {
   Future<Either<Failure, List<AttendanceEventModel>>> getEventsForAttendance();
-  Future<Either<Failure, List<AttendanceSession>>> getSessionsForEvent(String eventId);
   Future<Either<Failure, List<AttendanceRoom>>> getRoomsForSession(String sessionId);
+  Future<Either<Failure, List<AttendanceSession>>> getSessionsForEvent(String eventId);
   Future<Either<Failure, String>> markAttendance({
     required String participantId,
     required String sessionId,
@@ -47,26 +47,6 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
   }
 
   @override
-  Future<Either<Failure, List<AttendanceSession>>> getSessionsForEvent(String eventId) async {
-    try {
-      if (!await networkInfo.isConnected) {
-        return const Left(NetworkFailure(
-          message: 'No internet connection. Please check your network and try again.',
-          code: 'NO_INTERNET',
-        ));
-      }
-
-      final sessions = await remoteDataSource.getSessionsForEvent(eventId);
-      return Right(sessions);
-    } catch (e) {
-      return Left(ServerFailure(
-        message: 'Failed to load sessions. Please try again.',
-        code: 'LOAD_SESSIONS_ERROR',
-      ));
-    }
-  }
-
-  @override
   Future<Either<Failure, List<AttendanceRoom>>> getRoomsForSession(String sessionId) async {
     try {
       if (!await networkInfo.isConnected) {
@@ -82,6 +62,26 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
       return Left(ServerFailure(
         message: 'Failed to load rooms. Please try again.',
         code: 'LOAD_ROOMS_ERROR',
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<AttendanceSession>>> getSessionsForEvent(String eventId) async {
+    try {
+      if (!await networkInfo.isConnected) {
+        return const Left(NetworkFailure(
+          message: 'No internet connection. Please check your network and try again.',
+          code: 'NO_INTERNET',
+        ));
+      }
+
+      final sessions = await remoteDataSource.getSessionsForEvent(eventId);
+      return Right(sessions);
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'Failed to load sessions. Please try again.',
+        code: 'LOAD_SESSIONS_ERROR',
       ));
     }
   }
