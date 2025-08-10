@@ -28,6 +28,7 @@ class RouteNames {
   // Event registration routes
   static const String eventRegistrationStatusPage =
       '/event-registration-status';
+  static const String eventDetailsPage = '/attendance/event-details';
 
   // Utility routes
   static const String contactPage = '/contact';

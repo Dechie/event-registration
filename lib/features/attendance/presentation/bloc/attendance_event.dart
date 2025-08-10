@@ -7,6 +7,19 @@ abstract class AttendanceEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+// Load detailed event info with sessions and locations
+class LoadEventDetails extends AttendanceEvent {
+  final String eventId;
+
+  const LoadEventDetails(this.eventId);
+
+  @override
+  List<Object?> get props => [eventId];
+
+  @override
+  String toString() => 'LoadEventDetails(eventId: $eventId)';
+}
+
 class LoadEventsForAttendance extends AttendanceEvent {
   const LoadEventsForAttendance();
 
@@ -38,23 +51,18 @@ class LoadSessionsForEvent extends AttendanceEvent {
   String toString() => 'LoadSessionsForEvent(eventId: $eventId)';
 }
 
-class MarkAttendance extends AttendanceEvent {
-  final String participantId;
-  final String attendanceEventId;
-  final String sessionId;
-  final String roomId;
+// Mark attendance for a specific location
+class MarkAttendanceForLocation extends AttendanceEvent {
+  final String badgeNumber;
+  final String eventSessionId;
+  final String sessionLocationId; // Updated to use location ID
 
-  const MarkAttendance({
-    required this.participantId,
-    required this.attendanceEventId,
-    required this.sessionId,
-    required this.roomId,
+  const MarkAttendanceForLocation({
+    required this.badgeNumber,
+    required this.eventSessionId,
+    required this.sessionLocationId,
   });
 
   @override
-  List<Object?> get props => [participantId, sessionId, roomId, attendanceEventId];
-
-  @override
-  String toString() =>
-      'MarkAttendance(participantId: $participantId, sessionId: $sessionId, roomId: $roomId, eventId: $attendanceEventId)';
+  List<Object?> get props => [badgeNumber, eventSessionId, sessionLocationId];
 }

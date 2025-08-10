@@ -3,20 +3,17 @@
 import 'package:flutter/material.dart' show debugPrint;
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../attendance/presentation/bloc/attendance_bloc.dart';
+import '../../../attendance/presentation/bloc/attendance_event.dart';
 import '../../data/repositories/verification_repository.dart';
 import 'verification_event.dart';
 import 'verification_state.dart';
-import '../../../attendance/presentation/bloc/attendance_bloc.dart';
-import '../../../attendance/presentation/bloc/attendance_event.dart';
 
 class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
   final VerificationRepository repository;
   final AttendanceBloc? attendanceBloc; // Optional dependency for attendance
 
-  VerificationBloc({
-    required this.repository,
-    this.attendanceBloc,
-  })
+  VerificationBloc({required this.repository, this.attendanceBloc})
     : super(const VerificationInitial()) {
     on<VerifyBadgeRequested>(_onVerifyBadgeRequested);
     on<ResetVerificationState>(_onResetVerificationState);
@@ -138,19 +135,22 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
 
           // If this is an attendance verification and we have an attendance bloc,
           // mark attendance after successful verification
-          if (event.verificationType.toLowerCase() == 'attendance' && 
+          if (event.verificationType.toLowerCase() == 'attendance' &&
               attendanceBloc != null &&
               response.participant != null) {
-            
-            debugPrint('🎯 Marking attendance for participant: ${response.participant!.id}');
-            
+            debugPrint(
+              '🎯 Marking attendance for participant: ${response.participant!.id}',
+            );
+
             // Mark attendance using the attendance bloc
-            attendanceBloc!.add(MarkAttendance(
-              participantId: response.participant!.id,
-              attendanceEventId: event.eventId ?? '',
-              sessionId: event.eventSessionId ?? '',
-              roomId: event.roomId ?? '', // Use roomId from the event
-            ));
+            attendanceBloc!.add(
+              MarkAttendanceForLocation(
+                badgeNumber: event.badgeNumber,
+                eventSessionId: event.eventSessionId ?? '',
+                sessionLocationId:
+                    event.roomId ?? '', // Use roomId from the event
+              ),
+            );
           }
 
           emit(

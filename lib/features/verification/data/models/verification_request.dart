@@ -13,14 +13,6 @@ class VerificationRequest {
     this.couponId,
   });
 
-  // Factory constructor for security check
-  factory VerificationRequest.security({required String badgeNumber}) {
-    return VerificationRequest(
-      type: 'security',
-      badgeNumber: badgeNumber,
-    );
-  }
-
   // Factory constructor for attendance
   factory VerificationRequest.attendance({
     required String badgeNumber,
@@ -45,32 +37,6 @@ class VerificationRequest {
     );
   }
 
-  // Factory constructor for info/participant details
-  factory VerificationRequest.info({required String badgeNumber}) {
-    return VerificationRequest(
-      type: 'info',
-      badgeNumber: badgeNumber,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    final json = <String, dynamic>{
-      'type': type,
-      'badge_number': badgeNumber,
-    };
-
-    // Add conditional fields based on type
-    if (type == 'attendance' && eventSessionId != null) {
-      json['eventsession_id'] = int.tryParse(eventSessionId!) ?? 1;
-    }
-
-    if (type == 'coupon' && couponId != null) {
-      json['coupon_id'] = int.tryParse(couponId!) ?? 1;
-    }
-
-    return json;
-  }
-
   factory VerificationRequest.fromJson(Map<String, dynamic> json) {
     return VerificationRequest(
       type: json['type'] ?? 'security',
@@ -80,19 +46,14 @@ class VerificationRequest {
     );
   }
 
-  @override
-  String toString() {
-    return 'VerificationRequest(type: $type, badgeNumber: $badgeNumber, eventSessionId: $eventSessionId, couponId: $couponId)';
+  // Factory constructor for info/participant details
+  factory VerificationRequest.info({required String badgeNumber}) {
+    return VerificationRequest(type: 'info', badgeNumber: badgeNumber);
   }
 
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is VerificationRequest &&
-        other.type == type &&
-        other.badgeNumber == badgeNumber &&
-        other.eventSessionId == eventSessionId &&
-        other.couponId == couponId;
+  // Factory constructor for security check
+  factory VerificationRequest.security({required String badgeNumber}) {
+    return VerificationRequest(type: 'security', badgeNumber: badgeNumber);
   }
 
   @override
@@ -101,6 +62,17 @@ class VerificationRequest {
         badgeNumber.hashCode ^
         eventSessionId.hashCode ^
         couponId.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is VerificationRequest &&
+        other.type == type &&
+        other.badgeNumber == badgeNumber &&
+        other.eventSessionId == eventSessionId &&
+        other.couponId == couponId;
   }
 
   VerificationRequest copyWith({
@@ -115,5 +87,25 @@ class VerificationRequest {
       eventSessionId: eventSessionId ?? this.eventSessionId,
       couponId: couponId ?? this.couponId,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    final json = <String, dynamic>{'type': type, 'badge_number': badgeNumber};
+
+    // Add conditional fields based on type
+    if (type == 'attendance' && eventSessionId != null) {
+      json['eventsession_id'] = int.tryParse(eventSessionId!) ?? 1;
+    }
+
+    if (type == 'coupon' && couponId != null) {
+      json['coupon_id'] = int.tryParse(couponId!) ?? 1;
+    }
+
+    return json;
+  }
+
+  @override
+  String toString() {
+    return 'VerificationRequest(type: $type, badgeNumber: $badgeNumber, eventSessionId: $eventSessionId, couponId: $couponId)';
   }
 }

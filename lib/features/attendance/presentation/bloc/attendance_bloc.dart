@@ -7,11 +7,10 @@ import 'attendance_state.dart';
 class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
   final AttendanceRepository repository;
 
-  AttendanceBloc({required this.repository}) : super(const AttendanceInitial()) {
+  AttendanceBloc({required this.repository}) : super(AttendanceInitial()) {
     on<LoadEventsForAttendance>(_onLoadEventsForAttendance);
-    on<LoadRoomsForSession>(_onLoadRoomsForSession);
-    on<LoadSessionsForEvent>(_onLoadSessionsForEvent);
-    on<MarkAttendance>(_onMarkAttendance);
+    on<LoadEventDetails>(_onLoadEventDetails);
+    on<MarkAttendanceForLocation>(_onMarkAttendanceForLocation);
   }
 
   Future<void> _onLoadEventsForAttendance(
@@ -20,7 +19,7 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
   ) async {
     try {
       debugPrint('🔍 Loading events for attendance');
-      emit(const AttendanceLoading());
+      emit(AttendanceLoading());
 
       final result = await repository.getEventsForAttendance();
 
@@ -43,76 +42,46 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
     }
   }
 
-  Future<void> _onLoadRoomsForSession(
-    LoadRoomsForSession event,
+  Future<void> _onLoadEventDetails(
+    LoadEventDetails event,
     Emitter<AttendanceState> emit,
   ) async {
     try {
-      debugPrint('🔍 Loading rooms for session: ${event.sessionId}');
-      emit(const AttendanceLoading());
+      debugPrint('🔍 Loading detailed event info for: ${event.eventId}');
+      emit(AttendanceLoading());
 
-      final result = await repository.getRoomsForSession(event.sessionId);
+      final result = await repository.getEventDetails(event.eventId);
 
       result.fold(
         (failure) {
-          debugPrint('❌ Failed to load rooms: ${failure.message}');
+          debugPrint('❌ Failed to load event details: ${failure.message}');
           emit(AttendanceError(message: failure.message, code: failure.code));
         },
-        (rooms) {
-          debugPrint('✅ Rooms loaded successfully: ${rooms.length} rooms');
-          emit(RoomsLoaded(rooms: rooms, sessionId: event.sessionId));
+        (eventModel) {
+          debugPrint('✅ Event details loaded successfully');
+          emit(EventDetailsLoaded(eventModel));
         },
       );
     } catch (e) {
-      debugPrint('❌ Unexpected error loading rooms: $e');
+      debugPrint('❌ Unexpected error loading event details: $e');
       emit(const AttendanceError(
-        message: 'Failed to load rooms. Please try again.',
+        message: 'Failed to load event details. Please try again.',
         code: 'UNEXPECTED_ERROR',
       ));
     }
   }
 
-  Future<void> _onLoadSessionsForEvent(
-    LoadSessionsForEvent event,
+  Future<void> _onMarkAttendanceForLocation(
+    MarkAttendanceForLocation event,
     Emitter<AttendanceState> emit,
   ) async {
     try {
-      debugPrint('🔍 Loading sessions for event: ${event.eventId}');
-      emit(const AttendanceLoading());
-
-      final result = await repository.getSessionsForEvent(event.eventId);
-
-      result.fold(
-        (failure) {
-          debugPrint('❌ Failed to load sessions: ${failure.message}');
-          emit(AttendanceError(message: failure.message, code: failure.code));
-        },
-        (sessions) {
-          debugPrint('✅ Sessions loaded successfully: ${sessions.length} sessions');
-          emit(SessionsLoaded(sessions: sessions, eventId: event.eventId));
-        },
-      );
-    } catch (e) {
-      debugPrint('❌ Unexpected error loading sessions: $e');
-      emit(const AttendanceError(
-        message: 'Failed to load sessions. Please try again.',
-        code: 'UNEXPECTED_ERROR',
-      ));
-    }
-  }
-
-  Future<void> _onMarkAttendance(
-    MarkAttendance event,
-    Emitter<AttendanceState> emit,
-  ) async {
-    try {
-      debugPrint('🔍 Marking attendance for participant: ${event.participantId}');
+      debugPrint('🔍 Marking attendance for badge: ${event.badgeNumber}');
       
-      final result = await repository.markAttendance(
-        eventId: event.attendanceEventId,
-        participantId: event.participantId,
-        sessionId: event.sessionId,
-        roomId: event.roomId,
+      final result = await repository.markAttendanceForLocation(
+        badgeNumber: event.badgeNumber,
+        eventSessionId: event.eventSessionId,
+        sessionLocationId: event.sessionLocationId,
       );
 
       result.fold(
@@ -122,10 +91,10 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
         },
         (message) {
           debugPrint('✅ Attendance marked successfully');
-          emit(AttendanceMarked(
-            participantId: event.participantId,
-            sessionId: event.sessionId,
-            roomId: event.roomId,
+          emit(AttendanceMarkedForLocation(
+            badgeNumber: event.badgeNumber,
+            eventSessionId: event.eventSessionId,
+            sessionLocationId: event.sessionLocationId,
             message: message,
           ));
         },

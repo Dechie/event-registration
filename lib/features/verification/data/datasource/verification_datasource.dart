@@ -9,14 +9,17 @@ import '../models/coupon.dart';
 import '../models/verification_request.dart';
 
 abstract class VerificationRemoteDataSource {
+  
   Future<VerificationResponse> verifyBadge(
-    String badgeNumber,
-    String verificationType, {
-    String? eventSessionId,
-    String? couponId,
-    required String token,
-  });
+  String badgeNumber,
+  String verificationType, {
+  String? eventSessionId,
+  String? sessionLocationId, // Add this parameter
+  String? couponId,
+  required String token,
+});
   Future<List<Coupon>> fetchParticipantCoupons(String participantId, String token);
+
 }
 
 class VerificationRemoteDataSourceImpl implements VerificationRemoteDataSource {
@@ -64,6 +67,7 @@ Future<List<Coupon>> fetchParticipantCoupons(String participantId, String token)
     String badgeNumber,
     String verificationType, {
     String? eventSessionId,
+    String? sessionLocationId,
     String? couponId,
     required String token,
   }) async {
@@ -76,7 +80,7 @@ Future<List<Coupon>> fetchParticipantCoupons(String participantId, String token)
         case 'attendance':
           request = VerificationRequest.attendance(
             badgeNumber: badgeNumber,
-            eventSessionId: eventSessionId ?? '1',
+            eventSessionId: sessionLocationId ?? '1',
           );
           break;
         case 'coupon':

@@ -1,22 +1,157 @@
-// lib/features/attendance/data/datasource/attendance_datasource.dart
+// import 'package:event_reg/core/error/exceptions.dart';
+// import 'package:event_reg/core/network/dio_client.dart';
+// import 'package:event_reg/core/services/user_data_service.dart';
+// import 'package:flutter/material.dart' show debugPrint;
+
+// import '../models/attendance_event_model.dart';
+
+// abstract class AttendanceRemoteDataSource {
+//   Future<AttendanceEventModel> fetchEventDetails(String eventId);
+//   Future<List<AttendanceEventModel>> fetchEventsForAttendance();
+//   Future<void> markAttendance(
+//     String badgeNumber,
+//     String eventSessionId,
+//     String sessionLocationId,
+//   );
+// }
+
+// class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
+//   final DioClient dioClient;
+//   final UserDataService userDataService;
+
+//   AttendanceRemoteDataSourceImpl({
+//     required this.dioClient,
+//     required this.userDataService,
+//   });
+
+//   @override
+//   Future<AttendanceEventModel> fetchEventDetails(String eventId) async {
+//     try {
+//       debugPrint('🚀 DataSource: Fetching event details for event $eventId');
+
+//       final token = await userDataService.getAuthToken();
+//       final response = await dioClient.get(
+//         "/events/$eventId", // New endpoint for detailed event data
+//         token: token,
+//       );
+
+//       if (response.statusCode == 200) {
+//         final data = response.data;
+//         final eventData = data is Map<String, dynamic>
+//             ? (data["data"] ?? data)
+//             : data;
+
+//         if (eventData is Map<String, dynamic>) {
+//           return AttendanceEventModel.fromJson(eventData);
+//         } else {
+//           throw ServerException(
+//             message: "Invalid event response format",
+//             code: "INVALID_RESPONSE_FORMAT",
+//           );
+//         }
+//       } else {
+//         throw ServerException(
+//           message: "Failed to fetch event details",
+//           code: "FETCH_EVENT_DETAILS_FAILED",
+//         );
+//       }
+//     } catch (e) {
+//       debugPrint('❌ DataSource: Error fetching event details - $e');
+//       rethrow;
+//     }
+//   }
+
+//   @override
+//   Future<List<AttendanceEventModel>> fetchEventsForAttendance() async {
+//     try {
+//       debugPrint('🚀 DataSource: Fetching events for attendance');
+//       final token = await userDataService.getAuthToken();
+
+//       final response = await dioClient.get(
+//         "/fetch-events", // Updated endpoint
+//         token: token,
+//       );
+
+//       if (response.statusCode == 200) {
+//         final data = response.data;
+//         final eventsData = data is List ? data : (data["data"] ?? []);
+
+//         if (eventsData is List) {
+//           return eventsData
+//               .map((eventJson) => AttendanceEventModel.fromJson(eventJson))
+//               .toList();
+//         } else {
+//           throw ServerException(
+//             message: "Invalid events response format",
+//             code: "INVALID_RESPONSE_FORMAT",
+//           );
+//         }
+//       } else {
+//         throw ServerException(
+//           message: "Failed to fetch events",
+//           code: "FETCH_EVENTS_FAILED",
+//         );
+//       }
+//     } catch (e) {
+//       debugPrint('❌ DataSource: Error fetching events - $e');
+//       rethrow;
+//     }
+//   }
+
+//   @override
+//   Future<void> markAttendance(
+//     String badgeNumber,
+//     String eventSessionId,
+//     String sessionLocationId,
+//   ) async {
+//     try {
+//       debugPrint('🚀 DataSource: Marking attendance for badge $badgeNumber');
+
+//       final token = await userDataService.getAuthToken();
+//       final requestData = {
+//         'type': 'attendance',
+//         'badge_number': badgeNumber,
+//         'eventsession_id': int.tryParse(eventSessionId) ?? 1,
+//         'sessionlocation_id': int.tryParse(sessionLocationId) ?? 1, // New field
+//       };
+
+//       final response = await dioClient.post(
+//         "/qr/check", // Updated to use the verification endpoint
+//         data: requestData,
+//         token: token,
+//       );
+
+//       if (response.statusCode != 200) {
+//         final errorMessage = response.data is Map<String, dynamic>
+//             ? response.data["message"] ?? "Failed to mark attendance"
+//             : "Failed to mark attendance";
+//         throw ServerException(
+//           message: errorMessage,
+//           code: "MARK_ATTENDANCE_FAILED",
+//         );
+//       }
+//     } catch (e) {
+//       debugPrint('❌ DataSource: Error marking attendance - $e');
+//       rethrow;
+//     }
+//   }
+// }
+
+import 'package:event_reg/core/error/exceptions.dart';
 import 'package:event_reg/core/network/dio_client.dart';
 import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:flutter/material.dart' show debugPrint;
 
 import '../models/attendance_event_model.dart';
-import '../models/attendance_room.dart';
-import '../models/attendance_session.dart';
 
 abstract class AttendanceRemoteDataSource {
-  Future<List<AttendanceEventModel>> getEventsForAttendance();
-  Future<List<AttendanceRoom>> getRoomsForSession(String sessionId);
-  Future<List<AttendanceSession>> getSessionsForEvent(String eventId);
-  Future<String> markAttendance({
-    required String eventId,
-    required String participantId,
-    required String sessionId,
-    required String roomId,
-  });
+  Future<AttendanceEventModel> fetchEventDetails(String eventId);
+  Future<List<AttendanceEventModel>> fetchEventsForAttendance();
+  Future<void> markAttendance(
+    String badgeNumber,
+    String eventSessionId,
+    String sessionLocationId,
+  );
 }
 
 class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
@@ -29,344 +164,385 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
   });
 
   @override
-  Future<List<AttendanceEventModel>> getEventsForAttendance() async {
+  Future<AttendanceEventModel> fetchEventDetails(String eventId) async {
+    try {
+      debugPrint('🚀 DataSource: Fetching event details for event $eventId');
+
+      final token = await userDataService.getAuthToken();
+      if (token == null || token.isEmpty) {
+        debugPrint('❌ DataSource: No authentication token found');
+        throw const AuthenticationException(
+          message: "Authentication token not found",
+          code: "TOKEN_REQUIRED",
+        );
+      }
+      debugPrint("user token: $token");
+
+      final response = await dioClient.get("/events/$eventId", token: token);
+
+      debugPrint(
+        'DataSource: Event details response status: ${response.statusCode}',
+      );
+      debugPrint('DataSource: Event details response data: ${response.data}');
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        final eventData = data is Map<String, dynamic>
+            ? (data["data"] ?? data)
+            : data;
+
+        if (eventData is Map<String, dynamic>) {
+          debugPrint('✅ DataSource: Successfully parsed event details');
+          return AttendanceEventModel.fromJson(eventData);
+        } else {
+          debugPrint(
+            '❌ DataSource: Invalid event response format: ${eventData.runtimeType}',
+          );
+          throw const ServerException(
+            message: "Invalid event response format",
+            code: "INVALID_RESPONSE_FORMAT",
+          );
+        }
+      } else {
+        final errorMessage = response.data is Map<String, dynamic>
+            ? response.data["message"] ?? "Failed to fetch event details"
+            : "Failed to fetch event details";
+        final errorCode = response.data is Map<String, dynamic>
+            ? response.data["code"] ?? "FETCH_EVENT_DETAILS_FAILED"
+            : "FETCH_EVENT_DETAILS_FAILED";
+
+        debugPrint('❌ DataSource: Event details fetch failed: $errorMessage');
+        throw ServerException(message: errorMessage, code: errorCode);
+      }
+    } on ApiError catch (e) {
+      debugPrint(
+        '❌ DataSource: API Error fetching event details: ${e.message}',
+      );
+      _handleApiError(e, "FETCH_EVENT_DETAILS_ERROR");
+    } on FormatException catch (e) {
+      debugPrint('❌ DataSource: Format/Parse error fetching event details: $e');
+      throw ServerException(
+        message: "Invalid response format from server: $e",
+        code: "PARSE_ERROR",
+      );
+    } catch (e) {
+      debugPrint('❌ DataSource: Unexpected error fetching event details: $e');
+      if (e is ServerException ||
+          e is AuthenticationException ||
+          e is ValidationException ||
+          e is NetworkException ||
+          e is TimeoutException) {
+        rethrow;
+      }
+      throw ServerException(
+        message:
+            "An unexpected error occurred while fetching event details: $e",
+        code: "UNEXPECTED_FETCH_EVENT_DETAILS_ERROR",
+      );
+    }
+  }
+
+  @override
+  Future<List<AttendanceEventModel>> fetchEventsForAttendance() async {
     try {
       debugPrint('🚀 DataSource: Fetching events for attendance');
 
-      final token = await userDataService.getAuthToken() ?? '';
-      final response = await dioClient.get("/events", token: token);
+      final token = await userDataService.getAuthToken();
+      if (token == null || token.isEmpty) {
+        debugPrint('❌ DataSource: No authentication token found');
+        throw const AuthenticationException(
+          message: "Authentication token not found",
+          code: "TOKEN_REQUIRED",
+        );
+      }
+
+      final response = await dioClient.get("/fetch-events", token: token);
+
+      debugPrint('DataSource: Events response status: ${response.statusCode}');
+      debugPrint('DataSource: Events response data: ${response.data}');
 
       if (response.statusCode == 200) {
         final data = response.data;
-        final eventsData = data is Map<String, dynamic>
-            ? (data["data"] ?? data["events"] ?? [])
-            : data;
+        final eventsData = data is List ? data : (data["data"] ?? []);
 
         if (eventsData is List) {
-          return eventsData
-              .map((eventJson) => AttendanceEventModel.fromJson(eventJson))
-              .toList();
+          debugPrint(
+            '✅ DataSource: Successfully parsed ${eventsData.length} events',
+          );
+          return eventsData.map((eventJson) {
+            try {
+              return AttendanceEventModel.fromJson(eventJson);
+            } catch (e) {
+              debugPrint('❌ DataSource: Error parsing event: $e');
+              debugPrint('Event JSON: $eventJson');
+              rethrow;
+            }
+          }).toList();
         } else {
           debugPrint(
-            '⚠️ DataSource: Unexpected events data format, using mock data',
+            '❌ DataSource: Invalid events response format: ${eventsData.runtimeType}',
           );
-          return _getMockEvents();
+          throw const ServerException(
+            message: "Invalid events response format",
+            code: "INVALID_RESPONSE_FORMAT",
+          );
         }
       } else {
-        throw Exception(
-          "Failed to fetch events for attendance: ${response.statusCode}",
-        );
+        final errorMessage = response.data is Map<String, dynamic>
+            ? response.data["message"] ?? "Failed to fetch events"
+            : "Failed to fetch events";
+        final errorCode = response.data is Map<String, dynamic>
+            ? response.data["code"] ?? "FETCH_EVENTS_FAILED"
+            : "FETCH_EVENTS_FAILED";
+
+        debugPrint('❌ DataSource: Events fetch failed: $errorMessage');
+        throw ServerException(message: errorMessage, code: errorCode);
       }
-    } catch (e) {
-      debugPrint('❌ DataSource: Error fetching events - $e');
-      // For demo purposes, return mock data instead of throwing
-      return _getMockEvents();
-    }
-  }
-
-  @override
-  Future<List<AttendanceRoom>> getRoomsForSession(String sessionId) async {
-    try {
-      debugPrint('🚀 DataSource: Fetching rooms for session $sessionId');
-
-      final token = await userDataService.getAuthToken() ?? '';
-      final response = await dioClient.get(
-        "/sessions/$sessionId/rooms",
-        token: token,
+    } on ApiError catch (e) {
+      debugPrint('❌ DataSource: API Error fetching events: ${e.message}');
+      _handleApiError(e, "FETCH_EVENTS_ERROR");
+    } on FormatException catch (e) {
+      debugPrint('❌ DataSource: Format/Parse error fetching events: $e');
+      throw ServerException(
+        message: "Invalid response format from server: $e",
+        code: "PARSE_ERROR",
       );
-
-      if (response.statusCode == 200) {
-        final data = response.data;
-        final roomsData = data is Map<String, dynamic>
-            ? (data["data"] ?? data["rooms"] ?? [])
-            : data;
-
-        if (roomsData is List) {
-          return roomsData
-              .map((roomJson) => AttendanceRoom.fromJson(roomJson))
-              .toList();
-        } else {
-          debugPrint(
-            '⚠️ DataSource: Unexpected rooms data format, using mock data',
-          );
-          return _getMockRooms(sessionId);
-        }
-      } else {
-        throw Exception(
-          "Failed to fetch rooms for session: ${response.statusCode}",
-        );
-      }
     } catch (e) {
-      debugPrint('❌ DataSource: Error fetching rooms - $e');
-      // For demo purposes, return mock data instead of throwing
-      return _getMockRooms(sessionId);
-    }
-  }
-
-  @override
-  Future<List<AttendanceSession>> getSessionsForEvent(String eventId) async {
-    try {
-      debugPrint('🚀 DataSource: Fetching sessions for event $eventId');
-
-      final token = await userDataService.getAuthToken() ?? '';
-      final response = await dioClient.get(
-        "/events/$eventId/sessions",
-        token: token,
+      debugPrint('❌ DataSource: Unexpected error fetching events: $e');
+      if (e is ServerException ||
+          e is AuthenticationException ||
+          e is ValidationException ||
+          e is NetworkException ||
+          e is TimeoutException) {
+        rethrow;
+      }
+      throw ServerException(
+        message: "An unexpected error occurred while fetching events: $e",
+        code: "UNEXPECTED_FETCH_EVENTS_ERROR",
       );
-
-      if (response.statusCode == 200) {
-        final data = response.data;
-        final sessionsData = data is Map<String, dynamic>
-            ? (data["data"] ?? data["sessions"] ?? [])
-            : data;
-
-        if (sessionsData is List) {
-          var sessionsData2 = List.from(sessionsData);
-          if ((sessionsData2 as List<AttendanceSession>).isEmpty) {
-            return _getMockSessions(eventId);
-          }
-
-          return sessionsData
-              .map((sessionJson) => AttendanceSession.fromJson(sessionJson))
-              .toList();
-        } else {
-          debugPrint(
-            '⚠️ DataSource: Unexpected sessions data format, using mock data',
-          );
-
-          return _getMockSessions(eventId);
-        }
-      } else {
-        throw Exception(
-          "Failed to fetch sessions for event: ${response.statusCode}",
-        );
-      }
-    } catch (e) {
-      debugPrint('❌ DataSource: Error fetching sessions - $e');
-      // For demo purposes, return mock data instead of throwing
-      return _getMockSessions(eventId);
     }
   }
 
   @override
-  Future<String> markAttendance({
-    required String participantId,
-    required String sessionId,
-    required String roomId,
-    required String eventId,
-  }) async {
+  Future<void> markAttendance(
+    String badgeNumber,
+    String eventSessionId,
+    String sessionLocationId,
+  ) async {
     try {
+      debugPrint('🚀 DataSource: Marking attendance for badge $badgeNumber');
       debugPrint(
-        '🚀 DataSource: Marking attendance for participant $participantId',
+        'Event Session ID: $eventSessionId, Location ID: $sessionLocationId',
       );
 
-      final token = await userDataService.getAuthToken() ?? '';
+      final token = await userDataService.getAuthToken();
+      if (token == null || token.isEmpty) {
+        debugPrint('❌ DataSource: No authentication token found');
+        throw const AuthenticationException(
+          message: "Authentication token not found",
+          code: "TOKEN_REQUIRED",
+        );
+      }
+
+      // Validate input parameters
+      if (badgeNumber.trim().isEmpty) {
+        throw const ValidationException(
+          message: "Badge number cannot be empty",
+          code: "VALIDATION_ERROR",
+        );
+      }
+
+      if (eventSessionId.trim().isEmpty) {
+        throw const ValidationException(
+          message: "Event session ID cannot be empty",
+          code: "VALIDATION_ERROR",
+        );
+      }
+
+      if (sessionLocationId.trim().isEmpty) {
+        throw const ValidationException(
+          message: "Session location ID cannot be empty",
+          code: "VALIDATION_ERROR",
+        );
+      }
+
+      final requestData = {
+        'type': 'attendance',
+        'badge_number': badgeNumber.trim(),
+        'eventsession_id': int.tryParse(eventSessionId) ?? 1,
+        'sessionlocation_id': int.tryParse(sessionLocationId) ?? 1,
+      };
+
+      debugPrint('DataSource: Attendance request data: $requestData');
+
       final response = await dioClient.post(
-        "/attendance/mark",
-        data: {
-          'event_id': eventId,
-          'participant_id': participantId,
-          'session_id': sessionId,
-          'room_id': roomId,
-          'timestamp': DateTime.now().toIso8601String(),
-        },
+        "/qr/check",
+        data: requestData,
         token: token,
       );
 
+      debugPrint(
+        'DataSource: Attendance response status: ${response.statusCode}',
+      );
+      debugPrint('DataSource: Attendance response data: ${response.data}');
+
       if (response.statusCode == 200) {
-        final data = response.data;
-        return data is Map<String, dynamic>
-            ? (data["message"] ?? "Attendance marked successfully")
-            : "Attendance marked successfully";
+        debugPrint('✅ DataSource: Attendance marked successfully');
       } else {
-        throw Exception("Failed to mark attendance: ${response.statusCode}");
+        final errorMessage = response.data is Map<String, dynamic>
+            ? response.data["message"] ?? "Failed to mark attendance"
+            : "Failed to mark attendance";
+        final errorCode = response.data is Map<String, dynamic>
+            ? response.data["code"] ?? "MARK_ATTENDANCE_FAILED"
+            : "MARK_ATTENDANCE_FAILED";
+
+        debugPrint('❌ DataSource: Attendance marking failed: $errorMessage');
+        throw ServerException(message: errorMessage, code: errorCode);
       }
+    } on ApiError catch (e) {
+      debugPrint('❌ DataSource: API Error marking attendance: ${e.message}');
+      _handleApiError(e, "MARK_ATTENDANCE_ERROR");
     } catch (e) {
-      debugPrint('❌ DataSource: Error marking attendance - $e');
-      throw Exception("Failed to mark attendance: $e");
+      debugPrint('❌ DataSource: Unexpected error marking attendance: $e');
+      if (e is ServerException ||
+          e is AuthenticationException ||
+          e is ValidationException ||
+          e is NetworkException ||
+          e is TimeoutException) {
+        rethrow;
+      }
+      throw ServerException(
+        message: "An unexpected error occurred while marking attendance: $e",
+        code: "UNEXPECTED_MARK_ATTENDANCE_ERROR",
+      );
     }
   }
 
-  // Mock data for demo purposes
-  List<AttendanceEventModel> _getMockEvents() {
-    return [
-      AttendanceEventModel(
-        id: '1',
-        title: 'Tech Conference 2024',
-        description: 'Annual technology conference with multiple sessions',
-        location: 'San Francisco, CA',
-        startTime: DateTime.now(),
-        endTime: DateTime.now().add(const Duration(days: 2)),
-        isActive: true,
-        banner: null,
-        organizationId: '1',
-        sessions: [
-          AttendanceSession(
-            id: '1',
-            eventId: '1',
-            title: 'Opening Ceremony',
-            description: 'Welcome and introduction to the event',
-            startTime: DateTime.now().add(const Duration(hours: 1)),
-            endTime: DateTime.now().add(const Duration(hours: 2)),
-            isActive: true,
-            roomsCount: 3,
-          ),
-          AttendanceSession(
-            id: '2',
-            eventId: '1',
-            title: 'Technical Workshop',
-            description: 'Hands-on technical training session',
-            startTime: DateTime.now().add(const Duration(hours: 3)),
-            endTime: DateTime.now().add(const Duration(hours: 5)),
-            isActive: true,
-            roomsCount: 4,
-          ),
-          AttendanceSession(
-            id: '3',
-            eventId: '1',
-            title: 'Panel Discussion',
-            description: 'Industry experts discussing current trends',
-            startTime: DateTime.now().add(const Duration(hours: 6)),
-            endTime: DateTime.now().add(const Duration(hours: 7)),
-            isActive: false,
-            roomsCount: 2,
-          ),
-        ],
-      ),
-      AttendanceEventModel(
-        id: '2',
-        title: 'Workshop Series',
-        description: 'Hands-on workshops for skill development',
-        location: 'New York, NY',
-        startTime: DateTime.now().add(const Duration(days: 1)),
-        endTime: DateTime.now().add(const Duration(days: 3)),
-        isActive: false,
-        banner: null,
-        organizationId: '1',
-        sessions: [
-          AttendanceSession(
-            id: '4',
-            eventId: '2',
-            title: 'Introduction to Python',
-            description: 'Basic Python programming for beginners',
-            startTime: DateTime.now().add(const Duration(days: 1, hours: 10)),
-            endTime: DateTime.now().add(const Duration(days: 1, hours: 12)),
-            isActive: true,
-            roomsCount: 2,
-          ),
-          AttendanceSession(
-            id: '5',
-            eventId: '2',
-            title: 'Advanced SQL',
-            description: 'Database management and optimization',
-            startTime: DateTime.now().add(const Duration(days: 2, hours: 9)),
-            endTime: DateTime.now().add(const Duration(days: 2, hours: 11)),
-            isActive: true,
-            roomsCount: 3,
-          ),
-        ],
-      ),
-      AttendanceEventModel(
-        id: '3',
-        title: 'Networking Event',
-        description: 'Professional networking and business connections',
-        location: 'Austin, TX',
-        startTime: DateTime.now().subtract(const Duration(days: 1)),
-        endTime: DateTime.now().subtract(const Duration(hours: 2)),
-        isActive: false,
-        banner: null,
-        organizationId: '1',
-        sessions: [
-          AttendanceSession(
-            id: '6',
-            eventId: '3',
-            title: 'Lunch Break',
-            description: 'Time for participants to network and eat',
-            startTime: DateTime.now().subtract(const Duration(hours: 1)),
-            endTime: DateTime.now().subtract(
-              const Duration(hours: 1, minutes: 30),
-            ),
-            isActive: false,
-            roomsCount: 1,
-          ),
-        ],
-      ),
-    ];
-  }
+  /// Handles API errors and converts them to appropriate exceptions
+  Never _handleApiError(ApiError error, String defaultCode) {
+    debugPrint(
+      'Handling API Error: ${error.message}, Status: ${error.statusCode}',
+    );
 
-  List<AttendanceRoom> _getMockRooms(String sessionId) {
-    return [
-      AttendanceRoom(
-        id: '1',
-        sessionId: sessionId,
-        name: 'Main Auditorium',
-        description: 'Large auditorium for main presentations',
-        capacity: 200,
-        attendanceCount: 45,
-        location: 'Building A, Floor 1',
-      ),
-      AttendanceRoom(
-        id: '2',
-        sessionId: sessionId,
-        name: 'Workshop Room A',
-        description: 'Interactive workshop space',
-        capacity: 50,
-        attendanceCount: 38,
-        location: 'Building B, Floor 2',
-      ),
-      AttendanceRoom(
-        id: '3',
-        sessionId: sessionId,
-        name: 'Workshop Room B',
-        description: 'Secondary workshop space',
-        capacity: 50,
-        attendanceCount: 42,
-        location: 'Building B, Floor 2',
-      ),
-      AttendanceRoom(
-        id: '4',
-        sessionId: sessionId,
-        name: 'Meeting Room C',
-        description: 'Small group discussions',
-        capacity: 25,
-        attendanceCount: 25,
-        location: 'Building C, Floor 3',
-      ),
-    ];
+    if (error.statusCode != null) {
+      switch (error.statusCode!) {
+        case 400:
+          // Handle specific attendance validation errors
+          if (error.message.toLowerCase().contains('badge')) {
+            throw ValidationException(
+              message: error.message,
+              code: "INVALID_BADGE_NUMBER",
+            );
+          } else if (error.message.toLowerCase().contains('session')) {
+            throw ValidationException(
+              message: error.message,
+              code: "INVALID_SESSION",
+            );
+          } else if (error.message.toLowerCase().contains('already')) {
+            throw ValidationException(
+              message: error.message,
+              code: "ATTENDANCE_ALREADY_MARKED",
+            );
+          }
+          throw ValidationException(
+            message: error.message,
+            code: "VALIDATION_ERROR",
+          );
+        case 401:
+          throw AuthenticationException(
+            message: error.message.isEmpty
+                ? "Authentication failed. Please log in again."
+                : error.message,
+            code: "INVALID_CREDENTIALS",
+          );
+        case 403:
+          if (error.message.toLowerCase().contains('access')) {
+            throw AuthorizationException(
+              message: error.message,
+              code: "ACCESS_DENIED",
+            );
+          } else if (error.message.toLowerCase().contains('permission')) {
+            throw AuthorizationException(
+              message: error.message,
+              code: "INSUFFICIENT_PERMISSIONS",
+            );
+          }
+          throw AuthorizationException(
+            message: error.message,
+            code: "FORBIDDEN",
+          );
+        case 404:
+          if (error.message.toLowerCase().contains('event')) {
+            throw ServerException(
+              message: "Event not found",
+              code: "EVENT_NOT_FOUND",
+            );
+          } else if (error.message.toLowerCase().contains('session')) {
+            throw ServerException(
+              message: "Session not found",
+              code: "SESSION_NOT_FOUND",
+            );
+          } else if (error.message.toLowerCase().contains('badge')) {
+            throw ValidationException(
+              message: "Badge not found",
+              code: "BADGE_NOT_FOUND",
+            );
+          }
+          throw ServerException(message: error.message, code: "NOT_FOUND");
+        case 409:
+          throw ValidationException(
+            message: error.message,
+            code: "ATTENDANCE_ALREADY_MARKED",
+          );
+        case 422:
+          throw ValidationException(
+            message: error.message,
+            code: "VALIDATION_ERROR",
+          );
+        case 429:
+          throw ServerException(
+            message: error.message.isEmpty
+                ? "Too many requests. Please wait before trying again."
+                : error.message,
+            code: "RATE_LIMIT_EXCEEDED",
+          );
+        case 408:
+          throw TimeoutException(
+            message: error.message.isEmpty
+                ? "Request timeout. Please try again."
+                : error.message,
+            code: "TIMEOUT_ERROR",
+          );
+        case 500:
+        case 502:
+        case 503:
+        case 504:
+          throw ServerException(
+            message: error.message.isEmpty
+                ? "Server error. Please try again later."
+                : error.message,
+            code: "SERVER_ERROR",
+          );
+        default:
+          throw ServerException(
+            message: error.message.isEmpty
+                ? "An error occurred. Please try again."
+                : error.message,
+            code: "SERVER_ERROR",
+          );
+      }
+    } else {
+      if (error.message.toLowerCase().contains("timeout")) {
+        throw NetworkException(
+          message: "Connection timeout. Please try again",
+          code: "NETWORK_TIMEOUT",
+        );
+      } else {
+        throw NetworkException(
+          message: "Network error. Please check your connection",
+          code: "NETWORK_ERROR",
+        );
+      }
+    }
   }
-List<AttendanceSession> _getMockSessions(String eventId) {
-    return [
-      AttendanceSession(
-        id: '1',
-        eventId: eventId,
-        title: 'Opening Ceremony',
-        description: 'Welcome and introduction to the event',
-        startTime: DateTime.now().add(const Duration(hours: 1)),
-        endTime: DateTime.now().add(const Duration(hours: 2)),
-        isActive: true,
-        roomsCount: 3,
-      ),
-      AttendanceSession(
-        id: '2',
-        eventId: eventId,
-        title: 'Technical Workshop',
-        description: 'Hands-on technical training session',
-        startTime: DateTime.now().add(const Duration(hours: 3)),
-        endTime: DateTime.now().add(const Duration(hours: 5)),
-        isActive: true,
-        roomsCount: 4,
-      ),
-      AttendanceSession(
-        id: '3',
-        eventId: eventId,
-        title: 'Panel Discussion',
-        description: 'Industry experts discussing current trends',
-        startTime: DateTime.now().add(const Duration(hours: 6)),
-        endTime: DateTime.now().add(const Duration(hours: 7)),
-        isActive: false,
-        roomsCount: 2,
-      ),
-    ];
-  }
-
-  }
+}

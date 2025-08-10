@@ -46,10 +46,6 @@ class AttendanceEventModel {
           .toList();
     }
 
-    if (sessionsList.isEmpty) {
-      sessionsList = _getMockSessions("1");
-    }
-
     return AttendanceEventModel(
       id: json['id'].toString(),
       title: json['title'] ?? json['name'] ?? '',
@@ -80,7 +76,7 @@ class AttendanceEventModel {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    
+
     return other is AttendanceEventModel && other.id == id;
   }
 
@@ -102,40 +98,5 @@ class AttendanceEventModel {
   @override
   String toString() {
     return 'AttendanceEventModel(id: $id, title: $title, location: $location, isActive: $isActive, sessionsCount: ${sessions.length})';
-  }
-
-  static List<AttendanceSession> _getMockSessions(String eventId) {
-    return [
-      AttendanceSession(
-        id: '1',
-        eventId: eventId,
-        title: 'Opening Ceremony',
-        description: 'Welcome and introduction to the event',
-        startTime: DateTime.now().add(const Duration(hours: 1)),
-        endTime: DateTime.now().add(const Duration(hours: 2)),
-        isActive: true,
-        roomsCount: 3,
-      ),
-      AttendanceSession(
-        id: '2',
-        eventId: eventId,
-        title: 'Technical Workshop',
-        description: 'Hands-on technical training session',
-        startTime: DateTime.now().add(const Duration(hours: 3)),
-        endTime: DateTime.now().add(const Duration(hours: 5)),
-        isActive: true,
-        roomsCount: 4,
-      ),
-      AttendanceSession(
-        id: '3',
-        eventId: eventId,
-        title: 'Panel Discussion',
-        description: 'Industry experts discussing current trends',
-        startTime: DateTime.now().add(const Duration(hours: 6)),
-        endTime: DateTime.now().add(const Duration(hours: 7)),
-        isActive: false,
-        roomsCount: 2,
-      ),
-    ];
   }
 }

@@ -20,6 +20,7 @@ class QrScannerPage extends StatefulWidget {
   final String? sessionTitle;
   final String? eventId;
   final String? roomId; // Added for attendance tracking
+  final String? sessionLocationId; // Added for attendance tracking
   
   const QrScannerPage({
     super.key, 
@@ -28,6 +29,7 @@ class QrScannerPage extends StatefulWidget {
     this.sessionTitle,
     this.eventId,
     this.roomId, // Added for attendance tracking
+    this.sessionLocationId,
   });
   
   @override
@@ -347,19 +349,19 @@ class _QrScannerPageState extends State<QrScannerPage>
           
           // Use the session ID from widget if available, otherwise from QR data
           final eventSessionId = widget.eventSessionId ?? badgeData['eventsession_id']?.toString();
-          final eventId = widget.eventId ?? "";
-          final roomId = widget.roomId ?? "";
+final eventId = widget.eventId ?? "";
+final sessionLocationId = widget.sessionLocationId ?? widget.roomId ?? "";
           
-          context.read<VerificationBloc>().add(
-            VerifyBadgeRequested(
-              badgeNumber: badgeNumber,
-              verificationType: widget.verificationType,
-              eventSessionId: eventSessionId,
-              eventId: eventId,
-              roomId: roomId,
-              couponId: badgeData['coupon_id']?.toString(),
-            ),
-          );
+         context.read<VerificationBloc>().add(
+  VerifyBadgeRequested(
+    badgeNumber: badgeNumber,
+    verificationType: widget.verificationType,
+    eventSessionId: eventSessionId,
+    eventId: eventId,
+    sessionLocationId: sessionLocationId, // Updated parameter name
+    couponId: badgeData['coupon_id']?.toString(),
+  ),
+); 
         } else {
           debugPrint(
             'Step 6: Extracted badge number is null or empty. Showing error.',

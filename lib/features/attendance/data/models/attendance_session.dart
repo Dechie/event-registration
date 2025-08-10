@@ -1,3 +1,6 @@
+// lib/features/attendance/data/models/attendance_session.dart
+import 'attendance_location.dart';
+
 class AttendanceSession {
   final String id;
   final String eventId;
@@ -6,7 +9,8 @@ class AttendanceSession {
   final DateTime startTime;
   final DateTime endTime;
   final bool isActive;
-  final int roomsCount;
+  final String status;
+  final List<AttendanceLocation> locations;
 
   AttendanceSession({
     required this.id,
@@ -16,40 +20,23 @@ class AttendanceSession {
     required this.startTime,
     required this.endTime,
     required this.isActive,
-    required this.roomsCount,
+    required this.status,
+    required this.locations,
   });
 
   factory AttendanceSession.fromJson(Map<String, dynamic> json) {
     // Handle different possible field names from the API
-    final startTimeField =
-        json['start_time'] ??
-        json['startTime'] ??
-        json['start_date'] ??
-        json['startDate'];
-    final endTimeField =
-        json['end_time'] ??
-        json['endTime'] ??
-        json['end_date'] ??
-        json['endDate'];
+    final startTimeField = json['start_time'] ?? json['startTime'];
+    final endTimeField = json['end_time'] ?? json['endTime'];
     final eventIdField = json['event_id'] ?? json['eventId'] ?? '';
     final isActiveField = json['is_active'] ?? json['isActive'] ?? true;
-    final roomsCountField =
-        json['rooms_count'] ?? json['roomsCount'] ?? json['rooms']?.length ?? 0;
 
-    DateTime startTime = DateTime.now();
-
-    if (startTimeField is String) {
-      startTime = DateTime.parse(startTimeField);
-    } else if (startTimeField is DateTime) {
-      startTime = startTimeField;
-    }
-
-    DateTime endTime = DateTime.now().add(Duration(hours: 1));
-
-    if (endTimeField is String) {
-      startTime = DateTime.parse(startTimeField);
-    } else if (endTimeField is DateTime) {
-      startTime = endTimeField;
+    // Parse locations array
+    List<AttendanceLocation> locationsList = [];
+    if (json['locations'] != null && json['locations'] is List) {
+      locationsList = (json['locations'] as List)
+          .map((locationJson) => AttendanceLocation.fromJson(locationJson))
+          .toList();
     }
 
     return AttendanceSession(
@@ -57,12 +44,23 @@ class AttendanceSession {
       eventId: eventIdField.toString(),
       title: json['title'] ?? json['name'] ?? '',
       description: json['description'],
-      startTime: startTime,
-      endTime: endTime,
+      startTime: startTimeField is String 
+          ? DateTime.parse(startTimeField)
+          : startTimeField is DateTime 
+          ? startTimeField 
+          : DateTime.now(),
+      endTime: endTimeField is String 
+          ? DateTime.parse(endTimeField)
+          : endTimeField is DateTime 
+          ? endTimeField 
+          : DateTime.now().add(Duration(hours: 1)),
       isActive: isActiveField is bool ? isActiveField : (isActiveField == 1),
-      roomsCount: roomsCountField is int ? roomsCountField : 0,
+      status: json['status'] ?? 'Scheduled',
+      locations: locationsList,
     );
   }
+
+  int get locationsCount => locations.length;
 
   @override
   int get hashCode => id.hashCode;
@@ -70,7 +68,6 @@ class AttendanceSession {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-
     return other is AttendanceSession && other.id == id;
   }
 
@@ -83,12 +80,13 @@ class AttendanceSession {
       'start_time': startTime.toIso8601String(),
       'end_time': endTime.toIso8601String(),
       'is_active': isActive,
-      'rooms_count': roomsCount,
+      'status': status,
+      'locations': locations.map((location) => location.toJson()).toList(),
     };
   }
 
   @override
   String toString() {
-    return 'AttendanceSession(id: $id, title: $title, eventId: $eventId, isActive: $isActive, roomsCount: $roomsCount)';
+    return 'AttendanceSession(id: $id, title: $title, eventId: $eventId, isActive: $isActive, locationsCount: ${locations.length})';
   }
 }

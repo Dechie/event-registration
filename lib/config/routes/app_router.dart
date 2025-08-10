@@ -1,5 +1,6 @@
 import 'package:event_reg/config/routes/route_names.dart';
 import 'package:event_reg/features/admin_dashboard/presentation/pages/admin_dashboard_page.dart';
+import 'package:event_reg/features/attendance/presentation/pages/event_details_page.dart';
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:event_reg/features/auth/presentation/bloc/events/auth_event.dart';
 import 'package:event_reg/features/auth/presentation/bloc/states/auth_state.dart';
@@ -21,7 +22,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../features/attendance/presentation/bloc/attendance_bloc.dart';
 import '../../features/attendance/presentation/pages/event_list_page.dart';
 import '../../features/attendance/presentation/pages/room_list_page.dart';
-import '../../features/attendance/presentation/pages/session_list_page.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -138,12 +138,14 @@ class AppRouter {
           ),
         );
 
-      case RouteNames.sessionListPage:
+      case RouteNames.eventDetailsPage:
         final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
           builder: (_) => BlocProvider.value(
             value: args['bloc'],
-            child: SessionListPage(event: args['event']),
+            child: EventDetailsPage(
+              event: args['event'],
+            ), // Note: renamed to avoid conflict
           ),
         );
 

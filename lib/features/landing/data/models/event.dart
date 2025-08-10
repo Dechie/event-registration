@@ -1,3 +1,4 @@
+import 'package:event_reg/features/attendance/data/models/attendance_event_model.dart';
 import 'package:event_reg/features/landing/data/models/event_session.dart';
 
 import 'organization.dart';
@@ -38,6 +39,7 @@ class Event {
         isActive = true;
       }
     }
+
     return Event(
       id: json['id'].toString(),
       title: json['title'] ?? '',
@@ -45,7 +47,7 @@ class Event {
       location: json['location'] ?? '',
       startTime: DateTime.parse(json['start_time']),
       endTime: DateTime.parse(json['end_time']),
-      isActive: isActive, 
+      isActive: isActive,
       banner: json['banner'],
       organizationId: json['organization_id'].toString(),
       organization: json['organization'] != null
@@ -73,5 +75,18 @@ class Event {
       'organization': organization?.toJson(),
       'sessions': sessions?.map((session) => session.toJson()).toList(),
     };
+  }
+
+  factory Event.fromAttendanceEventModel(AttendanceEventModel attEvMdl) {
+    return Event(
+      id: attEvMdl.id,
+      title: attEvMdl.title,
+      description: attEvMdl.description ?? "",
+      location: attEvMdl.location,
+      startTime: attEvMdl.startTime,
+      endTime: attEvMdl.endTime,
+      isActive: attEvMdl.isActive,
+      organizationId: attEvMdl.organizationId,
+    );
   }
 }

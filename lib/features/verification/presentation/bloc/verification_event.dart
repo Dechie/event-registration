@@ -39,10 +39,12 @@ class VerifyBadgeRequested extends VerificationEvent {
   final String? couponId;
   final String? eventId; // Added for attendance tracking
   final String? roomId; // Added for attendance tracking
+  final String? sessionLocationId;
 
   const VerifyBadgeRequested({
     required this.badgeNumber,
     required this.verificationType,
+    this.sessionLocationId,
     this.eventSessionId,
     this.couponId,
     this.eventId,
@@ -51,13 +53,13 @@ class VerifyBadgeRequested extends VerificationEvent {
 
   @override
   List<Object?> get props => [
-        badgeNumber,
-        verificationType,
-        eventSessionId,
-        couponId,
-        eventId,
-        roomId,
-      ];
+    badgeNumber,
+    verificationType,
+    eventSessionId,
+    couponId,
+    eventId,
+    roomId,
+  ];
 
   @override
   String toString() =>

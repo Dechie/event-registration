@@ -1,3 +1,4 @@
+import 'package:event_reg/config/routes/route_names.dart';
 import 'package:event_reg/features/attendance/data/models/attendance_event_model.dart';
 import 'package:event_reg/features/attendance/data/models/attendance_session.dart';
 import 'package:flutter/material.dart';
@@ -208,154 +209,141 @@ class _EventListPageState extends State<EventListPage> {
     TextTheme textTheme,
     ColorScheme colorScheme,
   ) {
-    final isExpanded = _expandedEvents[event.id] ?? false;
-    final hasSessions = event.sessions.isNotEmpty;
-
     return Card(
       elevation: 2,
-      child: Column(
-        children: [
-          // Event header - always clickable to expand/collapse
-          InkWell(
-            onTap: hasSessions ? () => _toggleEventExpansion(event.id) : null,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(12),
-              topRight: Radius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  Container(
-                    width: 4,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: _getEventStatusColor(event.isActive),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+      child: InkWell(
+        onTap: () {
+          Navigator.pushNamed(
+            context,
+            RouteNames.eventDetailsPage,
+            arguments: {'event': event, 'bloc': context.read<AttendanceBloc>()},
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Container(
+                width: 4,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: _getEventStatusColor(event.isActive),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                event.title,
-                                style: textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                        Expanded(
+                          child: Text(
+                            event.title,
+                            style: textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: _getEventStatusColor(
-                                  event.isActive,
-                                ).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                _getEventStatusText(event.isActive),
-                                style: TextStyle(
-                                  color: _getEventStatusColor(event.isActive),
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        if (event.description != null) ...[
-                          Text(
-                            event.description!,
-                            style: textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                            maxLines: 2,
+                            maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 8),
-                        ],
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.location_on,
-                              size: 14,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                event.location,
-                                style: textTheme.bodySmall?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
                         ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.calendar_today,
-                              size: 14,
-                              color: colorScheme.onSurfaceVariant,
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getEventStatusColor(
+                              event.isActive,
+                            ).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            _getEventStatusText(event.isActive),
+                            style: TextStyle(
+                              color: _getEventStatusColor(event.isActive),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
                             ),
-                            const SizedBox(width: 4),
-                            Text(
-                              _formatDate(event.startTime),
-                              style: textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Icon(
-                              Icons.schedule,
-                              size: 14,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${event.sessionsCount} sessions',
-                              style: textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                  if (hasSessions) ...[
-                    Icon(
-                      isExpanded ? Icons.expand_less : Icons.expand_more,
-                      color: colorScheme.onSurfaceVariant,
-                      size: 24,
+                    const SizedBox(height: 8),
+                    if (event.description != null) ...[
+                      Text(
+                        event.description!,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          size: 14,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            event.location,
+                            style: textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 14,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatDate(event.startTime),
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Icon(
+                          Icons.schedule,
+                          size: 14,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${event.sessionsCount} sessions',
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
-                ],
+                ),
               ),
-            ),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: colorScheme.onSurfaceVariant,
+                size: 16,
+              ),
+            ],
           ),
-
-          // Collapsible sessions list
-          if (hasSessions && isExpanded) ...[
-            const Divider(height: 1),
-            _buildSessionsList(context, event, textTheme, colorScheme),
-          ],
-        ],
+        ),
       ),
     );
   }
@@ -477,16 +465,6 @@ class _EventListPageState extends State<EventListPage> {
                           color: session.isActive
                               ? colorScheme.onSurfaceVariant
                               : Colors.grey[500],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${session.roomsCount} rooms',
-                          style: textTheme.bodySmall?.copyWith(
-                            color: session.isActive
-                                ? colorScheme.onSurfaceVariant
-                                : Colors.grey[500],
-                            fontSize: 11,
-                          ),
                         ),
                       ],
                     ),
