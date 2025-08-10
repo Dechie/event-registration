@@ -1,9 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:event_reg/core/network/network_info.dart';
 import '../../../../core/error/failures.dart';
-import '../../presentation/pages/event_list_page.dart';
-import '../../presentation/pages/session_list_page.dart';
-import '../../presentation/pages/room_list_page.dart';
 import '../datasource/attendance_datasource.dart';
 import '../models/attendance_event_model.dart';
 import '../models/attendance_room.dart';

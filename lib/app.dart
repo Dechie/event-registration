@@ -27,7 +27,7 @@ class EventRegistrationApp extends StatelessWidget {
         BlocProvider(create: (_) => di.sl<AttendanceBloc>()),
       ],
       child: MaterialApp(
-        title: "Event Registration",
+        title: "EventHub",
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         onGenerateRoute: AppRouter.generateRoute,

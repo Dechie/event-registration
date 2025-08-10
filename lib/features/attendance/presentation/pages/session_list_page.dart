@@ -6,7 +6,6 @@ import '../../data/models/attendance_session.dart';
 import '../bloc/attendance_bloc.dart';
 import '../bloc/attendance_event.dart';
 import '../bloc/attendance_state.dart';
-import 'event_list_page.dart';
 import 'room_list_page.dart';
 
 class SessionListPage extends StatefulWidget {
@@ -244,7 +243,7 @@ class _SessionListPageState extends State<SessionListPage> {
                     width: 4,
                     height: 60,
                     decoration: BoxDecoration(
-                      color: _getSessionStatusColor(session.status),
+                      color: _getSessionStatusColor(session.isActive),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -272,14 +271,14 @@ class _SessionListPageState extends State<SessionListPage> {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: _getSessionStatusColor(session.status)
+                                color: _getSessionStatusColor(session.isActive)
                                     .withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
-                                session.status.toUpperCase(),
+                                _getSessionStatusText(session.isActive),
                                 style: TextStyle(
-                                  color: _getSessionStatusColor(session.status),
+                                  color: _getSessionStatusColor(session.isActive),
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -356,17 +355,12 @@ class _SessionListPageState extends State<SessionListPage> {
     );
   }
 
-  Color _getSessionStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return Colors.green;
-      case 'upcoming':
-        return Colors.orange;
-      case 'completed':
-        return Colors.grey;
-      default:
-        return Colors.blue;
-    }
+  Color _getSessionStatusColor(bool isActive) {
+    return isActive ? Colors.green : Colors.grey;
+  }
+
+  String _getSessionStatusText(bool isActive) {
+    return isActive ? 'Active' : 'Inactive';
   }
 
   String _formatTime(DateTime dateTime) {

@@ -2,9 +2,6 @@ import 'package:equatable/equatable.dart';
 import 'package:event_reg/features/attendance/data/models/attendance_event_model.dart';
 import '../../data/models/attendance_room.dart';
 import '../../data/models/attendance_session.dart';
-import '../pages/event_list_page.dart';
-import '../pages/session_list_page.dart';
-import '../pages/room_list_page.dart';
 
 abstract class AttendanceState extends Equatable {
   const AttendanceState();

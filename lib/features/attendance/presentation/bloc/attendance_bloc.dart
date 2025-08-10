@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart' show debugPrint;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/repositories/attendance_repository.dart';
-import '../pages/event_list_page.dart';
-import '../pages/session_list_page.dart';
-import '../pages/room_list_page.dart';
 import 'attendance_event.dart';
 import 'attendance_state.dart';
 

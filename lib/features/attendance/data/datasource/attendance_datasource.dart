@@ -34,7 +34,7 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
 
       final token = await userDataService.getAuthToken() ?? '';
       final response = await dioClient.get(
-        "/admin/events/attendance",
+        "/events",
         token: token,
       );
 
@@ -49,11 +49,11 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
               .map((eventJson) => AttendanceEventModel.fromJson(eventJson))
               .toList();
         } else {
-          // For demo purposes, return mock data
+          debugPrint('⚠️ DataSource: Unexpected events data format, using mock data');
           return _getMockEvents();
         }
       } else {
-        throw Exception("Failed to fetch events for attendance");
+        throw Exception("Failed to fetch events for attendance: ${response.statusCode}");
       }
     } catch (e) {
       debugPrint('❌ DataSource: Error fetching events - $e');
@@ -69,7 +69,7 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
 
       final token = await userDataService.getAuthToken() ?? '';
       final response = await dioClient.get(
-        "/admin/sessions/$sessionId/rooms",
+        "/sessions/$sessionId/rooms",
         token: token,
       );
 
@@ -84,11 +84,11 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
               .map((roomJson) => AttendanceRoom.fromJson(roomJson))
               .toList();
         } else {
-          // For demo purposes, return mock data
+          debugPrint('⚠️ DataSource: Unexpected rooms data format, using mock data');
           return _getMockRooms(sessionId);
         }
       } else {
-        throw Exception("Failed to fetch rooms for session");
+        throw Exception("Failed to fetch rooms for session: ${response.statusCode}");
       }
     } catch (e) {
       debugPrint('❌ DataSource: Error fetching rooms - $e');
@@ -104,26 +104,56 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
 
       final token = await userDataService.getAuthToken() ?? '';
       final response = await dioClient.get(
-        "/admin/events/$eventId/sessions",
+        "/events/$eventId",
         token: token,
       );
 
       if (response.statusCode == 200) {
         final data = response.data;
-        final sessionsData = data is Map<String, dynamic>
-            ? (data["data"] ?? data["sessions"] ?? [])
+        final eventData = data is Map<String, dynamic>
+            ? (data["data"] ?? data)
             : data;
 
-        if (sessionsData is List) {
-          return sessionsData
-              .map((sessionJson) => AttendanceSession.fromJson(sessionJson))
-              .toList();
-        } else {
-          // For demo purposes, return mock data
-          return _getMockSessions(eventId);
+        // Check if the event has sessions nested within it (Laravel relationship)
+        if (eventData is Map<String, dynamic> && eventData.containsKey('sessions')) {
+          final sessionsData = eventData['sessions'];
+          if (sessionsData is List) {
+            debugPrint('✅ DataSource: Found ${sessionsData.length} nested sessions in event data');
+            return sessionsData
+                .map((sessionJson) => AttendanceSession.fromJson(sessionJson))
+                .toList();
+          }
         }
+        
+        // If no nested sessions, try to get sessions from a separate endpoint
+        try {
+          debugPrint('⚠️ DataSource: No nested sessions found, trying separate sessions endpoint');
+          final sessionsResponse = await dioClient.get(
+            "/events/$eventId/sessions",
+            token: token,
+          );
+          
+          if (sessionsResponse.statusCode == 200) {
+            final sessionsData = sessionsResponse.data;
+            final sessionsList = sessionsData is Map<String, dynamic>
+                ? (sessionsData["data"] ?? sessionsData["sessions"] ?? [])
+                : sessionsData;
+
+            if (sessionsList is List) {
+              debugPrint('✅ DataSource: Found ${sessionsList.length} sessions from separate endpoint');
+              return sessionsList
+                  .map((sessionJson) => AttendanceSession.fromJson(sessionJson))
+                  .toList();
+            }
+          }
+        } catch (sessionsError) {
+          debugPrint('⚠️ DataSource: Could not fetch sessions separately: $sessionsError');
+        }
+
+        debugPrint('⚠️ DataSource: No sessions found in event data, using mock data');
+        return _getMockSessions(eventId);
       } else {
-        throw Exception("Failed to fetch sessions for event");
+        throw Exception("Failed to fetch sessions for event: ${response.statusCode}");
       }
     } catch (e) {
       debugPrint('❌ DataSource: Error fetching sessions - $e');
@@ -145,7 +175,7 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
 
       final token = await userDataService.getAuthToken() ?? '';
       final response = await dioClient.post(
-        "/admin/attendance/mark",
+        "/attendance/mark",
         data: {
           'participant_id': participantId,
           'session_id': sessionId,
@@ -161,7 +191,7 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
             ? (data["message"] ?? "Attendance marked successfully")
             : "Attendance marked successfully";
       } else {
-        throw Exception("Failed to mark attendance");
+        throw Exception("Failed to mark attendance: ${response.statusCode}");
       }
     } catch (e) {
       debugPrint('❌ DataSource: Error marking attendance - $e');
@@ -176,27 +206,36 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
         id: '1',
         title: 'Tech Conference 2024',
         description: 'Annual technology conference with multiple sessions',
-        startDate: DateTime.now(),
-        endDate: DateTime.now().add(const Duration(days: 2)),
-        status: 'active',
+        location: 'San Francisco, CA',
+        startTime: DateTime.now(),
+        endTime: DateTime.now().add(const Duration(days: 2)),
+        isActive: true,
+        banner: null,
+        organizationId: '1',
         sessionsCount: 5,
       ),
       AttendanceEventModel(
         id: '2',
         title: 'Workshop Series',
         description: 'Hands-on workshops for skill development',
-        startDate: DateTime.now().add(const Duration(days: 1)),
-        endDate: DateTime.now().add(const Duration(days: 3)),
-        status: 'upcoming',
+        location: 'New York, NY',
+        startTime: DateTime.now().add(const Duration(days: 1)),
+        endTime: DateTime.now().add(const Duration(days: 3)),
+        isActive: false,
+        banner: null,
+        organizationId: '1',
         sessionsCount: 3,
       ),
       AttendanceEventModel(
         id: '3',
         title: 'Networking Event',
         description: 'Professional networking and business connections',
-        startDate: DateTime.now().subtract(const Duration(days: 1)),
-        endDate: DateTime.now().subtract(const Duration(hours: 2)),
-        status: 'completed',
+        location: 'Austin, TX',
+        startTime: DateTime.now().subtract(const Duration(days: 1)),
+        endTime: DateTime.now().subtract(const Duration(hours: 2)),
+        isActive: false,
+        banner: null,
+        organizationId: '1',
         sessionsCount: 2,
       ),
     ];
@@ -252,9 +291,8 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
         description: 'Welcome and introduction to the event',
         startTime: DateTime.now().add(const Duration(hours: 1)),
         endTime: DateTime.now().add(const Duration(hours: 2)),
-        status: 'active',
-        roomsCount: 3,
         isActive: true,
+        roomsCount: 3,
       ),
       AttendanceSession(
         id: '2',
@@ -263,9 +301,8 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
         description: 'Hands-on technical training session',
         startTime: DateTime.now().add(const Duration(hours: 3)),
         endTime: DateTime.now().add(const Duration(hours: 5)),
-        status: 'upcoming',
-        roomsCount: 4,
         isActive: true,
+        roomsCount: 4,
       ),
       AttendanceSession(
         id: '3',
@@ -274,9 +311,8 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
         description: 'Industry experts discussing current trends',
         startTime: DateTime.now().add(const Duration(hours: 6)),
         endTime: DateTime.now().add(const Duration(hours: 7)),
-        status: 'upcoming',
-        roomsCount: 2,
         isActive: false,
+        roomsCount: 2,
       ),
     ];
   }

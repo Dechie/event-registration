@@ -257,6 +257,7 @@ class _RoomListPageState extends State<RoomListPage> {
       child: InkWell(
         onTap: () async {
           // Navigate to QR scanner with room context
+          
           final result = await Navigator.pushNamed(
             context,
             RouteNames.qrScannerPage,
@@ -270,7 +271,7 @@ class _RoomListPageState extends State<RoomListPage> {
           );
 
           // When returning from scanner, refresh the room data
-          if (result == true || mounted) {
+          if (result == true && context.mounted) {
             context.read<AttendanceBloc>().add(
               LoadRoomsForSession(widget.session.id),
             );

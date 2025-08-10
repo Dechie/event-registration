@@ -227,7 +227,7 @@ class _EventListPageState extends State<EventListPage> {
                     width: 4,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: _getEventStatusColor(event.status),
+                      color: _getEventStatusColor(event.isActive),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -254,14 +254,14 @@ class _EventListPageState extends State<EventListPage> {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: _getEventStatusColor(event.status)
+                                color: _getEventStatusColor(event.isActive)
                                     .withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
-                                event.status.toUpperCase(),
+                                _getEventStatusText(event.isActive),
                                 style: TextStyle(
-                                  color: _getEventStatusColor(event.status),
+                                  color: _getEventStatusColor(event.isActive),
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -284,13 +284,34 @@ class _EventListPageState extends State<EventListPage> {
                         Row(
                           children: [
                             Icon(
+                              Icons.location_on,
+                              size: 14,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                event.location,
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
                               Icons.calendar_today,
                               size: 14,
                               color: colorScheme.onSurfaceVariant,
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              _formatDate(event.startDate),
+                              _formatDate(event.startTime),
                               style: textTheme.bodySmall?.copyWith(
                                 color: colorScheme.onSurfaceVariant,
                               ),
@@ -327,17 +348,16 @@ class _EventListPageState extends State<EventListPage> {
     );
   }
 
-  Color _getEventStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return Colors.green;
-      case 'upcoming':
-        return Colors.orange;
-      case 'completed':
-        return Colors.grey;
-      default:
-        return Colors.blue;
+  Color _getEventStatusColor(bool isActive) {
+    if (isActive) {
+      return Colors.green;
+    } else {
+      return Colors.grey;
     }
+  }
+
+  String _getEventStatusText(bool isActive) {
+    return isActive ? 'Active' : 'Inactive';
   }
 
   String _formatDate(DateTime date) {
