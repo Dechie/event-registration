@@ -18,12 +18,16 @@ class QrScannerPage extends StatefulWidget {
   final String verificationType;
   final String? eventSessionId;
   final String? sessionTitle;
+  final String? eventId;
+  final String? roomId; // Added for attendance tracking
   
   const QrScannerPage({
     super.key, 
     this.verificationType = 'security',
     this.eventSessionId,
     this.sessionTitle,
+    this.eventId,
+    this.roomId, // Added for attendance tracking
   });
   
   @override
@@ -256,6 +260,7 @@ class _QrScannerPageState extends State<QrScannerPage>
         );
         final decodedData = jsonDecode(data);
         debugPrint('Step 3: Successfully decoded JSON. Result: $decodedData');
+
         return Map<String, dynamic>.from(decodedData);
       } else {
         debugPrint(
@@ -342,12 +347,16 @@ class _QrScannerPageState extends State<QrScannerPage>
           
           // Use the session ID from widget if available, otherwise from QR data
           final eventSessionId = widget.eventSessionId ?? badgeData['eventsession_id']?.toString();
+          final eventId = widget.eventId ?? "";
+          final roomId = widget.roomId ?? "";
           
           context.read<VerificationBloc>().add(
             VerifyBadgeRequested(
-              badgeNumber,
+              badgeNumber: badgeNumber,
               verificationType: widget.verificationType,
               eventSessionId: eventSessionId,
+              eventId: eventId,
+              roomId: roomId,
               couponId: badgeData['coupon_id']?.toString(),
             ),
           );

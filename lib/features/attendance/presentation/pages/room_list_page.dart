@@ -214,6 +214,7 @@ class _RoomListPageState extends State<RoomListPage> {
                             const SizedBox(height: 12),
                         itemBuilder: (context, index) {
                           final room = state.rooms[index];
+
                           return _buildRoomCard(
                             context,
                             room,
@@ -263,6 +264,7 @@ class _RoomListPageState extends State<RoomListPage> {
             RouteNames.qrScannerPage,
             arguments: {
               'type': 'attendance',
+              'eventId': widget.event.id,
               'eventSessionId': widget.session.id,
               'sessionTitle': widget.session.title,
               'roomId': room.id,

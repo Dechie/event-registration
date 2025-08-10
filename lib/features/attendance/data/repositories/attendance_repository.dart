@@ -14,6 +14,7 @@ abstract class AttendanceRepository {
     required String participantId,
     required String sessionId,
     required String roomId,
+    required String eventId,
   });
 }
 
@@ -91,6 +92,7 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
     required String participantId,
     required String sessionId,
     required String roomId,
+    required String eventId,
   }) async {
     try {
       if (!await networkInfo.isConnected) {
@@ -104,6 +106,7 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
         participantId: participantId,
         sessionId: sessionId,
         roomId: roomId,
+        eventId: eventId,
       );
       return Right(message);
     } catch (e) {

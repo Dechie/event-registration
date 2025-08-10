@@ -309,7 +309,7 @@ class _CouponSelectionPageState extends State<CouponSelectionPage> {
       // Trigger coupon validation
       context.read<VerificationBloc>().add(
         VerifyBadgeRequested(
-          widget.badgeNumber,
+          badgeNumber: widget.badgeNumber,
           verificationType: 'coupon',
           couponId: selectedCoupon!.id,
         ),

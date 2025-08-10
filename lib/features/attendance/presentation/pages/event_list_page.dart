@@ -2,6 +2,7 @@ import 'package:event_reg/features/attendance/data/models/attendance_event_model
 import 'package:event_reg/features/attendance/data/models/attendance_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../bloc/attendance_bloc.dart';
 import '../bloc/attendance_event.dart';
 import '../bloc/attendance_state.dart';
@@ -18,19 +19,6 @@ class _EventListPageState extends State<EventListPage> {
   final Map<String, bool> _expandedEvents = {};
 
   @override
-  void initState() {
-    super.initState();
-    // Load events when page initializes
-    context.read<AttendanceBloc>().add(LoadEventsForAttendance());
-  }
-
-  void _toggleEventExpansion(String eventId) {
-    setState(() {
-      _expandedEvents[eventId] = !(_expandedEvents[eventId] ?? false);
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
@@ -45,9 +33,7 @@ class _EventListPageState extends State<EventListPage> {
       body: BlocBuilder<AttendanceBloc, AttendanceState>(
         builder: (context, state) {
           if (state is AttendanceLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (state is AttendanceError) {
@@ -55,11 +41,7 @@ class _EventListPageState extends State<EventListPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.red[300],
-                  ),
+                  Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
                   const SizedBox(height: 16),
                   Text(
                     'Error Loading Events',
@@ -81,7 +63,9 @@ class _EventListPageState extends State<EventListPage> {
                   const SizedBox(height: 24),
                   ElevatedButton.icon(
                     onPressed: () {
-                      context.read<AttendanceBloc>().add(LoadEventsForAttendance());
+                      context.read<AttendanceBloc>().add(
+                        LoadEventsForAttendance(),
+                      );
                     },
                     icon: const Icon(Icons.refresh),
                     label: const Text('Retry'),
@@ -186,10 +170,17 @@ class _EventListPageState extends State<EventListPage> {
                   Expanded(
                     child: ListView.separated(
                       itemCount: state.events.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 12),
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final event = state.events[index];
-                        return _buildEventCard(context, event, textTheme, colorScheme);
+
+                        return _buildEventCard(
+                          context,
+                          event,
+                          textTheme,
+                          colorScheme,
+                        );
                       },
                     ),
                   ),
@@ -202,6 +193,13 @@ class _EventListPageState extends State<EventListPage> {
         },
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Load events when page initializes
+    context.read<AttendanceBloc>().add(LoadEventsForAttendance());
   }
 
   Widget _buildEventCard(
@@ -259,8 +257,9 @@ class _EventListPageState extends State<EventListPage> {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: _getEventStatusColor(event.isActive)
-                                    .withValues(alpha: 0.1),
+                                color: _getEventStatusColor(
+                                  event.isActive,
+                                ).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -361,40 +360,6 @@ class _EventListPageState extends State<EventListPage> {
     );
   }
 
-  Widget _buildSessionsList(
-    BuildContext context,
-    AttendanceEventModel event,
-    TextTheme textTheme,
-    ColorScheme colorScheme,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Sessions (${event.sessions.length})',
-            style: textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: event.sessions.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 8),
-            itemBuilder: (context, index) {
-              final session = event.sessions[index];
-              return _buildSessionCard(context, session, event, textTheme, colorScheme);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSessionCard(
     BuildContext context,
     AttendanceSession session,
@@ -413,10 +378,7 @@ class _EventListPageState extends State<EventListPage> {
                   MaterialPageRoute(
                     builder: (context) => BlocProvider.value(
                       value: context.read<AttendanceBloc>(),
-                      child: RoomListPage(
-                        event: event,
-                        session: session,
-                      ),
+                      child: RoomListPage(event: event, session: session),
                     ),
                   ),
                 );
@@ -459,8 +421,9 @@ class _EventListPageState extends State<EventListPage> {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: _getSessionStatusColor(session.isActive)
-                                .withValues(alpha: 0.1),
+                            color: _getSessionStatusColor(
+                              session.isActive,
+                            ).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -479,8 +442,8 @@ class _EventListPageState extends State<EventListPage> {
                       Text(
                         session.description!,
                         style: textTheme.bodySmall?.copyWith(
-                          color: session.isActive 
-                              ? colorScheme.onSurfaceVariant 
+                          color: session.isActive
+                              ? colorScheme.onSurfaceVariant
                               : Colors.grey[500],
                         ),
                         maxLines: 1,
@@ -493,16 +456,16 @@ class _EventListPageState extends State<EventListPage> {
                         Icon(
                           Icons.access_time,
                           size: 12,
-                          color: session.isActive 
-                              ? colorScheme.onSurfaceVariant 
+                          color: session.isActive
+                              ? colorScheme.onSurfaceVariant
                               : Colors.grey[500],
                         ),
                         const SizedBox(width: 4),
                         Text(
                           '${_formatTime(session.startTime)} - ${_formatTime(session.endTime)}',
                           style: textTheme.bodySmall?.copyWith(
-                            color: session.isActive 
-                                ? colorScheme.onSurfaceVariant 
+                            color: session.isActive
+                                ? colorScheme.onSurfaceVariant
                                 : Colors.grey[500],
                             fontSize: 11,
                           ),
@@ -511,16 +474,16 @@ class _EventListPageState extends State<EventListPage> {
                         Icon(
                           Icons.meeting_room,
                           size: 12,
-                          color: session.isActive 
-                              ? colorScheme.onSurfaceVariant 
+                          color: session.isActive
+                              ? colorScheme.onSurfaceVariant
                               : Colors.grey[500],
                         ),
                         const SizedBox(width: 4),
                         Text(
                           '${session.roomsCount} rooms',
                           style: textTheme.bodySmall?.copyWith(
-                            color: session.isActive 
-                                ? colorScheme.onSurfaceVariant 
+                            color: session.isActive
+                                ? colorScheme.onSurfaceVariant
                                 : Colors.grey[500],
                             fontSize: 11,
                           ),
@@ -544,6 +507,57 @@ class _EventListPageState extends State<EventListPage> {
     );
   }
 
+  Widget _buildSessionsList(
+    BuildContext context,
+    AttendanceEventModel event,
+    TextTheme textTheme,
+    ColorScheme colorScheme,
+  ) {
+    final sessions = event.sessions;
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Sessions (${sessions.length})',
+            style: textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: sessions.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 8),
+            itemBuilder: (context, index) {
+              final session = sessions[index];
+
+              return _buildSessionCard(
+                context,
+                session,
+                event,
+                textTheme,
+                colorScheme,
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
+  }
+
+  String _formatTime(DateTime dateTime) {
+    return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+  }
+
   Color _getEventStatusColor(bool isActive) {
     if (isActive) {
       return Colors.green;
@@ -564,12 +578,9 @@ class _EventListPageState extends State<EventListPage> {
     return isActive ? 'Active' : 'Inactive';
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
-  }
-
-  String _formatTime(DateTime dateTime) {
-    return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+  void _toggleEventExpansion(String eventId) {
+    setState(() {
+      _expandedEvents[eventId] = !(_expandedEvents[eventId] ?? false);
+    });
   }
 }
-

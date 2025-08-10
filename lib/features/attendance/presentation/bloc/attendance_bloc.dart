@@ -109,6 +109,7 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
       debugPrint('🔍 Marking attendance for participant: ${event.participantId}');
       
       final result = await repository.markAttendance(
+        eventId: event.attendanceEventId,
         participantId: event.participantId,
         sessionId: event.sessionId,
         roomId: event.roomId,

@@ -99,8 +99,13 @@ class AppRouter {
       case RouteNames.qrScannerPage:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
-          builder: (_) =>
-              QrScannerPage(verificationType: args?['type'] ?? 'security'),
+          builder: (_) => QrScannerPage(
+            verificationType: args?['type'] ?? 'security',
+            eventId: args?['eventId'],
+            eventSessionId: args?['eventSessionId'],
+            sessionTitle: args?['sessionTitle'],
+            roomId: args?['roomId'],
+          ),
         );
 
       case RouteNames.couponSelectionPage:

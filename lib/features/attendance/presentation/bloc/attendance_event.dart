@@ -40,18 +40,21 @@ class LoadSessionsForEvent extends AttendanceEvent {
 
 class MarkAttendance extends AttendanceEvent {
   final String participantId;
+  final String attendanceEventId;
   final String sessionId;
   final String roomId;
 
   const MarkAttendance({
     required this.participantId,
+    required this.attendanceEventId,
     required this.sessionId,
     required this.roomId,
   });
 
   @override
-  List<Object?> get props => [participantId, sessionId, roomId];
+  List<Object?> get props => [participantId, sessionId, roomId, attendanceEventId];
 
   @override
-  String toString() => 'MarkAttendance(participantId: $participantId, sessionId: $sessionId, roomId: $roomId)';
+  String toString() =>
+      'MarkAttendance(participantId: $participantId, sessionId: $sessionId, roomId: $roomId, eventId: $attendanceEventId)';
 }

@@ -22,6 +22,7 @@ abstract class VerificationRepository {
     String verificationType, {
     String? eventSessionId,
     String? couponId,
+    String? eventId,
   });
 }
 
@@ -78,6 +79,7 @@ class VerificationRepositoryImpl implements VerificationRepository {
     String verificationType, {
     String? eventSessionId,
     String? couponId,
+    String? eventId,
   }) async {
     try {
       debugPrint(

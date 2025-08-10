@@ -6,11 +6,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/repositories/verification_repository.dart';
 import 'verification_event.dart';
 import 'verification_state.dart';
+import '../../../attendance/presentation/bloc/attendance_bloc.dart';
+import '../../../attendance/presentation/bloc/attendance_event.dart';
 
 class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
   final VerificationRepository repository;
+  final AttendanceBloc? attendanceBloc; // Optional dependency for attendance
 
-  VerificationBloc({required this.repository})
+  VerificationBloc({
+    required this.repository,
+    this.attendanceBloc,
+  })
     : super(const VerificationInitial()) {
     on<VerifyBadgeRequested>(_onVerifyBadgeRequested);
     on<ResetVerificationState>(_onResetVerificationState);
@@ -109,6 +115,7 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
         event.verificationType,
         eventSessionId: event.eventSessionId,
         couponId: event.couponId,
+        eventId: event.eventId,
       );
 
       result.fold(
@@ -128,6 +135,23 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
           debugPrint(
             '✅ Verification successful for badge: ${event.badgeNumber}',
           );
+
+          // If this is an attendance verification and we have an attendance bloc,
+          // mark attendance after successful verification
+          if (event.verificationType.toLowerCase() == 'attendance' && 
+              attendanceBloc != null &&
+              response.participant != null) {
+            
+            debugPrint('🎯 Marking attendance for participant: ${response.participant!.id}');
+            
+            // Mark attendance using the attendance bloc
+            attendanceBloc!.add(MarkAttendance(
+              participantId: response.participant!.id,
+              attendanceEventId: event.eventId ?? '',
+              sessionId: event.eventSessionId ?? '',
+              roomId: event.roomId ?? '', // Use roomId from the event
+            ));
+          }
 
           emit(
             VerificationSuccess(

@@ -12,6 +12,7 @@ abstract class AttendanceRemoteDataSource {
   Future<List<AttendanceRoom>> getRoomsForSession(String sessionId);
   Future<List<AttendanceSession>> getSessionsForEvent(String eventId);
   Future<String> markAttendance({
+    required String eventId,
     required String participantId,
     required String sessionId,
     required String roomId,
@@ -33,10 +34,7 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
       debugPrint('🚀 DataSource: Fetching events for attendance');
 
       final token = await userDataService.getAuthToken() ?? '';
-      final response = await dioClient.get(
-        "/events",
-        token: token,
-      );
+      final response = await dioClient.get("/events", token: token);
 
       if (response.statusCode == 200) {
         final data = response.data;
@@ -49,11 +47,15 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
               .map((eventJson) => AttendanceEventModel.fromJson(eventJson))
               .toList();
         } else {
-          debugPrint('⚠️ DataSource: Unexpected events data format, using mock data');
+          debugPrint(
+            '⚠️ DataSource: Unexpected events data format, using mock data',
+          );
           return _getMockEvents();
         }
       } else {
-        throw Exception("Failed to fetch events for attendance: ${response.statusCode}");
+        throw Exception(
+          "Failed to fetch events for attendance: ${response.statusCode}",
+        );
       }
     } catch (e) {
       debugPrint('❌ DataSource: Error fetching events - $e');
@@ -84,11 +86,15 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
               .map((roomJson) => AttendanceRoom.fromJson(roomJson))
               .toList();
         } else {
-          debugPrint('⚠️ DataSource: Unexpected rooms data format, using mock data');
+          debugPrint(
+            '⚠️ DataSource: Unexpected rooms data format, using mock data',
+          );
           return _getMockRooms(sessionId);
         }
       } else {
-        throw Exception("Failed to fetch rooms for session: ${response.statusCode}");
+        throw Exception(
+          "Failed to fetch rooms for session: ${response.statusCode}",
+        );
       }
     } catch (e) {
       debugPrint('❌ DataSource: Error fetching rooms - $e');
@@ -115,15 +121,25 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
             : data;
 
         if (sessionsData is List) {
+          var sessionsData2 = List.from(sessionsData);
+          if ((sessionsData2 as List<AttendanceSession>).isEmpty) {
+            return _getMockSessions(eventId);
+          }
+
           return sessionsData
               .map((sessionJson) => AttendanceSession.fromJson(sessionJson))
               .toList();
         } else {
-          debugPrint('⚠️ DataSource: Unexpected sessions data format, using mock data');
+          debugPrint(
+            '⚠️ DataSource: Unexpected sessions data format, using mock data',
+          );
+
           return _getMockSessions(eventId);
         }
       } else {
-        throw Exception("Failed to fetch sessions for event: ${response.statusCode}");
+        throw Exception(
+          "Failed to fetch sessions for event: ${response.statusCode}",
+        );
       }
     } catch (e) {
       debugPrint('❌ DataSource: Error fetching sessions - $e');
@@ -137,6 +153,7 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
     required String participantId,
     required String sessionId,
     required String roomId,
+    required String eventId,
   }) async {
     try {
       debugPrint(
@@ -147,6 +164,7 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
       final response = await dioClient.post(
         "/attendance/mark",
         data: {
+          'event_id': eventId,
           'participant_id': participantId,
           'session_id': sessionId,
           'room_id': roomId,
@@ -265,7 +283,9 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
             title: 'Lunch Break',
             description: 'Time for participants to network and eat',
             startTime: DateTime.now().subtract(const Duration(hours: 1)),
-            endTime: DateTime.now().subtract(const Duration(hours: 1, minutes: 30)),
+            endTime: DateTime.now().subtract(
+              const Duration(hours: 1, minutes: 30),
+            ),
             isActive: false,
             roomsCount: 1,
           ),
@@ -314,8 +334,7 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
       ),
     ];
   }
-
-  List<AttendanceSession> _getMockSessions(String eventId) {
+List<AttendanceSession> _getMockSessions(String eventId) {
     return [
       AttendanceSession(
         id: '1',
@@ -349,4 +368,5 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
       ),
     ];
   }
-}
+
+  }

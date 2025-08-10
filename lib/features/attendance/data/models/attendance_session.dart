@@ -21,30 +21,57 @@ class AttendanceSession {
 
   factory AttendanceSession.fromJson(Map<String, dynamic> json) {
     // Handle different possible field names from the API
-    final startTimeField = json['start_time'] ?? json['startTime'] ?? json['start_date'] ?? json['startDate'];
-    final endTimeField = json['end_time'] ?? json['endTime'] ?? json['end_date'] ?? json['endDate'];
+    final startTimeField =
+        json['start_time'] ??
+        json['startTime'] ??
+        json['start_date'] ??
+        json['startDate'];
+    final endTimeField =
+        json['end_time'] ??
+        json['endTime'] ??
+        json['end_date'] ??
+        json['endDate'];
     final eventIdField = json['event_id'] ?? json['eventId'] ?? '';
     final isActiveField = json['is_active'] ?? json['isActive'] ?? true;
-    final roomsCountField = json['rooms_count'] ?? json['roomsCount'] ?? json['rooms']?.length ?? 0;
-    
+    final roomsCountField =
+        json['rooms_count'] ?? json['roomsCount'] ?? json['rooms']?.length ?? 0;
+
+    DateTime startTime = DateTime.now();
+
+    if (startTimeField is String) {
+      startTime = DateTime.parse(startTimeField);
+    } else if (startTimeField is DateTime) {
+      startTime = startTimeField;
+    }
+
+    DateTime endTime = DateTime.now().add(Duration(hours: 1));
+
+    if (endTimeField is String) {
+      startTime = DateTime.parse(startTimeField);
+    } else if (endTimeField is DateTime) {
+      startTime = endTimeField;
+    }
+
     return AttendanceSession(
       id: json['id'].toString(),
       eventId: eventIdField.toString(),
       title: json['title'] ?? json['name'] ?? '',
       description: json['description'],
-      startTime: startTimeField is String 
-          ? DateTime.parse(startTimeField)
-          : startTimeField is DateTime 
-              ? startTimeField 
-              : DateTime.now(),
-      endTime: endTimeField is String 
-          ? DateTime.parse(endTimeField)
-          : endTimeField is DateTime 
-              ? endTimeField 
-              : DateTime.now().add(const Duration(hours: 1)),
+      startTime: startTime,
+      endTime: endTime,
       isActive: isActiveField is bool ? isActiveField : (isActiveField == 1),
       roomsCount: roomsCountField is int ? roomsCountField : 0,
     );
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is AttendanceSession && other.id == id;
   }
 
   Map<String, dynamic> toJson() {
@@ -64,13 +91,4 @@ class AttendanceSession {
   String toString() {
     return 'AttendanceSession(id: $id, title: $title, eventId: $eventId, isActive: $isActive, roomsCount: $roomsCount)';
   }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is AttendanceSession && other.id == id;
-  }
-
-  @override
-  int get hashCode => id.hashCode;
 }
