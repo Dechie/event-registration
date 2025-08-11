@@ -9,17 +9,18 @@ import '../models/coupon.dart';
 import '../models/verification_request.dart';
 
 abstract class VerificationRemoteDataSource {
-  
+  Future<List<Coupon>> fetchParticipantCoupons(
+    String participantId,
+    String token,
+  );
   Future<VerificationResponse> verifyBadge(
-  String badgeNumber,
-  String verificationType, {
-  String? eventSessionId,
-  String? sessionLocationId, // Add this parameter
-  String? couponId,
-  required String token,
-});
-  Future<List<Coupon>> fetchParticipantCoupons(String participantId, String token);
-
+    String badgeNumber,
+    String verificationType, {
+    String? eventSessionId,
+    String? sessionLocationId, // Add this parameter
+    String? couponId,
+    required String token,
+  });
 }
 
 class VerificationRemoteDataSourceImpl implements VerificationRemoteDataSource {
@@ -28,40 +29,48 @@ class VerificationRemoteDataSourceImpl implements VerificationRemoteDataSource {
   VerificationRemoteDataSourceImpl({required this.dioClient});
 
   @override
-Future<List<Coupon>> fetchParticipantCoupons(String participantId, String token) async {
-  try {
-    debugPrint('🚀 DataSource: Fetching coupons for participant $participantId');
-    
-    final response = await dioClient.get(
-      "/my-coupons", // Based on your backend route
-      token: token,
-    );
+  Future<List<Coupon>> fetchParticipantCoupons(
+    String participantId,
+    String token,
+  ) async {
+    try {
+      debugPrint(
+        '🚀 DataSource: Fetching coupons for participant $participantId',
+      );
 
-    if (response.statusCode == 200) {
-      final data = response.data;
-      final couponsData = data is Map<String, dynamic> 
-          ? (data["data"] ?? data)
-          : data;
-          
-      if (couponsData is List) {
-        return couponsData.map((couponJson) => Coupon.fromJson(couponJson)).toList();
+      final response = await dioClient.get(
+        "/my-coupons", // Based on your backend route
+        token: token,
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        final couponsData = data is Map<String, dynamic>
+            ? (data["data"] ?? data)
+            : data;
+
+        if (couponsData is List) {
+          return couponsData
+              .map((couponJson) => Coupon.fromJson(couponJson))
+              .toList();
+        } else {
+          throw ServerException(
+            message: "Invalid coupons response format",
+            code: "INVALID_RESPONSE_FORMAT",
+          );
+        }
       } else {
         throw ServerException(
-          message: "Invalid coupons response format",
-          code: "INVALID_RESPONSE_FORMAT",
+          message: "Failed to fetch coupons",
+          code: "FETCH_COUPONS_FAILED",
         );
       }
-    } else {
-      throw ServerException(
-        message: "Failed to fetch coupons",
-        code: "FETCH_COUPONS_FAILED",
-      );
+    } catch (e) {
+      debugPrint('❌ DataSource: Error fetching coupons - $e');
+      rethrow;
     }
-  } catch (e) {
-    debugPrint('❌ DataSource: Error fetching coupons - $e');
-    rethrow;
   }
-}
+
   @override
   Future<VerificationResponse> verifyBadge(
     String badgeNumber,
@@ -80,7 +89,9 @@ Future<List<Coupon>> fetchParticipantCoupons(String participantId, String token)
         case 'attendance':
           request = VerificationRequest.attendance(
             badgeNumber: badgeNumber,
-            eventSessionId: sessionLocationId ?? '1',
+            eventSessionId: eventSessionId ?? '1', // Use actual eventSessionId
+            sessionLocationId:
+                sessionLocationId ?? '1', // Use actual sessionLocationId
           );
           break;
         case 'coupon':

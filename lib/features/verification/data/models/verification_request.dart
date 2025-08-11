@@ -4,24 +4,27 @@ class VerificationRequest {
   final String type; // 'attendance', 'coupon', 'security', or 'info'
   final String badgeNumber;
   final String? eventSessionId; // required if type is 'attendance'
+  final String? sessionLocationId;
   final String? couponId; // required if type is 'coupon'
 
   const VerificationRequest({
     required this.type,
     required this.badgeNumber,
+    this.sessionLocationId,
     this.eventSessionId,
     this.couponId,
   });
 
-  // Factory constructor for attendance
   factory VerificationRequest.attendance({
     required String badgeNumber,
     required String eventSessionId,
+    required String sessionLocationId,
   }) {
     return VerificationRequest(
       type: 'attendance',
       badgeNumber: badgeNumber,
       eventSessionId: eventSessionId,
+      sessionLocationId: sessionLocationId,
     );
   }
 
@@ -89,12 +92,20 @@ class VerificationRequest {
     );
   }
 
+  // ... (other factories unchanged)
+
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{'type': type, 'badge_number': badgeNumber};
 
-    // Add conditional fields based on type
-    if (type == 'attendance' && eventSessionId != null) {
-      json['eventsession_id'] = int.tryParse(eventSessionId!) ?? 1;
+    // Updated for attendance: send both fields with server-expected keys
+    if (type == 'attendance') {
+      if (eventSessionId != null) {
+        json['eventsession_id'] = int.tryParse(eventSessionId!) ?? 1;
+      }
+      if (sessionLocationId != null) {
+        json['sessionlocation_id'] =
+            int.tryParse(sessionLocationId!) ?? 1; // Key fixed to match server
+      }
     }
 
     if (type == 'coupon' && couponId != null) {

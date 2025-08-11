@@ -1,8 +1,8 @@
-import 'dart:convert';
+import 'dart:convert' show jsonEncode;
 
-import 'package:event_reg/features/verification/data/models/coupon.dart';
 import 'package:flutter/material.dart' show debugPrint;
 
+import 'coupon.dart';
 import 'participant_info.dart';
 
 class VerificationResponse {
@@ -10,32 +10,42 @@ class VerificationResponse {
   final String message;
   final ParticipantInfo? participant;
   final String? status;
-  final List<Coupon>? coupons; // Add this line
+  final List<Coupon>? coupons;
 
   const VerificationResponse({
     required this.success,
     required this.message,
     this.participant,
     this.status,
-    this.coupons, // Add this line
+    this.coupons,
   });
 
   factory VerificationResponse.fromJson(Map<String, dynamic> json) {
     debugPrint("verification response json: ${jsonEncode(json)}");
-    bool success = json["message"] == "Security check successful.";
-    String status = success ? "Verified" : "Not Verified";
+
+    // Updated: Consider multiple success messages
+    final message = json['message']?.toString() ?? '';
+    bool success =
+        message.contains('successful') || message.contains('success');
+    String? status;
+    if (success) {
+      status = json['attendance'] != null ? 'present' : 'Verified';
+    } else {
+      status = 'Not Verified';
+    }
+
     try {
       return VerificationResponse(
         success: success,
-        message: json['message'] ?? '',
+        message: message,
         status: status,
         participant: json['participant'] != null
             ? ParticipantInfo.fromJson(json['participant'])
             : null,
-        coupons: json['coupons'] != null // Add this block
+        coupons: json['coupons'] != null
             ? (json['coupons'] as List)
-                .map((coupon) => Coupon.fromJson(coupon))
-                .toList()
+                  .map((coupon) => Coupon.fromJson(coupon))
+                  .toList()
             : null,
       );
     } catch (e) {
@@ -51,9 +61,7 @@ class VerificationResponse {
       'message': message,
       'status': status,
       'participant': participant?.toJson(),
-      'coupons': coupons?.map((coupon) => coupon.toJson()).toList(), // Add this line
+      'coupons': coupons?.map((coupon) => coupon.toJson()).toList(),
     };
   }
 }
-
-// Add this new Coupon model at the end of the file

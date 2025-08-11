@@ -21,6 +21,7 @@ abstract class VerificationRepository {
     String badgeNumber,
     String verificationType, {
     String? eventSessionId,
+    String? sessionLocationId,
     String? couponId,
     String? eventId,
   });
@@ -78,6 +79,7 @@ class VerificationRepositoryImpl implements VerificationRepository {
     String badgeNumber,
     String verificationType, {
     String? eventSessionId,
+    String? sessionLocationId,
     String? couponId,
     String? eventId,
   }) async {
@@ -106,6 +108,7 @@ class VerificationRepositoryImpl implements VerificationRepository {
         badgeNumber,
         verificationType,
         eventSessionId: eventSessionId,
+        sessionLocationId: sessionLocationId,
         couponId: couponId,
         token: token,
       );

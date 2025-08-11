@@ -111,6 +111,7 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
         event.badgeNumber.trim(),
         event.verificationType,
         eventSessionId: event.eventSessionId,
+        sessionLocationId: event.sessionLocationId ?? event.roomId,
         couponId: event.couponId,
         eventId: event.eventId,
       );
