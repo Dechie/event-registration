@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart' show debugPrint;
+
 class EventSession {
   final String id;
   final String eventId;
@@ -18,18 +20,30 @@ class EventSession {
   });
 
   factory EventSession.fromJson(Map<String, dynamic> json) {
+    debugPrint("event session , is acive: ${json["is_active"]}");
+
+    bool isActive = false;
+    if (json["is_active"] is int) {
+      debugPrint("is active is an int");
+      if (json["is_active"] == 1) {
+        isActive = true;
+      } else if (json["is_active"] == 0) {
+        isActive = false;
+      }
+    }
+
     return EventSession(
       id: json['id'].toString(),
       eventId: json['event_id'].toString(),
       title: json['title'] ?? '',
       description: json['description'],
-      startTime: json['start_time'] != null 
-          ? DateTime.parse(json['start_time']) 
+      startTime: json['start_time'] != null
+          ? DateTime.parse(json['start_time'])
           : null,
-      endTime: json['end_time'] != null 
-          ? DateTime.parse(json['end_time']) 
+      endTime: json['end_time'] != null
+          ? DateTime.parse(json['end_time'])
           : null,
-      isActive: json['is_active'] ?? false,
+      isActive: isActive,
     );
   }
 

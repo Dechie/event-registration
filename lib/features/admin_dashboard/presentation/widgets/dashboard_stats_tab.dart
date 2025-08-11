@@ -462,6 +462,7 @@ class DashboardStatsTab extends StatelessWidget {
   String _formatDateTime(String dateTimeStr) {
     try {
       final dateTime = DateTime.parse(dateTimeStr);
+
       return DateFormat('MMM dd, yyyy • hh:mm a').format(dateTime);
     } catch (e) {
       return dateTimeStr;

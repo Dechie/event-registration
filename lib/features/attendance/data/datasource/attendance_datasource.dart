@@ -184,6 +184,7 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
         'DataSource: Event details response status: ${response.statusCode}',
       );
       debugPrint('DataSource: Event details response data: ${response.data}');
+      
 
       if (response.statusCode == 200) {
         final data = response.data;

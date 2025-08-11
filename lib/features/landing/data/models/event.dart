@@ -1,5 +1,6 @@
 import 'package:event_reg/features/attendance/data/models/attendance_event_model.dart';
 import 'package:event_reg/features/landing/data/models/event_session.dart';
+import 'package:flutter/material.dart' show debugPrint;
 
 import 'organization.dart';
 
@@ -30,13 +31,28 @@ class Event {
     this.sessions,
   });
 
+  factory Event.fromAttendanceEventModel(AttendanceEventModel attEvMdl) {
+    return Event(
+      id: attEvMdl.id,
+      title: attEvMdl.title,
+      description: attEvMdl.description ?? "",
+      location: attEvMdl.location,
+      startTime: attEvMdl.startTime,
+      endTime: attEvMdl.endTime,
+      isActive: attEvMdl.isActive,
+      organizationId: attEvMdl.organizationId,
+    );
+  }
+
   factory Event.fromJson(Map<String, dynamic> json) {
+    debugPrint("event , is acive: ${json["is_active"]}");
     bool isActive = false;
-    if (json["isActive"] is int) {
+    if (json["is_active"] is int) {
+      debugPrint("is active is an int");
       if (json["is_active"] == 1) {
-        isActive = false;
-      } else if (json["is_active"] == 0) {
         isActive = true;
+      } else if (json["is_active"] == 0) {
+        isActive = false;
       }
     }
 
@@ -75,18 +91,5 @@ class Event {
       'organization': organization?.toJson(),
       'sessions': sessions?.map((session) => session.toJson()).toList(),
     };
-  }
-
-  factory Event.fromAttendanceEventModel(AttendanceEventModel attEvMdl) {
-    return Event(
-      id: attEvMdl.id,
-      title: attEvMdl.title,
-      description: attEvMdl.description ?? "",
-      location: attEvMdl.location,
-      startTime: attEvMdl.startTime,
-      endTime: attEvMdl.endTime,
-      isActive: attEvMdl.isActive,
-      organizationId: attEvMdl.organizationId,
-    );
   }
 }
