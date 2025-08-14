@@ -117,37 +117,15 @@ class VerificationRemoteDataSourceImpl implements VerificationRemoteDataSource {
         token: token,
       );
 
-      debugPrint('📥 DataSource: Response status ${response.statusCode}');
-      debugPrint('📥 DataSource: Response data ${response.data}');
-      if (response.statusCode == 200) {
+      debugPrint('🔥 DataSource: Response status ${response.statusCode}');
+      debugPrint('🔥 DataSource: Response data ${response.data}');
+
+      // Handle both success (200) and error responses
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final data = response.data;
-        final responseData = data is Map<String, dynamic>
-            ? (data["data"] ?? data)
-            : data;
-        if (responseData is! Map<String, dynamic>) {
-          debugPrint('❌ Invalid response format: ${responseData.runtimeType}');
-          throw ServerException(
-            message: "Invalid response format from server",
-            code: "INVALID_RESPONSE_FORMAT",
-          );
-        }
+        final responseData = data is Map<String, dynamic> ? data : <String, dynamic>{};
+
         try {
-          debugPrint("response data:");
-          debugPrint("{");
-          for (var entry in responseData.entries) {
-            if (entry.value is Map<String, dynamic>) {
-              debugPrint("  {");
-              for (var valueEntry in entry.value.entries) {
-                debugPrint(
-                  "    \"${valueEntry.key}\": \"${valueEntry.value}\"",
-                );
-              }
-              debugPrint("  }");
-              continue;
-            }
-            debugPrint("  \"${entry.key}\": \"${entry.value}\"");
-          }
-          debugPrint("}");
           final verificationResponse = VerificationResponse.fromJson(
             responseData,
           );
@@ -162,12 +140,29 @@ class VerificationRemoteDataSourceImpl implements VerificationRemoteDataSource {
           );
         }
       } else {
-        final errorMessage = response.data is Map<String, dynamic>
-            ? response.data["message"] ?? "Verification failed"
-            : "Verification failed";
-        final errorCode = response.data is Map<String, dynamic>
-            ? response.data["code"] ?? "VERIFICATION_FAILED"
-            : "VERIFICATION_FAILED";
+        // Handle error responses (404, 409, 422, etc.)
+        final data = response.data;
+        String errorMessage = "Verification failed";
+        String errorCode = "VERIFICATION_FAILED";
+
+        if (data is Map<String, dynamic>) {
+          errorMessage = data["message"] ?? errorMessage;
+
+          // Map specific error messages from backend
+          if (errorMessage.contains('not found') ||
+              errorMessage.contains('not approved')) {
+            errorCode = "PARTICIPANT_NOT_FOUND";
+          } else if (errorMessage.contains('Already checked in')) {
+            errorCode = "ALREADY_CHECKED_IN";
+          } else if (errorMessage.contains('No active attendance round')) {
+            errorCode = "NO_ACTIVE_ROUND";
+          } else if (errorMessage.contains('Usage limit reached')) {
+            errorCode = "USAGE_LIMIT_REACHED";
+          } else if (errorMessage.contains('Coupon is inactive')) {
+            errorCode = "COUPON_INACTIVE";
+          }
+        }
+
         throw ServerException(message: errorMessage, code: errorCode);
       }
     } catch (e) {

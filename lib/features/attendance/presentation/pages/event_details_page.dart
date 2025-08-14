@@ -80,6 +80,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
 
           if (state is EventDetailsLoaded) {
             final event = state.event;
+
             return SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Column(

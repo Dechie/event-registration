@@ -23,15 +23,35 @@ class VerificationResponse {
   factory VerificationResponse.fromJson(Map<String, dynamic> json) {
     debugPrint("verification response json: ${jsonEncode(json)}");
 
-    // Updated: Consider multiple success messages
     final message = json['message']?.toString() ?? '';
+
+    // Check for explicit success field or successful messages
     bool success =
-        message.contains('successful') || message.contains('success');
+        json['success'] == true ||
+        json['status'] == 'success' ||
+        message.contains('successful') ||
+        message.contains('Check-in successful');
+
+    // Handle specific error cases from backend
+    if (message.contains('not found') ||
+        message.contains('not approved') ||
+        message.contains('Already checked in') ||
+        message.contains('No active attendance round') ||
+        message.contains('Usage limit reached') ||
+        message.contains('Coupon is inactive')) {
+      success = false;
+    }
+
     String? status;
     if (success) {
-      status = json['attendance'] != null ? 'present' : 'Verified';
+      // Extract status from attendance response
+      if (json['attendance'] != null && json['attendance']['status'] != null) {
+        status = json['attendance']['status']; // 'present' or 'late'
+      } else {
+        status = 'Verified';
+      }
     } else {
-      status = 'Not Verified';
+      status = 'Failed';
     }
 
     try {

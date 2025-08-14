@@ -21,9 +21,9 @@ class QrScannerPage extends StatefulWidget {
   final String? eventId;
   final String? roomId; // Added for attendance tracking
   final String? sessionLocationId; // Added for attendance tracking
-  
+
   const QrScannerPage({
-    super.key, 
+    super.key,
     this.verificationType = 'security',
     this.eventSessionId,
     this.sessionTitle,
@@ -31,7 +31,7 @@ class QrScannerPage extends StatefulWidget {
     this.roomId, // Added for attendance tracking
     this.sessionLocationId,
   });
-  
+
   @override
   State<QrScannerPage> createState() => _QrScannerPageState();
 }
@@ -281,7 +281,7 @@ class _QrScannerPageState extends State<QrScannerPage>
   String _getAppBarTitle() {
     switch (widget.verificationType.toLowerCase()) {
       case 'attendance':
-        return widget.sessionTitle != null 
+        return widget.sessionTitle != null
             ? 'Attendance - ${widget.sessionTitle}'
             : 'Scan for Attendance';
       case 'security':
@@ -346,22 +346,24 @@ class _QrScannerPageState extends State<QrScannerPage>
             'Step 6: Found a valid badge number. Adding event to Bloc.',
           );
           final badgeNumber = badgeData['badge_number'].toString();
-          
+
           // Use the session ID from widget if available, otherwise from QR data
-          final eventSessionId = widget.eventSessionId ?? badgeData['eventsession_id']?.toString();
-final eventId = widget.eventId ?? "";
-final sessionLocationId = widget.sessionLocationId ?? widget.roomId ?? "";
-          
-         context.read<VerificationBloc>().add(
-  VerifyBadgeRequested(
-    badgeNumber: badgeNumber,
-    verificationType: widget.verificationType,
-    eventSessionId: eventSessionId,
-    eventId: eventId,
-    sessionLocationId: sessionLocationId, // Updated parameter name
-    couponId: badgeData['coupon_id']?.toString(),
-  ),
-); 
+          final eventSessionId =
+              widget.eventSessionId ?? badgeData['eventsession_id']?.toString();
+          final eventId = widget.eventId ?? "";
+          final sessionLocationId =
+              widget.sessionLocationId ?? widget.roomId ?? "";
+
+          context.read<VerificationBloc>().add(
+            VerifyBadgeRequested(
+              badgeNumber: badgeNumber,
+              verificationType: widget.verificationType,
+              eventSessionId: eventSessionId,
+              eventId: eventId,
+              sessionLocationId: sessionLocationId, // Updated parameter name
+              couponId: badgeData['coupon_id']?.toString(),
+            ),
+          );
         } else {
           debugPrint(
             'Step 6: Extracted badge number is null or empty. Showing error.',
@@ -419,11 +421,38 @@ final sessionLocationId = widget.sessionLocationId ?? widget.roomId ?? "";
   }
 
   void _showErrorDialog(String title, String message) {
+    IconData errorIcon = Icons.error;
+    Color errorColor = Colors.red;
+
+    // Customize icon and color based on error type
+    if (message.contains('Already checked in')) {
+      errorIcon = Icons.check_circle_outline;
+      errorColor = Colors.orange;
+      title = 'Already Checked In';
+    } else if (message.contains('not found') ||
+        message.contains('not approved')) {
+      errorIcon = Icons.person_off;
+      errorColor = Colors.red;
+      title = 'Participant Not Found';
+    } else if (message.contains('No active attendance round')) {
+      errorIcon = Icons.schedule_outlined;
+      errorColor = Colors.orange;
+      title = 'Session Inactive';
+    } else if (message.contains('Usage limit reached')) {
+      errorIcon = Icons.block;
+      errorColor = Colors.orange;
+      title = 'Usage Limit Reached';
+    } else if (message.contains('Coupon is inactive')) {
+      errorIcon = Icons.local_offer_outlined;
+      errorColor = Colors.red;
+      title = 'Coupon Inactive';
+    }
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        icon: const Icon(Icons.error, color: Colors.red, size: 48),
-        title: Text(title),
+        icon: Icon(errorIcon, color: errorColor, size: 48),
+        title: Text(title, style: TextStyle(color: errorColor)),
         content: Text(message),
         actions: [
           TextButton(
@@ -435,7 +464,8 @@ final sessionLocationId = widget.sessionLocationId ?? widget.roomId ?? "";
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            style: ElevatedButton.styleFrom(backgroundColor: errorColor),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

@@ -52,16 +52,29 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
             );
           } else if (state is AuthRegistrationSuccessState) {
             // Navigate to OTP verification page
-            Navigator.pushReplacementNamed(
-              context,
-              RouteNames.otpVerificationPage,
-              arguments: {
-                'email': state.email,
-                'otpToken': state.otpToken,
-                'message': state.message,
-                'role': _selectedRole,
-              },
-            );
+            if (_selectedRole == 'admin') {
+              // Admin goes directly to admin dashboard
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                RouteNames.adminLoginPage,
+                (route) => false,
+              );
+            } else {
+              // Participant goes to login page
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                RouteNames.participantLoginPage,
+                (route) => false,
+              );
+            }
+            // Navigator.pushReplacementNamed(
+            //   context,
+            //   RouteNames.otpVerificationPage,
+            //   arguments: {
+            //     'email': state.email,
+            //     'otpToken': state.otpToken,
+            //     'message': state.message,
+            //     'role': _selectedRole,
+            //   },
+            // );
           }
         },
         child: Container(
@@ -397,7 +410,11 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
       children: [
         Row(
           children: [
-            Icon(Icons.account_circle, color: Theme.of(context).primaryColor, size: 20),
+            Icon(
+              Icons.account_circle,
+              color: Theme.of(context).primaryColor,
+              size: 20,
+            ),
             const SizedBox(width: 8),
             Text(
               'Account Type',
@@ -411,10 +428,7 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
         const SizedBox(height: 4),
         Text(
           'Choose your account type to register for the appropriate features',
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
+          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
         ),
         const SizedBox(height: 12),
         Container(
@@ -559,54 +573,6 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
     );
   }
 
-  void _showSignInDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              Icon(Icons.login, color: Theme.of(context).primaryColor),
-              const SizedBox(width: 8),
-              const Text('Sign In'),
-            ],
-          ),
-          content: const Text('Choose your account type to sign in:'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                Navigator.pushNamed(context, RouteNames.participantLoginPage);
-              },
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.person, color: Colors.blue, size: 20),
-                  const SizedBox(width: 8),
-                  const Text('Participant'),
-                ],
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                Navigator.pushNamed(context, RouteNames.adminLoginPage);
-              },
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.admin_panel_settings, color: Colors.green, size: 20),
-                  const SizedBox(width: 8),
-                  const Text('Admin'),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Widget _buildTermsAndConditions() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -673,5 +639,57 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
         );
       }
     }
+  }
+
+  void _showSignInDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.login, color: Theme.of(context).primaryColor),
+              const SizedBox(width: 8),
+              const Text('Sign In'),
+            ],
+          ),
+          content: const Text('Choose your account type to sign in:'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                Navigator.pushNamed(context, RouteNames.participantLoginPage);
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.person, color: Colors.blue, size: 20),
+                  const SizedBox(width: 8),
+                  const Text('Participant'),
+                ],
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                Navigator.pushNamed(context, RouteNames.adminLoginPage);
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.admin_panel_settings,
+                    color: Colors.green,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text('Admin'),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

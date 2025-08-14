@@ -198,20 +198,41 @@ class VerificationResultPage extends StatelessWidget {
   }
 
   Widget _buildStatusCard(BuildContext context, TextTheme textTheme) {
+    final isSuccess = response.success;
+    final isAlreadyCheckedIn = response.message.contains('Already checked in');
+    final isLate = response.status == 'late';
+
+    Color statusColor = isSuccess ? _getBackgroundColor() : Colors.red;
+    IconData statusIcon = isSuccess ? _getStatusIcon() : Icons.error;
+    String statusText = _getStatusText();
+
+    // Special handling for already checked in
+    if (isAlreadyCheckedIn) {
+      statusColor = Colors.orange;
+      statusIcon = Icons.check_circle_outline;
+      statusText = 'Already Checked In';
+    }
+
+    // Special handling for late attendance
+    if (isLate && isSuccess) {
+      statusColor = Colors.orange;
+      statusText = 'Checked In (Late)';
+    }
+
     return Card(
       elevation: 4,
-      color: _getBackgroundColor().withOpacity(0.1),
+      color: statusColor.withOpacity(0.1),
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
-            Icon(_getStatusIcon(), size: 80, color: _getBackgroundColor()),
+            Icon(statusIcon, size: 80, color: statusColor),
             const SizedBox(height: 16),
             Text(
-              _getStatusText(),
+              statusText,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: _getBackgroundColor(),
+                color: statusColor,
               ),
               textAlign: TextAlign.center,
             ),
@@ -221,11 +242,33 @@ class VerificationResultPage extends StatelessWidget {
               style: textTheme.bodyLarge,
               textAlign: TextAlign.center,
             ),
+            // Show additional info for late attendance
+            if (isLate && isSuccess) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  'Marked as Late',
+                  style: TextStyle(
+                    color: Colors.orange[800],
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: _getBackgroundColor().withOpacity(0.2),
+                color: statusColor.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
