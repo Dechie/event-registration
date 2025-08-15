@@ -3,8 +3,8 @@ import 'package:dio/dio.dart';
 import 'package:event_reg/core/error/exceptions.dart';
 import 'package:event_reg/core/network/dio_client.dart';
 import 'package:event_reg/features/dashboard/data/models/event.dart';
+import 'package:event_reg/features/dashboard/data/models/session.dart';
 
-import '../../../attendance/data/models/session.dart';
 
 abstract class LandingRemoteDataSource {
   Future<Map<String, dynamic>> getContactInfo();

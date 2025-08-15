@@ -42,6 +42,32 @@ class AttendanceMarked extends AttendanceState {
       'AttendanceMarked(participantId: $participantId, sessionId: $sessionId, roomId: $roomId)';
 }
 
+class AttendanceMarkedForLocation extends AttendanceState {
+  final String badgeNumber;
+  final String eventSessionId;
+  final String sessionLocationId;
+  final String message;
+
+  const AttendanceMarkedForLocation({
+    required this.badgeNumber,
+    required this.eventSessionId,
+    required this.sessionLocationId,
+    required this.message,
+  });
+
+  @override
+  List<Object?> get props => [
+    badgeNumber,
+    eventSessionId,
+    sessionLocationId,
+    message,
+  ];
+
+  @override
+  String toString() =>
+      'AttendanceMarkedForLocation(badge: $badgeNumber, session: $eventSessionId, location: $sessionLocationId)';
+}
+
 abstract class AttendanceState extends Equatable {
   const AttendanceState();
 
@@ -69,26 +95,7 @@ class EventsLoaded extends AttendanceState {
   @override
   String toString() => 'EventsLoaded(events: ${events.length})';
 }
-class AttendanceMarkedForLocation extends AttendanceState {
-  final String badgeNumber;
-  final String eventSessionId;
-  final String sessionLocationId;
-  final String message;
 
-  const AttendanceMarkedForLocation({
-    required this.badgeNumber,
-    required this.eventSessionId,
-    required this.sessionLocationId,
-    required this.message,
-  });
-
-  @override
-  List<Object?> get props => [badgeNumber, eventSessionId, sessionLocationId, message];
-
-  @override
-  String toString() =>
-      'AttendanceMarkedForLocation(badge: $badgeNumber, session: $eventSessionId, location: $sessionLocationId)';
-}
 class RoomsLoaded extends AttendanceState {
   final List<AttendanceRoom> rooms;
   final String sessionId;

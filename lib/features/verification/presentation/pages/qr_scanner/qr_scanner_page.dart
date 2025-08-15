@@ -268,12 +268,14 @@ class _QrScannerPageState extends State<QrScannerPage>
         debugPrint(
           'Step 2: Raw data is not JSON. Treating as a plain badge number.',
         );
+
         return {'badge_number': data};
       }
     } catch (e) {
       debugPrint(
         'Step 2: Failed to decode JSON. Error: $e. Falling back to plain badge number.',
       );
+
       return {'badge_number': qrCode.trim()};
     }
   }

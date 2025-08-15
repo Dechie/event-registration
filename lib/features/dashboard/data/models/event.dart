@@ -1,4 +1,5 @@
-import 'package:event_reg/features/attendance/data/models/session.dart';
+
+import 'session.dart';
 
 enum EventStatus {
   draft,
