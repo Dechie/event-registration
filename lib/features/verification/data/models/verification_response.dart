@@ -22,7 +22,6 @@ class VerificationResponse {
 
   factory VerificationResponse.fromJson(Map<String, dynamic> json) {
     debugPrint("verification response json: ${jsonEncode(json)}");
-
     final message = json['message']?.toString() ?? '';
 
     // Check for explicit success field or successful messages

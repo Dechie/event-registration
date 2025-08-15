@@ -439,8 +439,8 @@ class _RegistrationStatusPageState extends State<RegistrationStatusPage> {
     }
 
     return Card(
-      color: statusColor.withOpacity(0.1),
-      //border: Border.all(color: statusColor.withOpacity(0.3)),
+      color: statusColor.withValues(alpha: 0.1),
+      //border: Border.all(color: statusColor.withValues(alpha:0.3)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

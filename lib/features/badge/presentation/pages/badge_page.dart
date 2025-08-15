@@ -69,14 +69,14 @@ class _BadgePageState extends State<BadgePage> {
                   label: const Text('Front'),
                   selected: !_showBack,
                   onSelected: (selected) => setState(() => _showBack = false),
-                  selectedColor: AppColors.primary.withOpacity(0.2),
+                  selectedColor: AppColors.primary.withValues(alpha: 0.2),
                 ),
                 const SizedBox(width: 16),
                 ChoiceChip(
                   label: const Text('Back'),
                   selected: _showBack,
                   onSelected: (selected) => setState(() => _showBack = true),
-                  selectedColor: AppColors.primary.withOpacity(0.2),
+                  selectedColor: AppColors.primary.withValues(alpha: 0.2),
                 ),
               ],
             ),
@@ -194,7 +194,7 @@ class _BadgePageState extends State<BadgePage> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
+            color: Colors.grey.withValues(alpha: 0.3),
             spreadRadius: 2,
             blurRadius: 8,
             offset: const Offset(0, 4),
@@ -394,7 +394,7 @@ class _BadgePageState extends State<BadgePage> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
+            color: Colors.grey.withValues(alpha: 0.3),
             spreadRadius: 2,
             blurRadius: 8,
             offset: const Offset(0, 4),

@@ -100,7 +100,7 @@ class DashboardStatsTab extends StatelessWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
+                          color: Colors.green.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Text(
@@ -175,7 +175,7 @@ class DashboardStatsTab extends StatelessWidget {
           flex: 3,
           child: LinearProgressIndicator(
             value: total > 0 ? count / total : 0,
-            backgroundColor: color.withOpacity(0.1),
+            backgroundColor: color.withValues(alpha: 0.1),
             valueColor: AlwaysStoppedAnimation<Color>(color),
           ),
         ),
@@ -279,7 +279,7 @@ class DashboardStatsTab extends StatelessWidget {
   //                             decoration: BoxDecoration(
   //                               color: Theme.of(
   //                                 context,
-  //                               ).primaryColor.withOpacity(0.1),
+  //                               ).primaryColor.withValues(alpha:0.1),
   //                               borderRadius: BorderRadius.circular(12),
   //                             ),
   //                             child: Text(

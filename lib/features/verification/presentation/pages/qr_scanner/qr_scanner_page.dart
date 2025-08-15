@@ -149,14 +149,14 @@ class _QrScannerPageState extends State<QrScannerPage>
               ),
             ),
             Positioned(
-              bottom: 100,
+              bottom: 90,
               left: 0,
               right: 0,
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 24),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7),
+                  color: Colors.black.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Column(

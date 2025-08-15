@@ -1,6 +1,6 @@
 // lib/features/event_registration/presentation/pages/event_details_page.dart
-import 'package:event_reg/config/themes/app_colors.dart';
 import 'package:event_reg/config/routes/route_names.dart';
+import 'package:event_reg/config/themes/app_colors.dart';
 import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:event_reg/core/shared/widgets/custom_button.dart';
 import 'package:event_reg/features/landing/data/models/event.dart';
@@ -105,7 +105,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Registration Status Banner (if registered)
-                if (_isAuthenticated && _isRegistered) _buildRegistrationStatusBanner(),
+                if (_isAuthenticated && _isRegistered)
+                  _buildRegistrationStatusBanner(),
 
                 // Event Banner
                 if (widget.event.banner != null)
@@ -120,12 +121,16 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                       ),
                     ),
                   ),
-                HeroSection(title: widget.event.title, description: widget.event.description),
+                HeroSection(
+                  title: widget.event.title,
+                  description: widget.event.description,
+                ),
                 const SizedBox(height: 16),
                 EventInfoSection(event: widget.event),
 
                 // Sessions
-                if (widget.event.sessions != null && widget.event.sessions!.isNotEmpty) ...[
+                if (widget.event.sessions != null &&
+                    widget.event.sessions!.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -155,7 +160,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    session.description ?? 'No description available',
+                                    session.description ??
+                                        'No description available',
                                     style: TextStyle(
                                       color: AppColors.textSecondary,
                                       fontSize: 12,
@@ -184,7 +190,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Card(
-                    color: AppColors.primary.withOpacity(0.1),
+                    color: AppColors.primary.withValues(alpha: 0.1),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -257,7 +263,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-      color: bannerColor.withOpacity(0.1),
+      color: bannerColor.withValues(alpha: 0.1),
       child: Row(
         children: [
           Icon(bannerIcon, color: bannerColor),
@@ -265,10 +271,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           Expanded(
             child: Text(
               bannerText,
-              style: TextStyle(
-                color: bannerColor,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: bannerColor, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -322,7 +325,9 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 // Show rejection message
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Your registration was rejected. Please contact the event organizer.'),
+                    content: Text(
+                      'Your registration was rejected. Please contact the event organizer.',
+                    ),
                     backgroundColor: Colors.red,
                   ),
                 );

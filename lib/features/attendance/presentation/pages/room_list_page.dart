@@ -139,7 +139,7 @@ class _RoomListPageState extends State<RoomListPage> {
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: Colors.green.withOpacity(0.1),
+                                    color: Colors.green.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(
@@ -258,7 +258,7 @@ class _RoomListPageState extends State<RoomListPage> {
       child: InkWell(
         onTap: () async {
           // Navigate to QR scanner with room context
-          
+
           final result = await Navigator.pushNamed(
             context,
             RouteNames.qrScannerPage,
@@ -318,7 +318,7 @@ class _RoomListPageState extends State<RoomListPage> {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.green.withOpacity(0.1),
+                                color: Colors.green.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: Row(
@@ -404,7 +404,7 @@ class _RoomListPageState extends State<RoomListPage> {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.red.withOpacity(0.1),
+                                  color: Colors.red.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
@@ -423,7 +423,7 @@ class _RoomListPageState extends State<RoomListPage> {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.orange.withOpacity(0.1),
+                                  color: Colors.orange.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(

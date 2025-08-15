@@ -22,7 +22,7 @@ class ParticipantLandingDrawer extends StatelessWidget {
                 end: Alignment.bottomCenter,
                 colors: [
                   Theme.of(context).primaryColor,
-                  Theme.of(context).primaryColor.withOpacity(0.8),
+                  Theme.of(context).primaryColor.withValues(alpha: 0.8),
                 ],
               ),
             ),
@@ -38,7 +38,7 @@ class ParticipantLandingDrawer extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
@@ -101,7 +101,7 @@ class ParticipantLandingDrawer extends StatelessWidget {
                   selected: true,
                   selectedTileColor: Theme.of(
                     context,
-                  ).primaryColor.withOpacity(0.1),
+                  ).primaryColor.withValues(alpha: 0.1),
                   onTap: () {
                     Navigator.pop(context);
                   },

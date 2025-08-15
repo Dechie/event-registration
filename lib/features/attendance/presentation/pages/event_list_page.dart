@@ -257,7 +257,7 @@ class _EventListPageState extends State<EventListPage> {
                           decoration: BoxDecoration(
                             color: _getEventStatusColor(
                               event.isActive,
-                            ).withOpacity(0.1),
+                            ).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(

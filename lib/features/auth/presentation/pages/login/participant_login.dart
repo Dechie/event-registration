@@ -66,7 +66,7 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
               end: Alignment.bottomRight,
               colors: [
                 Theme.of(context).primaryColor,
-                Theme.of(context).primaryColor.withOpacity(0.1),
+                Theme.of(context).primaryColor.withValues(alpha: 0.1),
               ],
             ),
           ),
@@ -267,7 +267,7 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Theme.of(context).primaryColor.withOpacity(0.1),
+                Theme.of(context).primaryColor.withValues(alpha: 0.1),
                 Colors.white,
               ],
             ),

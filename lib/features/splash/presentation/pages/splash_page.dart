@@ -53,7 +53,10 @@ class SplashPage extends StatelessWidget {
           Navigator.pushReplacementNamed(context, RouteNames.adminLoginPage);
         } else if (state is SplashNavigateToParticipantLogin) {
           debugPrint("📍 Navigating to Participant Login");
-          Navigator.pushReplacementNamed(context, RouteNames.participantLoginPage);
+          Navigator.pushReplacementNamed(
+            context,
+            RouteNames.participantLoginPage,
+          );
         }
       },
       child: Scaffold(
@@ -108,7 +111,7 @@ class SplashPage extends StatelessWidget {
                     loadingText,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   );
                 },

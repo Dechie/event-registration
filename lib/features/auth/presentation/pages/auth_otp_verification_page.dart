@@ -104,7 +104,7 @@ class _AuthOTPVerificationPageState extends State<AuthOTPVerificationPage>
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Theme.of(context).primaryColor.withOpacity(0.1),
+                Theme.of(context).primaryColor.withValues(alpha: 0.1),
                 Colors.white,
               ],
             ),
@@ -174,7 +174,7 @@ class _AuthOTPVerificationPageState extends State<AuthOTPVerificationPage>
             gradient: LinearGradient(
               colors: [
                 Theme.of(context).primaryColor,
-                Theme.of(context).primaryColor.withOpacity(0.7),
+                Theme.of(context).primaryColor.withValues(alpha: 0.7),
               ],
             ),
             shape: BoxShape.circle,

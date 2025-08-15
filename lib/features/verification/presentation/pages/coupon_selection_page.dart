@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../data/models/coupon.dart';
 import '../../data/models/participant_info.dart';
-import '../../data/models/verification_response.dart';
 import '../bloc/verification_bloc.dart';
 import '../bloc/verification_event.dart';
 
@@ -179,11 +179,13 @@ class _CouponSelectionPageState extends State<CouponSelectionPage> {
       margin: const EdgeInsets.only(bottom: 12),
       elevation: isSelected ? 4 : 1,
       child: InkWell(
-        onTap: isRedeemed ? null : () {
-          setState(() {
-            selectedCoupon = isSelected ? null : coupon;
-          });
-        },
+        onTap: isRedeemed
+            ? null
+            : () {
+                setState(() {
+                  selectedCoupon = isSelected ? null : coupon;
+                });
+              },
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.all(16),
@@ -192,11 +194,11 @@ class _CouponSelectionPageState extends State<CouponSelectionPage> {
             border: isSelected
                 ? Border.all(color: Colors.orange, width: 2)
                 : null,
-            color: isRedeemed 
-                ? Colors.grey[100] 
-                : isSelected 
-                    ? Colors.orange.withOpacity(0.1) 
-                    : null,
+            color: isRedeemed
+                ? Colors.grey[100]
+                : isSelected
+                ? Colors.orange.withValues(alpha: 0.1)
+                : null,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,9 +208,9 @@ class _CouponSelectionPageState extends State<CouponSelectionPage> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: isRedeemed 
+                      color: isRedeemed
                           ? Colors.grey[300]
-                          : Colors.orange.withOpacity(0.1),
+                          : Colors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
@@ -224,25 +226,32 @@ class _CouponSelectionPageState extends State<CouponSelectionPage> {
                       children: [
                         Text(
                           coupon.title,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: isRedeemed ? Colors.grey[600] : null,
-                          ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: isRedeemed ? Colors.grey[600] : null,
+                              ),
                         ),
                         if (coupon.value?.isNotEmpty == true)
                           Text(
                             'Value: ${coupon.value}',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: isRedeemed ? Colors.grey[500] : Colors.green[700],
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: isRedeemed
+                                      ? Colors.grey[500]
+                                      : Colors.green[700],
+                                  fontWeight: FontWeight.w500,
+                                ),
                           ),
                       ],
                     ),
                   ),
                   if (isRedeemed)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.red[100],
                         borderRadius: BorderRadius.circular(12),
@@ -258,7 +267,10 @@ class _CouponSelectionPageState extends State<CouponSelectionPage> {
                     )
                   else if (isSelected)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.orange[100],
                         borderRadius: BorderRadius.circular(12),
