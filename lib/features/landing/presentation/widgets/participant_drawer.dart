@@ -1,3 +1,4 @@
+import 'package:event_reg/config/routes/route_names.dart';
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:event_reg/features/auth/presentation/bloc/events/auth_event.dart';
 import 'package:event_reg/features/auth/presentation/bloc/states/auth_state.dart';
@@ -107,43 +108,59 @@ class ParticipantLandingDrawer extends StatelessWidget {
                   },
                 ),
 
-                // My Events (Future functionality)
+                // // My Events
+                // ListTile(
+                //   leading: Icon(Icons.bookmark, color: Colors.grey[600]),
+                //   title: Text(
+                //     'My Events',
+                //     style: TextStyle(
+                //       color: Colors.grey[600],
+                //       fontWeight: FontWeight.w400,
+                //     ),
+                //   ),
+                //   onTap: () {
+                //     Navigator.pop(context);
+                //     Navigator.pushNamed(context, RouteNames.myEventsPage);
+                //   },
+                // ),
+
+                // Attendance Report - NEW
                 ListTile(
-                  leading: Icon(Icons.bookmark, color: Colors.grey[600]),
-                  title: Text(
-                    'My Events',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w400,
-                    ),
+                  leading: Icon(
+                    Icons.assessment,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  title: const Text(
+                    'My Attendance Report',
+                    style: TextStyle(fontWeight: FontWeight.w500),
                   ),
                   onTap: () {
                     Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('My Events - Coming Soon!')),
+                    Navigator.pushNamed(
+                      context,
+                      RouteNames.attendanceReportPage,
                     );
                   },
                 ),
 
-                // Profile (Future functionality)
-                ListTile(
-                  leading: Icon(Icons.person, color: Colors.grey[600]),
-                  title: Text(
-                    'Profile',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    // TODO: Navigate to Profile page when implemented
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Profile - Coming Soon!')),
-                    );
-                  },
-                ),
-
+                // // Profile
+                // ListTile(
+                //   leading: Icon(Icons.person, color: Colors.grey[600]),
+                //   title: Text(
+                //     'Profile',
+                //     style: TextStyle(
+                //       color: Colors.grey[600],
+                //       fontWeight: FontWeight.w400,
+                //     ),
+                //   ),
+                //   onTap: () {
+                //     Navigator.pop(context);
+                //     // TODO: Navigate to Profile page when implemented
+                //     ScaffoldMessenger.of(context).showSnackBar(
+                //       const SnackBar(content: Text('Profile - Coming Soon!')),
+                //     );
+                //   },
+                // ),
                 const Divider(height: 32, indent: 16, endIndent: 16),
 
                 // Logout Item

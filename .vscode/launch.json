@@ -17,6 +17,12 @@
       "type": "dart",
       "request": "launch",
       "program": "lib/features/auth/data/models/login/login_request.dart"
+    },
+    {
+      "name": "Flutter (lib/features/attendance_report/presentation/bloc/attendance_report._state.dart)",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/features/attendance_report/presentation/bloc/attendance_report._state.dart"
     }
   ]
 }

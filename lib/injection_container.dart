@@ -6,6 +6,9 @@ import 'package:event_reg/features/admin_dashboard/presentation/bloc/admin_dashb
 import 'package:event_reg/features/attendance/data/datasource/attendance_datasource.dart';
 import 'package:event_reg/features/attendance/data/repositories/attendance_repository.dart';
 import 'package:event_reg/features/attendance/presentation/bloc/attendance_bloc.dart';
+import 'package:event_reg/features/attendance_report/data/datasource/attendance_report_datasource.dart';
+import 'package:event_reg/features/attendance_report/data/repositories/attendance_report_repository.dart';
+import 'package:event_reg/features/attendance_report/presentation/bloc/attendance_report_bloc.dart';
 import 'package:event_reg/features/auth/data/datasource/auth_local_datasource.dart';
 import 'package:event_reg/features/auth/data/datasource/auth_remote_datasource.dart';
 import 'package:event_reg/features/auth/data/datasource/profile_remote_datasource.dart';
@@ -158,22 +161,31 @@ Future<void> init() async {
   );
 
   sl.registerLazySingleton<ReportRemoteDataSource>(
-  () => ReportRemoteDataSourceImpl(
-    dioClient: sl(),
-    userDataService: sl(),
-  ),
-);
+    () => ReportRemoteDataSourceImpl(dioClient: sl(), userDataService: sl()),
+  );
 
-// Repositories
-sl.registerLazySingleton<ReportRepository>(
-  () => ReportRepositoryImpl(
-    remoteDataSource: sl(),
-    networkInfo: sl(),
-  ),
-);
+  // Repositories
+  sl.registerLazySingleton<ReportRepository>(
+    () => ReportRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
 
-// BLoCs
-sl.registerFactory(() => ReportBloc(repository: sl()));
+  // BLoCs
+  sl.registerFactory(() => ReportBloc(repository: sl()));
+
+  // ! Features - Attendance Report
+  // DataSource
+  sl.registerLazySingleton<AttendanceReportDataSource>(
+    () =>
+        AttendanceReportDataSourceImpl(dioClient: sl(), userDataService: sl()),
+  );
+
+  // Repository
+  sl.registerLazySingleton<AttendanceReportRepository>(
+    () => AttendanceReportRepositoryImpl(dataSource: sl(), networkInfo: sl()),
+  );
+
+  // Bloc
+  sl.registerFactory(() => AttendanceReportBloc(repository: sl()));
   // ! Features - Dashboard
   // DataSources
   // sl.registerLazySingleton<DashboardRemoteDataSource>(

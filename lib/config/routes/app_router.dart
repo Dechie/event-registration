@@ -1,6 +1,8 @@
 import 'package:event_reg/config/routes/route_names.dart';
 import 'package:event_reg/features/admin_dashboard/presentation/pages/admin_dashboard_page.dart';
 import 'package:event_reg/features/attendance/presentation/pages/event_details_page.dart';
+import 'package:event_reg/features/attendance_report/presentation/bloc/attendance_report_bloc.dart';
+import 'package:event_reg/features/attendance_report/presentation/pages/attendance_report_page.dart';
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:event_reg/features/auth/presentation/bloc/events/auth_event.dart';
 import 'package:event_reg/features/auth/presentation/bloc/states/auth_state.dart';
@@ -175,6 +177,13 @@ class AppRouter {
       //       child: const ReportsDashboardPage(),
       //     ),
       //   );
+      case RouteNames.attendanceReportPage:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (context) => di.sl<AttendanceReportBloc>(),
+            child: const AttendanceReportPage(),
+          ),
+        );
 
       case RouteNames.eventReportPage:
         final args = settings.arguments as Map<String, dynamic>;

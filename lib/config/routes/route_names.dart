@@ -30,10 +30,14 @@ class RouteNames {
       '/event-registration-status';
   static const String eventDetailsPage = '/attendance/event-details';
 
+  // attendance reporat for participant
+  // Attendance report route - NEW
+  static const String attendanceReportPage = '/attendance-report';
+
   // admin report pages
   static const String reportsDashboardPage = '/reports-dashboard';
-static const String eventReportPage = '/event-report';
-static const String sessionReportPage = '/session-report';
+  static const String eventReportPage = '/event-report';
+  static const String sessionReportPage = '/session-report';
 
   // Utility routes
   static const String contactPage = '/contact';
@@ -42,5 +46,4 @@ static const String sessionReportPage = '/session-report';
   static const String myEventsPage = "/my-events";
   static const String qrScannerPage = '/qr-scanner';
   static const String verificationResultPage = '/verification-result';
-
 }

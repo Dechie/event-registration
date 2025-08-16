@@ -1,6 +1,7 @@
 import 'package:event_reg/config/routes/route_names.dart';
 import 'package:event_reg/features/admin_dashboard/presentation/bloc/admin_dashboard_bloc.dart';
 import 'package:event_reg/features/attendance/presentation/bloc/attendance_bloc.dart';
+import 'package:event_reg/features/attendance_report/presentation/bloc/attendance_report_bloc.dart';
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_bloc.dart';
 import 'package:event_reg/features/reports/presentation/bloc/reports_bloc.dart';
@@ -27,6 +28,7 @@ class EventRegistrationApp extends StatelessWidget {
         BlocProvider(create: (_) => di.sl<AdminDashboardBloc>()),
         BlocProvider(create: (_) => di.sl<AttendanceBloc>()),
         BlocProvider(create: (_) => di.sl<ReportBloc>()),
+        BlocProvider(create: (_) => di.sl<AttendanceReportBloc>()),
       ],
       child: MaterialApp(
         title: "EventHub",
