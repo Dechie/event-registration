@@ -3,6 +3,7 @@ import 'package:event_reg/features/admin_dashboard/presentation/bloc/admin_dashb
 import 'package:event_reg/features/attendance/presentation/bloc/attendance_bloc.dart';
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_bloc.dart';
+import 'package:event_reg/features/reports/presentation/bloc/reports_bloc.dart';
 import 'package:event_reg/features/splash/presentation/bloc/splash_bloc.dart';
 import 'package:event_reg/features/verification/presentation/bloc/verification_bloc.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +26,7 @@ class EventRegistrationApp extends StatelessWidget {
         BlocProvider(create: (_) => di.sl<VerificationBloc>()),
         BlocProvider(create: (_) => di.sl<AdminDashboardBloc>()),
         BlocProvider(create: (_) => di.sl<AttendanceBloc>()),
+        BlocProvider(create: (_) => di.sl<ReportBloc>()),
       ],
       child: MaterialApp(
         title: "EventHub",

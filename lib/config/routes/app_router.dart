@@ -11,6 +11,8 @@ import 'package:event_reg/features/auth/presentation/pages/profile_add_page.dart
 import 'package:event_reg/features/auth/presentation/pages/user_registration.dart';
 import 'package:event_reg/features/badge/presentation/pages/badge_page.dart';
 import 'package:event_reg/features/landing/presentation/pages/landing_page.dart';
+import 'package:event_reg/features/reports/presentation/bloc/reports_bloc.dart';
+import 'package:event_reg/features/reports/presentation/pages/session_report_page.dart';
 import 'package:event_reg/features/splash/presentation/pages/splash_page.dart';
 import 'package:event_reg/features/verification/presentation/pages/coupon_selection_page.dart';
 import 'package:event_reg/features/verification/presentation/pages/qr_scanner/qr_scanner_page.dart';
@@ -22,6 +24,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../features/attendance/presentation/bloc/attendance_bloc.dart';
 import '../../features/attendance/presentation/pages/event_list_page.dart';
 import '../../features/attendance/presentation/pages/room_list_page.dart';
+import '../../features/reports/presentation/pages/event_report_page.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -140,6 +143,8 @@ class AppRouter {
 
       case RouteNames.eventDetailsPage:
         final args = settings.arguments as Map<String, dynamic>;
+        debugPrint("args passed to event details page:");
+        debugPrint(args.toString());
         return MaterialPageRoute(
           builder: (_) => BlocProvider.value(
             value: args['bloc'],
@@ -159,6 +164,43 @@ class AppRouter {
         );
       case RouteNames.eventAgendaPage:
         return MaterialPageRoute(builder: (_) => const EventAgendaPage());
+
+      // case RouteNames.reportsDashboardPage:
+      //   return MaterialPageRoute(
+      //     builder: (_) => MultiBlocProvider(
+      //       providers: [
+      //         BlocProvider(create: (context) => di.sl<AttendanceBloc>()),
+      //         BlocProvider(create: (context) => di.sl<ReportBloc>()),
+      //       ],
+      //       child: const ReportsDashboardPage(),
+      //     ),
+      //   );
+
+      case RouteNames.eventReportPage:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (context) => di.sl<ReportBloc>(),
+            child: EventReportPage(
+              eventId:
+                  int.tryParse(args['eventId']) ??
+                  1, // this could cause issues down the line since you gave it a commonly occurring id number as a fallback.
+              eventTitle: args['eventTitle'],
+            ),
+          ),
+        );
+
+      case RouteNames.sessionReportPage:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (context) => di.sl<ReportBloc>(),
+            child: SessionReportPage(
+              sessionId: int.tryParse(args['sessionId']) ?? 1,
+              sessionTitle: args['sessionTitle'],
+            ),
+          ),
+        );
 
       case RouteNames.contactPage:
         return MaterialPageRoute(builder: (_) => const ContactPage());

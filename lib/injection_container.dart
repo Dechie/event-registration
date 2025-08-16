@@ -15,6 +15,9 @@ import 'package:event_reg/features/auth/data/repositories/profile_add_repository
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:event_reg/features/event_registration/data/datasource/event_registration_datasource.dart';
 import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_bloc.dart';
+import 'package:event_reg/features/reports/data/datasource/reports_datasource.dart';
+import 'package:event_reg/features/reports/data/repositories/reports_repository.dart';
+import 'package:event_reg/features/reports/presentation/bloc/reports_bloc.dart';
 import 'package:event_reg/features/splash/data/datasource/splash_datasource.dart';
 import 'package:event_reg/features/splash/data/repositories/splash_repository.dart';
 import 'package:event_reg/features/splash/presentation/bloc/splash_bloc.dart';
@@ -153,6 +156,24 @@ Future<void> init() async {
     () =>
         AttendanceRemoteDataSourceImpl(dioClient: sl(), userDataService: sl()),
   );
+
+  sl.registerLazySingleton<ReportRemoteDataSource>(
+  () => ReportRemoteDataSourceImpl(
+    dioClient: sl(),
+    userDataService: sl(),
+  ),
+);
+
+// Repositories
+sl.registerLazySingleton<ReportRepository>(
+  () => ReportRepositoryImpl(
+    remoteDataSource: sl(),
+    networkInfo: sl(),
+  ),
+);
+
+// BLoCs
+sl.registerFactory(() => ReportBloc(repository: sl()));
   // ! Features - Dashboard
   // DataSources
   // sl.registerLazySingleton<DashboardRemoteDataSource>(

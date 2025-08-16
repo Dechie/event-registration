@@ -92,6 +92,19 @@ class _QuickActionsTabState extends State<QuickActionsTab> {
                   color: Colors.green,
                   onTap: () => _navigateToAttendanceFlow(context),
                 ),
+
+                // Update your lib/features/admin_dashboard/presentation/widgets/quick_actions_tab.dart
+                // Add this action card to the GridView.count children:
+                _buildActionCard(
+                  textTheme: textTheme,
+                  colorScheme: colorScheme,
+                  context,
+                  icon: Icons.analytics,
+                  title: 'View Reports',
+                  description: 'Access attendance reports and analytics',
+                  color: Colors.indigo,
+                  onTap: () => _navigateToReports(context),
+                ),
                 _buildActionCard(
                   textTheme: textTheme,
                   colorScheme: colorScheme,
@@ -270,6 +283,10 @@ class _QuickActionsTabState extends State<QuickActionsTab> {
         ),
       ),
     );
+  }
+
+  void _navigateToReports(BuildContext context) {
+    Navigator.pushNamed(context, RouteNames.reportsDashboardPage);
   }
 
   void _navigateToScanner(BuildContext context, String type) {
