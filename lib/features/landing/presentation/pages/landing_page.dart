@@ -38,7 +38,7 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Events")),
-      drawer: ParticipantLandingDrawer(),
+      drawer: ParticipantLandingDrawer(selectedTile: 1),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthLoggedOutState) {
@@ -50,10 +50,9 @@ class _UpdatedLandingPageState extends State<UpdatedLandingPage> {
             }
 
             // Navigate to login page after successful logout
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              RouteNames.participantLoginPage,
-              (route) => false,
-            );
+            Navigator.of(
+              context,
+            ).pushNamedAndRemoveUntil(RouteNames.reloginPage, (route) => false);
           }
 
           if (state is AuthErrorState) {

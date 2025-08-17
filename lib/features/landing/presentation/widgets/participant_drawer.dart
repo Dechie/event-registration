@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ParticipantLandingDrawer extends StatelessWidget {
-  const ParticipantLandingDrawer({super.key});
+  final int selectedTile;
+  const ParticipantLandingDrawer({super.key, required this.selectedTile});
 
   @override
   Widget build(BuildContext context) {
@@ -99,12 +100,15 @@ class ParticipantLandingDrawer extends StatelessWidget {
                     'Events',
                     style: TextStyle(fontWeight: FontWeight.w500),
                   ),
-                  selected: true,
+                  selected: selectedTile == 1,
                   selectedTileColor: Theme.of(
                     context,
                   ).primaryColor.withValues(alpha: 0.1),
                   onTap: () {
                     Navigator.pop(context);
+                    Navigator.of(
+                      context,
+                    ).pushReplacementNamed(RouteNames.landingPage);
                   },
                 ),
 
@@ -130,16 +134,20 @@ class ParticipantLandingDrawer extends StatelessWidget {
                     Icons.assessment,
                     color: Theme.of(context).primaryColor,
                   ),
+
+                  selected: selectedTile == 2,
+                  selectedTileColor: Theme.of(
+                    context,
+                  ).primaryColor.withValues(alpha: 0.1),
                   title: const Text(
                     'My Attendance Report',
                     style: TextStyle(fontWeight: FontWeight.w500),
                   ),
                   onTap: () {
                     Navigator.pop(context);
-                    Navigator.pushNamed(
+                    Navigator.of(
                       context,
-                      RouteNames.attendanceReportPage,
-                    );
+                    ).pushReplacementNamed(RouteNames.attendanceReportPage);
                   },
                 ),
 

@@ -88,3 +88,12 @@ class ParseException extends AppException {
     required super.code,
   });
 }
+
+class NotFoundException extends AppException {
+  const NotFoundException({required super.message, required super.code});
+}
+
+/// Thrown for business logic conflicts (e.g., already exists, 409, 422).
+class ConflictException extends AppException {
+  const ConflictException({required super.message, required super.code});
+}

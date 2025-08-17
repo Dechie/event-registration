@@ -53,6 +53,7 @@ class DioClient {
           debugPrint(
             "📥 Response: ${response.statusCode} ${response.requestOptions.uri}",
           );
+
           return handler.next(response);
         },
         onError: (DioException e, handler) {
@@ -64,13 +65,14 @@ class DioClient {
           if (e.response?.statusCode == 401) {
             debugPrint("🚨 Unauthorized! Token might be expired.");
           }
+
           return handler.next(e);
         },
       ),
     );
 
     // Add logging interceptor (only in debug mode)
-    if (const bool.fromEnvironment('dart.vm.product') == false) {
+    if (!const bool.fromEnvironment('dart.vm.product')) {
       dio.interceptors.add(
         LogInterceptor(
           request: true,
@@ -159,6 +161,10 @@ class DioClient {
         message = error.response!.data;
       }
     }
+
+    debugPrint(
+      "handle dio error: [ message: $message, status code: $statusCode, type: ${error.type}]",
+    );
 
     // Handle different error types
     switch (error.type) {

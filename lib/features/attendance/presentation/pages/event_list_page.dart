@@ -1,13 +1,11 @@
 import 'package:event_reg/config/routes/route_names.dart';
 import 'package:event_reg/features/attendance/data/models/attendance_event_model.dart';
 import 'package:event_reg/features/attendance/data/models/attendance_session.dart';
+import 'package:event_reg/features/verification/presentation/bloc/verification_bloc.dart';
+import 'package:event_reg/features/verification/presentation/bloc/verification_event.dart';
+import 'package:event_reg/features/verification/presentation/bloc/verification_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../bloc/attendance_bloc.dart';
-import '../bloc/attendance_event.dart';
-import '../bloc/attendance_state.dart';
-import 'room_list_page.dart';
 
 class EventListPage extends StatefulWidget {
   const EventListPage({super.key});
@@ -31,9 +29,9 @@ class _EventListPageState extends State<EventListPage> {
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
       ),
-      body: BlocBuilder<AttendanceBloc, AttendanceState>(
+      body: BlocBuilder<VerificationBloc, VerificationState>(
         builder: (context, state) {
-          if (state is AttendanceLoading) {
+          if (state is AttendanceLoading || state is VerificationLoading) {
             return const Center(child: CircularProgressIndicator());
           }
 
@@ -64,7 +62,7 @@ class _EventListPageState extends State<EventListPage> {
                   const SizedBox(height: 24),
                   ElevatedButton.icon(
                     onPressed: () {
-                      context.read<AttendanceBloc>().add(
+                      context.read<VerificationBloc>().add(
                         LoadEventsForAttendance(),
                       );
                     },
@@ -200,7 +198,7 @@ class _EventListPageState extends State<EventListPage> {
   void initState() {
     super.initState();
     // Load events when page initializes
-    context.read<AttendanceBloc>().add(LoadEventsForAttendance());
+    context.read<VerificationBloc>().add(LoadEventsForAttendance());
   }
 
   Widget _buildEventCard(
@@ -216,7 +214,10 @@ class _EventListPageState extends State<EventListPage> {
           Navigator.pushNamed(
             context,
             RouteNames.eventDetailsPage,
-            arguments: {'event': event, 'bloc': context.read<AttendanceBloc>()},
+            arguments: {
+              'event': event,
+              'bloc': context.read<VerificationBloc>(),
+            },
           );
         },
         borderRadius: BorderRadius.circular(12),
@@ -326,7 +327,7 @@ class _EventListPageState extends State<EventListPage> {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '${event.sessionsCount} sessions',
+                          '${event.sessions.length} sessions',
                           style: textTheme.bodySmall?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                           ),
@@ -359,19 +360,6 @@ class _EventListPageState extends State<EventListPage> {
       elevation: 1,
       margin: EdgeInsets.zero,
       child: InkWell(
-        onTap: session.isActive
-            ? () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => BlocProvider.value(
-                      value: context.read<AttendanceBloc>(),
-                      child: RoomListPage(event: event, session: session),
-                    ),
-                  ),
-                );
-              }
-            : null,
         borderRadius: BorderRadius.circular(8),
         child: Padding(
           padding: const EdgeInsets.all(12.0),

@@ -63,7 +63,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         listener: (context, state) {
           if (state is AuthLoggedOutState) {
             Navigator.of(context).pushNamedAndRemoveUntil(
-              RouteNames.adminLoginPage,
+              RouteNames.reloginPage,
               (route) => false,
             );
           }

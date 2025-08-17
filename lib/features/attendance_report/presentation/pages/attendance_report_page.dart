@@ -50,7 +50,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
           ),
         ],
       ),
-      drawer: ParticipantLandingDrawer(),
+      drawer: ParticipantLandingDrawer(selectedTile: 2),
       body: BlocBuilder<AttendanceReportBloc, AttendanceReportState>(
         builder: (context, state) {
           if (state is AttendanceReportLoading) {

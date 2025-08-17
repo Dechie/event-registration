@@ -1,8 +1,7 @@
-// lib/features/admin_dashboard/presentation/widgets/quick_actions_tab.dart
 import 'package:event_reg/config/routes/route_names.dart';
-import 'package:event_reg/features/attendance/presentation/bloc/attendance_bloc.dart';
 import 'package:event_reg/features/attendance/presentation/pages/event_list_page.dart';
 import 'package:event_reg/features/landing/data/models/event_session.dart';
+import 'package:event_reg/features/verification/presentation/bloc/verification_bloc.dart';
 import 'package:event_reg/injection_container.dart' as di;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -278,7 +277,7 @@ class _QuickActionsTabState extends State<QuickActionsTab> {
       context,
       MaterialPageRoute(
         builder: (context) => BlocProvider(
-          create: (context) => di.sl<AttendanceBloc>(),
+          create: (context) => di.sl<VerificationBloc>(),
           child: const EventListPage(),
         ),
       ),

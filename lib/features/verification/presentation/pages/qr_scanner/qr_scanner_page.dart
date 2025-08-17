@@ -10,17 +10,494 @@ import '../../../data/models/participant_info.dart';
 import '../../bloc/verification_bloc.dart';
 import '../../bloc/verification_event.dart';
 import '../../bloc/verification_state.dart';
-import '../coupon_selection_page.dart';
 
 part 'qr_overlay_shape.dart';
 
+// class QrScannerPage extends StatefulWidget {
+//   final String verificationType;
+//   final String? eventSessionId;
+//   final String? sessionTitle;
+//   final String? eventId;
+//   final String? roomId; // Added for attendance tracking
+//   final String? sessionLocationId; // Added for attendance tracking
+
+//   const QrScannerPage({
+//     super.key,
+//     this.verificationType = 'security',
+//     this.eventSessionId,
+//     this.sessionTitle,
+//     this.eventId,
+//     this.roomId, // Added for attendance tracking
+//     this.sessionLocationId,
+//   });
+
+//   @override
+//   State<QrScannerPage> createState() => _QrScannerPageState();
+// }
+
+// class _QrScannerPageState extends State<QrScannerPage>
+//     with WidgetsBindingObserver {
+//   final MobileScannerController controller = MobileScannerController(
+//     autoStart: false,
+//     formats: const [BarcodeFormat.qrCode],
+//     detectionSpeed: DetectionSpeed.normal,
+//     detectionTimeoutMs: 500,
+//     autoZoom: true,
+//   );
+//   ParticipantInfo? _currentParticipant;
+
+//   StreamSubscription<BarcodeCapture>? _subscription;
+//   bool isScanning = true;
+//   String? lastScannedCode;
+
+//   @override
+//   Widget build(BuildContext context) {
+//     debugPrint(
+//       "qrscanner page: verification type is: ${widget.verificationType}",
+//     );
+//     if (widget.eventSessionId != null) {
+//       debugPrint("qrscanner page: eventSessionId is: ${widget.eventSessionId}");
+//       debugPrint("qrscanner page: sessionTitle is: ${widget.sessionTitle}");
+//     }
+
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text(_getAppBarTitle()),
+//         backgroundColor: Theme.of(context).colorScheme.onPrimary,
+//         foregroundColor: Theme.of(context).colorScheme.primary,
+//         actions: [
+//           IconButton(
+//             onPressed: () => controller.toggleTorch(),
+//             icon: ValueListenableBuilder<MobileScannerState>(
+//               valueListenable: controller,
+//               builder: (context, state, child) {
+//                 switch (state.torchState) {
+//                   case TorchState.off:
+//                     return const Icon(Icons.flash_off);
+//                   case TorchState.on:
+//                     return const Icon(Icons.flash_on);
+//                   default:
+//                     return const Icon(Icons.flash_off);
+//                 }
+//               },
+//             ),
+//           ),
+//           IconButton(
+//             onPressed: () => controller.switchCamera(),
+//             icon: ValueListenableBuilder<MobileScannerState>(
+//               valueListenable: controller,
+//               builder: (context, state, child) {
+//                 switch (state.cameraDirection) {
+//                   case CameraFacing.front:
+//                     return const Icon(Icons.camera_front);
+//                   case CameraFacing.back:
+//                     return const Icon(Icons.camera_rear);
+//                   default:
+//                     return const Icon(Icons.camera_front);
+//                 }
+//               },
+//             ),
+//           ),
+//         ],
+//       ),
+//       body: BlocListener<VerificationBloc, VerificationState>(
+//         listener: (context, state) {
+//           if (state is VerificationLoading) {
+//             _showLoadingDialog();
+//           } else if (state is VerificationSuccess) {
+//             debugPrint("state is verification success.");
+//             _dismissDialog();
+
+//             // Special handling for coupon verification
+//             if (widget.verificationType == 'coupon' &&
+//                 state.response.participant != null) {
+//               // Fetch coupons for the participant
+//               context.read<VerificationBloc>().add(
+//                 FetchParticipantCoupons(
+//                   state.response.participant!.id,
+//                   state.response.participant!, // Pass the participant info
+//                 ),
+//               );
+//             } else {
+//               _navigateToResultPage(state.response, state.badgeNumber);
+//             }
+//           } else if (state is CouponsFetched) {
+//             _dismissDialog();
+//             _navigateToCouponSelection(
+//               state.coupons,
+//               state.participant,
+//             ); // Updated signature
+//           } else if (state is VerificationFailure) {
+//             _dismissDialog();
+//             _showErrorDialog('Verification Failed', state.message);
+//           }
+//         },
+
+//         child: Stack(
+//           children: [
+//             MobileScanner(controller: controller),
+//             Container(
+//               decoration: ShapeDecoration(
+//                 shape: QrScannerOverlayShape(
+//                   borderColor: _getBorderColor(),
+//                   borderRadius: 16,
+//                   borderLength: 30,
+//                   borderWidth: 8,
+//                   cutOutSize: 250,
+//                 ),
+//               ),
+//             ),
+//             Positioned(
+//               bottom: 90,
+//               left: 0,
+//               right: 0,
+//               child: Container(
+//                 margin: const EdgeInsets.symmetric(horizontal: 24),
+//                 padding: const EdgeInsets.all(16),
+//                 decoration: BoxDecoration(
+//                   color: Colors.black.withValues(alpha: 0.7),
+//                   borderRadius: BorderRadius.circular(8),
+//                 ),
+//                 child: Column(
+//                   mainAxisSize: MainAxisSize.min,
+//                   children: [
+//                     if (widget.sessionTitle != null) ...[
+//                       Text(
+//                         'Session: ${widget.sessionTitle}',
+//                         style: const TextStyle(
+//                           color: Colors.white,
+//                           fontSize: 14,
+//                           fontWeight: FontWeight.w600,
+//                         ),
+//                         textAlign: TextAlign.center,
+//                       ),
+//                       const SizedBox(height: 8),
+//                     ],
+//                     Text(
+//                       'location: ${widget.sessionLocationId ?? "null"}',
+//                       style: const TextStyle(
+//                         color: Colors.white,
+//                         fontSize: 14,
+//                         fontWeight: FontWeight.w600,
+//                       ),
+//                       textAlign: TextAlign.center,
+//                     ),
+//                     const SizedBox(height: 8),
+//                     Text(
+//                       _getInstructionText(),
+//                       style: const TextStyle(
+//                         color: Colors.white,
+//                         fontSize: 16,
+//                         fontWeight: FontWeight.w500,
+//                       ),
+//                       textAlign: TextAlign.center,
+//                     ),
+//                     const SizedBox(height: 8),
+//                     Text(
+//                       isScanning ? 'Scanning...' : 'Processing...',
+//                       style: TextStyle(
+//                         color: isScanning ? Colors.green : Colors.orange,
+//                         fontSize: 14,
+//                       ),
+//                       textAlign: TextAlign.center,
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+
+//   @override
+//   void didChangeAppLifecycleState(AppLifecycleState state) {
+//     if (!controller.value.hasCameraPermission) {
+//       return;
+//     }
+
+//     switch (state) {
+//       case AppLifecycleState.detached:
+//       case AppLifecycleState.hidden:
+//       case AppLifecycleState.paused:
+//         return;
+//       case AppLifecycleState.resumed:
+//         unawaited(_subscription?.cancel());
+//         _subscription = controller.barcodes.listen(_handleBarcode);
+//         unawaited(controller.start());
+//         _resetScanner();
+//         break;
+//       case AppLifecycleState.inactive:
+//         unawaited(_subscription?.cancel());
+//         _subscription = null;
+//         unawaited(controller.stop());
+//         break;
+//     }
+//   }
+
+//   @override
+//   Future<void> dispose() async {
+//     WidgetsBinding.instance.removeObserver(this);
+//     unawaited(_subscription?.cancel());
+//     _subscription = null;
+//     super.dispose();
+//     await controller.dispose();
+//   }
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     WidgetsBinding.instance.addObserver(this);
+//     _subscription = controller.barcodes.listen(_handleBarcode);
+//     unawaited(controller.start());
+//   }
+
+//   void _dismissDialog() {
+//     if (Navigator.canPop(context)) {
+//       Navigator.pop(context);
+//     }
+//   }
+
+//   Map<String, dynamic> _extractQrData(String qrCode) {
+//     debugPrint(
+//       'Step 1: Starting to extract QR data from raw string: "$qrCode"',
+//     );
+//     try {
+//       final data = qrCode.trim();
+//       if (data.startsWith('{') && data.endsWith('}')) {
+//         debugPrint(
+//           'Step 2: Raw data appears to be JSON. Attempting to decode.',
+//         );
+//         final decodedData = jsonDecode(data);
+//         debugPrint('Step 3: Successfully decoded JSON. Result: $decodedData');
+
+//         return Map<String, dynamic>.from(decodedData);
+//       } else {
+//         debugPrint(
+//           'Step 2: Raw data is not JSON. Treating as a plain badge number.',
+//         );
+
+//         return {'badge_number': data};
+//       }
+//     } catch (e) {
+//       debugPrint(
+//         'Step 2: Failed to decode JSON. Error: $e. Falling back to plain badge number.',
+//       );
+
+//       return {'badge_number': qrCode.trim()};
+//     }
+//   }
+
+//   String _getAppBarTitle() {
+//     switch (widget.verificationType.toLowerCase()) {
+//       case 'attendance':
+//         return widget.sessionTitle != null
+//             ? 'Attendance - ${widget.sessionTitle}'
+//             : 'Scan for Attendance';
+//       case 'security':
+//         return 'Security Check';
+//       case 'coupon':
+//         return 'Scan Coupon';
+//       case 'info':
+//         return 'Participant Info';
+//       default:
+//         return 'Scan QR Code';
+//     }
+//   }
+
+//   Color _getBorderColor() {
+//     switch (widget.verificationType.toLowerCase()) {
+//       case 'attendance':
+//         return Colors.green;
+//       case 'security':
+//         return Colors.blue;
+//       case 'coupon':
+//         return Colors.orange;
+//       case 'info':
+//         return Colors.purple;
+//       default:
+//         return Colors.green;
+//     }
+//   }
+
+//   String _getInstructionText() {
+//     switch (widget.verificationType.toLowerCase()) {
+//       case 'attendance':
+//         return 'Position the attendance QR code within the frame';
+//       case 'security':
+//         return 'Position the badge QR code within the frame';
+//       case 'coupon':
+//         return 'Position the coupon QR code within the frame';
+//       case 'info':
+//         return 'Position the badge QR code within the frame';
+//       default:
+//         return 'Position the QR code within the frame';
+//     }
+//   }
+
+//   void _handleBarcode(BarcodeCapture capture) {
+//     if (!isScanning) return;
+//     final List<Barcode> barcodes = capture.barcodes;
+//     if (barcodes.isNotEmpty) {
+//       final String? code = barcodes.first.rawValue;
+//       if (code != null && code != lastScannedCode) {
+//         lastScannedCode = code;
+//         setState(() {
+//           isScanning = false;
+//         });
+
+//         debugPrint('Step 4: Barcode detected with raw value: "$code"');
+//         final badgeData = _extractQrData(code);
+//         debugPrint('Step 5: Extracted badge data: $badgeData');
+
+//         if (badgeData['badge_number'] != null &&
+//             badgeData['badge_number'].toString().isNotEmpty) {
+//           debugPrint(
+//             'Step 6: Found a valid badge number. Adding event to Bloc.',
+//           );
+//           final badgeNumber = badgeData['badge_number'].toString();
+
+//           // Use the session ID from widget if available, otherwise from QR data
+//           final eventSessionId =
+//               widget.eventSessionId ?? badgeData['eventsession_id']?.toString();
+//           final eventId = widget.eventId ?? "";
+//           final sessionLocationId =
+//               widget.sessionLocationId ?? widget.roomId ?? "";
+
+//           context.read<VerificationBloc>().add(
+//             VerifyBadgeRequested(
+//               badgeNumber: badgeNumber,
+//               verificationType: widget.verificationType,
+//               eventSessionId: eventSessionId,
+//               eventId: eventId,
+//               sessionLocationId: sessionLocationId, // Updated parameter name
+//               couponId: badgeData['coupon_id']?.toString(),
+//             ),
+//           );
+//         } else {
+//           debugPrint(
+//             'Step 6: Extracted badge number is null or empty. Showing error.',
+//           );
+//           _showErrorDialog(
+//             'Invalid QR Code',
+//             'Could not extract badge number from QR code.',
+//           );
+//           _resetScanner();
+//         }
+//       }
+//     }
+//   }
+
+//   void _navigateToCouponSelection(
+//     List<Coupon> coupons,
+//     ParticipantInfo participant,
+//   ) {
+//     Navigator.pushReplacement(
+//       context,
+//       MaterialPageRoute(
+//         builder: (context) => BlocProvider.value(
+//           value: context.read<VerificationBloc>(),
+//           child: CouponSelectionPage(
+//             coupons: coupons,
+//             participant: participant,
+//             badgeNumber: lastScannedCode ?? '',
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+//   void _navigateToResultPage(dynamic response, String badgeNumber) {
+//     Navigator.pushReplacementNamed(
+//       context,
+//       '/verification-result',
+//       arguments: {
+//         'type': widget.verificationType,
+//         'response': response,
+//         'badgeNumber': badgeNumber,
+//         'sessionTitle': widget.sessionTitle,
+//       },
+//     );
+//   }
+
+//   void _resetScanner() {
+//     if (mounted) {
+//       setState(() {
+//         isScanning = true;
+//         lastScannedCode = null;
+//       });
+//     }
+//     debugPrint('Scanner reset. Ready for the next scan.');
+//   }
+
+//   void _showErrorDialog(String title, String message) {
+//     IconData errorIcon = Icons.error;
+//     Color errorColor = Colors.red;
+
+//     // Customize icon and color based on error type
+//     if (message.contains('Already checked in')) {
+//       errorIcon = Icons.check_circle_outline;
+//       errorColor = Colors.orange;
+//       title = 'Already Checked In';
+//     } else if (message.contains('not found') ||
+//         message.contains('not approved')) {
+//       errorIcon = Icons.person_off;
+//       errorColor = Colors.red;
+//       title = 'Participant Not Found';
+//     } else if (message.contains('No active attendance round')) {
+//       errorIcon = Icons.schedule_outlined;
+//       errorColor = Colors.orange;
+//       title = 'Session Inactive';
+//     } else if (message.contains('Usage limit reached')) {
+//       errorIcon = Icons.block;
+//       errorColor = Colors.orange;
+//       title = 'Usage Limit Reached';
+//     } else if (message.contains('Coupon is inactive')) {
+//       errorIcon = Icons.local_offer_outlined;
+//       errorColor = Colors.red;
+//       title = 'Coupon Inactive';
+//     }
+
+//     showDialog(
+//       context: context,
+//       builder: (context) => AlertDialog(
+//         icon: Icon(errorIcon, color: errorColor, size: 48),
+//         title: Text(title, style: TextStyle(color: errorColor)),
+//         content: Text(message),
+//         actions: [
+//           TextButton(
+//             onPressed: () {
+//               Navigator.pop(context);
+//               _resetScanner();
+//             },
+//             child: const Text('Try Again'),
+//           ),
+//           ElevatedButton(
+//             onPressed: () => Navigator.pop(context),
+//             style: ElevatedButton.styleFrom(backgroundColor: errorColor),
+//             child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   void _showLoadingDialog() {
+//     showDialog(
+//       context: context,
+//       barrierDismissible: false,
+//       builder: (context) => const Center(child: CircularProgressIndicator()),
+//     );
+//   }
+// }
 class QrScannerPage extends StatefulWidget {
   final String verificationType;
   final String? eventSessionId;
   final String? sessionTitle;
   final String? eventId;
   final String? roomId; // Added for attendance tracking
-  final String? sessionLocationId; // Added for attendance tracking
+  final String? sessionLocationId;
 
   const QrScannerPage({
     super.key,
@@ -28,7 +505,7 @@ class QrScannerPage extends StatefulWidget {
     this.eventSessionId,
     this.sessionTitle,
     this.eventId,
-    this.roomId, // Added for attendance tracking
+    this.roomId,
     this.sessionLocationId,
   });
 
@@ -41,82 +518,51 @@ class _QrScannerPageState extends State<QrScannerPage>
   final MobileScannerController controller = MobileScannerController(
     autoStart: false,
     formats: const [BarcodeFormat.qrCode],
-    detectionSpeed: DetectionSpeed.normal,
-    detectionTimeoutMs: 500,
-    autoZoom: true,
   );
-  ParticipantInfo? _currentParticipant;
 
   StreamSubscription<BarcodeCapture>? _subscription;
   bool isScanning = true;
   String? lastScannedCode;
+  bool isDialogShowing = false;
 
   @override
   Widget build(BuildContext context) {
-    debugPrint(
-      "qrscanner page: verification type is: ${widget.verificationType}",
-    );
-    if (widget.eventSessionId != null) {
-      debugPrint("qrscanner page: eventSessionId is: ${widget.eventSessionId}");
-      debugPrint("qrscanner page: sessionTitle is: ${widget.sessionTitle}");
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: Text(_getAppBarTitle()),
-        backgroundColor: Theme.of(context).colorScheme.onPrimary,
-        foregroundColor: Theme.of(context).colorScheme.primary,
         actions: [
           IconButton(
             onPressed: () => controller.toggleTorch(),
             icon: ValueListenableBuilder<MobileScannerState>(
               valueListenable: controller,
               builder: (context, state, child) {
-                switch (state.torchState) {
-                  case TorchState.off:
-                    return const Icon(Icons.flash_off);
-                  case TorchState.on:
-                    return const Icon(Icons.flash_on);
-                  default:
-                    return const Icon(Icons.flash_off);
-                }
+                return Icon(
+                  state.torchState == TorchState.on
+                      ? Icons.flash_on
+                      : Icons.flash_off,
+                );
               },
             ),
           ),
           IconButton(
             onPressed: () => controller.switchCamera(),
-            icon: ValueListenableBuilder<MobileScannerState>(
-              valueListenable: controller,
-              builder: (context, state, child) {
-                switch (state.cameraDirection) {
-                  case CameraFacing.front:
-                    return const Icon(Icons.camera_front);
-                  case CameraFacing.back:
-                    return const Icon(Icons.camera_rear);
-                  default:
-                    return const Icon(Icons.camera_front);
-                }
-              },
-            ),
+            icon: const Icon(Icons.cameraswitch_outlined),
           ),
         ],
       ),
+      // Use MultiBlocListener to react to states from both BLoCs
       body: BlocListener<VerificationBloc, VerificationState>(
         listener: (context, state) {
           if (state is VerificationLoading) {
             _showLoadingDialog();
           } else if (state is VerificationSuccess) {
-            debugPrint("state is verification success.");
             _dismissDialog();
-
-            // Special handling for coupon verification
             if (widget.verificationType == 'coupon' &&
                 state.response.participant != null) {
-              // Fetch coupons for the participant
               context.read<VerificationBloc>().add(
                 FetchParticipantCoupons(
                   state.response.participant!.id,
-                  state.response.participant!, // Pass the participant info
+                  state.response.participant!,
                 ),
               );
             } else {
@@ -124,13 +570,31 @@ class _QrScannerPageState extends State<QrScannerPage>
             }
           } else if (state is CouponsFetched) {
             _dismissDialog();
-            _navigateToCouponSelection(
-              state.coupons,
-              state.participant,
-            ); // Updated signature
+            _navigateToCouponSelection(state.coupons, state.participant);
           } else if (state is VerificationFailure) {
             _dismissDialog();
-            _showErrorDialog('Verification Failed', state.message);
+            // Show error dialog for verification failures
+            _showErrorDialog(
+              'Verification Failed',
+              state.message,
+              code: state.code,
+            );
+          } else if (state is AttendanceMarkedForLocation) {
+            // After successful attendance, trigger verification BLoC to get participant info
+            context.read<VerificationBloc>().add(
+              VerifyBadgeRequested(
+                badgeNumber: state.badgeNumber,
+                verificationType: 'info', // Fetch info to show on result page
+              ),
+            );
+          } else if (state is AttendanceError) {
+            _dismissDialog();
+            // Show error dialog for attendance failures
+            _showErrorDialog(
+              'Attendance Failed',
+              state.message,
+              code: state.code,
+            );
           }
         },
 
@@ -156,7 +620,7 @@ class _QrScannerPageState extends State<QrScannerPage>
                 margin: const EdgeInsets.symmetric(horizontal: 24),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.7),
+                  color: Colors.black.withOpacity(0.7),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Column(
@@ -183,15 +647,6 @@ class _QrScannerPageState extends State<QrScannerPage>
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      isScanning ? 'Scanning...' : 'Processing...',
-                      style: TextStyle(
-                        color: isScanning ? Colors.green : Colors.orange,
-                        fontSize: 14,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
                   ],
                 ),
               ),
@@ -204,78 +659,42 @@ class _QrScannerPageState extends State<QrScannerPage>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!controller.value.hasCameraPermission) {
-      return;
-    }
-
-    switch (state) {
-      case AppLifecycleState.detached:
-      case AppLifecycleState.hidden:
-      case AppLifecycleState.paused:
-        return;
-      case AppLifecycleState.resumed:
-        unawaited(_subscription?.cancel());
-        _subscription = controller.barcodes.listen(_handleBarcode);
-        unawaited(controller.start());
-        _resetScanner();
-        break;
-      case AppLifecycleState.inactive:
-        unawaited(_subscription?.cancel());
-        _subscription = null;
-        unawaited(controller.stop());
-        break;
+    if (!controller.value.hasCameraPermission) return;
+    if (state == AppLifecycleState.resumed) {
+      _startScanner();
     }
   }
 
   @override
-  Future<void> dispose() async {
+  void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    unawaited(_subscription?.cancel());
-    _subscription = null;
+    _subscription?.cancel();
+    controller.dispose();
     super.dispose();
-    await controller.dispose();
   }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _subscription = controller.barcodes.listen(_handleBarcode);
-    unawaited(controller.start());
+    _startScanner();
   }
 
   void _dismissDialog() {
-    if (Navigator.canPop(context)) {
-      Navigator.pop(context);
+    if (isDialogShowing) {
+      Navigator.of(context, rootNavigator: true).pop();
+      isDialogShowing = false;
     }
   }
 
   Map<String, dynamic> _extractQrData(String qrCode) {
-    debugPrint(
-      'Step 1: Starting to extract QR data from raw string: "$qrCode"',
-    );
     try {
       final data = qrCode.trim();
       if (data.startsWith('{') && data.endsWith('}')) {
-        debugPrint(
-          'Step 2: Raw data appears to be JSON. Attempting to decode.',
-        );
-        final decodedData = jsonDecode(data);
-        debugPrint('Step 3: Successfully decoded JSON. Result: $decodedData');
-
-        return Map<String, dynamic>.from(decodedData);
-      } else {
-        debugPrint(
-          'Step 2: Raw data is not JSON. Treating as a plain badge number.',
-        );
-
-        return {'badge_number': data};
+        return Map<String, dynamic>.from(jsonDecode(data));
       }
+      return {'badge_number': data};
     } catch (e) {
-      debugPrint(
-        'Step 2: Failed to decode JSON. Error: $e. Falling back to plain badge number.',
-      );
-
       return {'badge_number': qrCode.trim()};
     }
   }
@@ -283,9 +702,7 @@ class _QrScannerPageState extends State<QrScannerPage>
   String _getAppBarTitle() {
     switch (widget.verificationType.toLowerCase()) {
       case 'attendance':
-        return widget.sessionTitle != null
-            ? 'Attendance - ${widget.sessionTitle}'
-            : 'Scan for Attendance';
+        return 'Scan for Attendance';
       case 'security':
         return 'Security Check';
       case 'coupon':
@@ -298,84 +715,41 @@ class _QrScannerPageState extends State<QrScannerPage>
   }
 
   Color _getBorderColor() {
-    switch (widget.verificationType.toLowerCase()) {
-      case 'attendance':
-        return Colors.green;
-      case 'security':
-        return Colors.blue;
-      case 'coupon':
-        return Colors.orange;
-      case 'info':
-        return Colors.purple;
-      default:
-        return Colors.green;
-    }
+    return widget.verificationType.toLowerCase() == 'attendance'
+        ? Colors.green
+        : Colors.blue;
   }
 
   String _getInstructionText() {
-    switch (widget.verificationType.toLowerCase()) {
-      case 'attendance':
-        return 'Position the attendance QR code within the frame';
-      case 'security':
-        return 'Position the badge QR code within the frame';
-      case 'coupon':
-        return 'Position the coupon QR code within the frame';
-      case 'info':
-        return 'Position the badge QR code within the frame';
-      default:
-        return 'Position the QR code within the frame';
-    }
+    return 'Position the QR code within the frame';
   }
 
   void _handleBarcode(BarcodeCapture capture) {
-    if (!isScanning) return;
-    final List<Barcode> barcodes = capture.barcodes;
-    if (barcodes.isNotEmpty) {
-      final String? code = barcodes.first.rawValue;
-      if (code != null && code != lastScannedCode) {
+    if (!isScanning || !mounted) return;
+    final String? code = capture.barcodes.first.rawValue;
+
+    if (code != null && code != lastScannedCode) {
+      setState(() {
+        isScanning = false;
         lastScannedCode = code;
-        setState(() {
-          isScanning = false;
-        });
+      });
 
-        debugPrint('Step 4: Barcode detected with raw value: "$code"');
-        final badgeData = _extractQrData(code);
-        debugPrint('Step 5: Extracted badge data: $badgeData');
+      final badgeData = _extractQrData(code);
+      final badgeNumber = badgeData['badge_number']?.toString();
 
-        if (badgeData['badge_number'] != null &&
-            badgeData['badge_number'].toString().isNotEmpty) {
-          debugPrint(
-            'Step 6: Found a valid badge number. Adding event to Bloc.',
-          );
-          final badgeNumber = badgeData['badge_number'].toString();
-
-          // Use the session ID from widget if available, otherwise from QR data
-          final eventSessionId =
-              widget.eventSessionId ?? badgeData['eventsession_id']?.toString();
-          final eventId = widget.eventId ?? "";
-          final sessionLocationId =
-              widget.sessionLocationId ?? widget.roomId ?? "";
-
-          context.read<VerificationBloc>().add(
-            VerifyBadgeRequested(
-              badgeNumber: badgeNumber,
-              verificationType: widget.verificationType,
-              eventSessionId: eventSessionId,
-              eventId: eventId,
-              sessionLocationId: sessionLocationId, // Updated parameter name
-              couponId: badgeData['coupon_id']?.toString(),
-            ),
-          );
-        } else {
-          debugPrint(
-            'Step 6: Extracted badge number is null or empty. Showing error.',
-          );
-          _showErrorDialog(
-            'Invalid QR Code',
-            'Could not extract badge number from QR code.',
-          );
-          _resetScanner();
-        }
+      if (badgeNumber != null && badgeNumber.isNotEmpty) {
+        // Always dispatch to VerificationBloc, which will coordinate with AttendanceBloc
+        context.read<VerificationBloc>().add(
+          VerifyBadgeRequested(
+            badgeNumber: badgeNumber,
+            verificationType: widget.verificationType,
+            eventSessionId: widget.eventSessionId,
+            sessionLocationId: widget.sessionLocationId,
+            couponId: badgeData['coupon_id']?.toString(),
+          ),
+        );
+      } else {
+        _showErrorDialog('Invalid QR Code', 'Could not find a badge number.');
       }
     }
   }
@@ -384,19 +758,7 @@ class _QrScannerPageState extends State<QrScannerPage>
     List<Coupon> coupons,
     ParticipantInfo participant,
   ) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BlocProvider.value(
-          value: context.read<VerificationBloc>(),
-          child: CouponSelectionPage(
-            coupons: coupons,
-            participant: participant,
-            badgeNumber: lastScannedCode ?? '',
-          ),
-        ),
-      ),
-    );
+    // ... (your existing navigation logic)
   }
 
   void _navigateToResultPage(dynamic response, String badgeNumber) {
@@ -419,39 +781,32 @@ class _QrScannerPageState extends State<QrScannerPage>
         lastScannedCode = null;
       });
     }
-    debugPrint('Scanner reset. Ready for the next scan.');
   }
 
-  void _showErrorDialog(String title, String message) {
+  void _showErrorDialog(String title, String message, {String? code}) {
+    if (isDialogShowing) return;
+    isDialogShowing = true;
+
     IconData errorIcon = Icons.error;
     Color errorColor = Colors.red;
 
-    // Customize icon and color based on error type
-    if (message.contains('Already checked in')) {
-      errorIcon = Icons.check_circle_outline;
-      errorColor = Colors.orange;
-      title = 'Already Checked In';
-    } else if (message.contains('not found') ||
-        message.contains('not approved')) {
-      errorIcon = Icons.person_off;
-      errorColor = Colors.red;
-      title = 'Participant Not Found';
-    } else if (message.contains('No active attendance round')) {
-      errorIcon = Icons.schedule_outlined;
-      errorColor = Colors.orange;
-      title = 'Session Inactive';
-    } else if (message.contains('Usage limit reached')) {
-      errorIcon = Icons.block;
-      errorColor = Colors.orange;
-      title = 'Usage Limit Reached';
-    } else if (message.contains('Coupon is inactive')) {
-      errorIcon = Icons.local_offer_outlined;
-      errorColor = Colors.red;
-      title = 'Coupon Inactive';
+    // Centralized error code handling
+    switch (code) {
+      case 'ATTENDANCE_ALREADY_TAKEN':
+        errorIcon = Icons.how_to_reg;
+        errorColor = Colors.orange;
+        title = 'Already Attended';
+        break;
+      case 'PARTICIPANT_NOT_FOUND':
+        errorIcon = Icons.person_off;
+        title = 'Participant Not Found';
+        break;
+      // Add other cases for verification or attendance errors
     }
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
         icon: Icon(errorIcon, color: errorColor, size: 48),
         title: Text(title, style: TextStyle(color: errorColor)),
@@ -459,26 +814,35 @@ class _QrScannerPageState extends State<QrScannerPage>
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
-              _resetScanner();
+              Navigator.pop(context); // Closes the dialog
             },
-            child: const Text('Try Again'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(backgroundColor: errorColor),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+            child: const Text('OK'),
           ),
         ],
       ),
-    );
+    ).then((_) {
+      isDialogShowing = false;
+      _resetScanner();
+    });
   }
 
   void _showLoadingDialog() {
+    if (isDialogShowing) return;
+    isDialogShowing = true;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => const Center(child: CircularProgressIndicator()),
     );
+  }
+
+  void _startScanner() {
+    if (controller.value.isInitialized) {
+      _subscription = controller.barcodes.listen(_handleBarcode);
+    } else {
+      controller.start().then((_) {
+        _subscription = controller.barcodes.listen(_handleBarcode);
+      });
+    }
   }
 }

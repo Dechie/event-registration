@@ -7,7 +7,7 @@ class RouteNames {
   static const String userRegistrationPage = '/user-registration';
   static const String otpVerificationPage = '/auth-otp-verification';
   static const String registrationPage = '/registration';
-  static const String registrationSuccessPage = '/registration-success';
+
 
   // profile routes:
   static const String profileAddPage = "/profile-add";
@@ -24,6 +24,7 @@ class RouteNames {
   static const String participantDashboardPage = '/participant-dashboard';
   static const String participantLoginPage = '/participant-login';
   static const String adminLoginPage = '/admin-login';
+  static const String reloginPage = '/re-login';
 
   // Event registration routes
   static const String eventRegistrationStatusPage =

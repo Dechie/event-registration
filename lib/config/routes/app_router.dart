@@ -10,12 +10,14 @@ import 'package:event_reg/features/auth/presentation/pages/auth_otp_verification
 import 'package:event_reg/features/auth/presentation/pages/login/admin_login.dart';
 import 'package:event_reg/features/auth/presentation/pages/login/participant_login.dart';
 import 'package:event_reg/features/auth/presentation/pages/profile_add_page.dart';
+import 'package:event_reg/features/auth/presentation/pages/re_login_page.dart';
 import 'package:event_reg/features/auth/presentation/pages/user_registration.dart';
 import 'package:event_reg/features/badge/presentation/pages/badge_page.dart';
 import 'package:event_reg/features/landing/presentation/pages/landing_page.dart';
 import 'package:event_reg/features/reports/presentation/bloc/reports_bloc.dart';
 import 'package:event_reg/features/reports/presentation/pages/session_report_page.dart';
 import 'package:event_reg/features/splash/presentation/pages/splash_page.dart';
+import 'package:event_reg/features/verification/presentation/bloc/verification_bloc.dart';
 import 'package:event_reg/features/verification/presentation/pages/coupon_selection_page.dart';
 import 'package:event_reg/features/verification/presentation/pages/qr_scanner/qr_scanner_page.dart';
 import 'package:event_reg/features/verification/presentation/pages/verification_result_page.dart';
@@ -23,9 +25,7 @@ import 'package:event_reg/injection_container.dart' as di;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../features/attendance/presentation/bloc/attendance_bloc.dart';
 import '../../features/attendance/presentation/pages/event_list_page.dart';
-import '../../features/attendance/presentation/pages/room_list_page.dart';
 import '../../features/reports/presentation/pages/event_report_page.dart';
 
 class AppRouter {
@@ -97,6 +97,8 @@ class AppRouter {
             child: const AdminLoginPage(),
           ),
         );
+      case RouteNames.reloginPage:
+        return MaterialPageRoute(builder: (_) => ReLoginPage());
 
       case RouteNames.adminDashboardPage:
         return MaterialPageRoute(builder: (_) => const AdminDashboardPage());
@@ -109,6 +111,7 @@ class AppRouter {
             eventId: args?['eventId'],
             eventSessionId: args?['eventSessionId'],
             sessionTitle: args?['sessionTitle'],
+            sessionLocationId: args?['sessionLocationId'],
             roomId: args?['roomId'],
           ),
         );
@@ -138,7 +141,7 @@ class AppRouter {
       case RouteNames.eventListPage:
         return MaterialPageRoute(
           builder: (_) => BlocProvider(
-            create: (context) => di.sl<AttendanceBloc>(),
+            create: (context) => di.sl<VerificationBloc>(),
             child: const EventListPage(),
           ),
         );
@@ -156,27 +159,9 @@ class AppRouter {
           ),
         );
 
-      case RouteNames.roomListPage:
-        final args = settings.arguments as Map<String, dynamic>;
-        return MaterialPageRoute(
-          builder: (_) => BlocProvider.value(
-            value: args['bloc'],
-            child: RoomListPage(event: args['event'], session: args['session']),
-          ),
-        );
       case RouteNames.eventAgendaPage:
         return MaterialPageRoute(builder: (_) => const EventAgendaPage());
 
-      // case RouteNames.reportsDashboardPage:
-      //   return MaterialPageRoute(
-      //     builder: (_) => MultiBlocProvider(
-      //       providers: [
-      //         BlocProvider(create: (context) => di.sl<AttendanceBloc>()),
-      //         BlocProvider(create: (context) => di.sl<ReportBloc>()),
-      //       ],
-      //       child: const ReportsDashboardPage(),
-      //     ),
-      //   );
       case RouteNames.attendanceReportPage:
         return MaterialPageRoute(
           builder: (_) => BlocProvider(

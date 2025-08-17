@@ -246,119 +246,125 @@ class _BadgePageState extends State<BadgePage> {
           ),
 
           // Main content
-          Column(
-            children: [
-              // Top hole punch area
-              Container(
-                width: 80,
-                height: 8,
-                margin: const EdgeInsets.only(top: 12),
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Organization logo/name area
-              SizedBox(
-                height: 60,
-                width: 60,
-                child: Image.asset("assets/logo.png"),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Event title in box
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.indigo.shade800, width: 2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  badgeData.eventTitle,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+          Align(
+            alignment: Alignment.center,
+            child: Column(
+              children: [
+                // Top hole punch area
+                Container(
+                  width: 80,
+                  height: 8,
+                  margin: const EdgeInsets.only(top: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(4),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              // Date range
-              Text(
-                _formatDateRange(widget.event.startTime, widget.event.endTime),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.orange.shade600,
-                  fontWeight: FontWeight.w500,
+                // Organization logo/name area
+                SizedBox(
+                  height: 60,
+                  width: 60,
+                  child: Image.asset("assets/logo.png"),
                 ),
-              ),
 
-              const Spacer(),
-              SizedBox(
-                height: 40,
-                child: Column(
-                  children: [
-                    Text(
-                      "For Technical Support",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textDisabledDark,
+                const SizedBox(height: 24),
+
+                // Event title in box
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.indigo.shade800, width: 2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    badgeData.eventTitle,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Date range
+                Text(
+                  _formatDateRange(
+                    widget.event.startTime,
+                    widget.event.endTime,
+                  ),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.orange.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+
+                const Spacer(),
+                SizedBox(
+                  height: 40,
+                  child: Column(
+                    children: [
+                      Text(
+                        "For Technical Support",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textDisabledDark,
+                        ),
                       ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      spacing: 6,
-                      children: [
-                        Icon(
-                          Icons.email,
-                          color: AppColors.textDisabledDark,
-                          size: 8,
-                        ),
-                        Text(
-                          "icteventhub@gmail.com",
-                          style: TextStyle(
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        spacing: 6,
+                        children: [
+                          Icon(
+                            Icons.email,
                             color: AppColors.textDisabledDark,
-                            fontSize: 8,
-                            fontWeight: FontWeight.w500,
+                            size: 8,
                           ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      spacing: 6,
-                      children: [
-                        Icon(
-                          Icons.email,
-                          color: AppColors.textDisabledDark,
-                          size: 8,
-                        ),
-                        Text(
-                          "+ 251 9 10 21 08 14",
-                          style: TextStyle(
+                          Text(
+                            "icteventhub@gmail.com",
+                            style: TextStyle(
+                              color: AppColors.textDisabledDark,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        spacing: 6,
+                        children: [
+                          Icon(
+                            Icons.email,
                             color: AppColors.textDisabledDark,
-                            fontSize: 8,
-                            fontWeight: FontWeight.w500,
+                            size: 8,
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          Text(
+                            "+ 251 9 10 21 08 14",
+                            style: TextStyle(
+                              color: AppColors.textDisabledDark,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

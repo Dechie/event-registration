@@ -3,9 +3,6 @@ import 'package:event_reg/core/services/user_data_service.dart';
 import 'package:event_reg/features/admin_dashboard/data/datasource/admin_dashboard_datasource.dart';
 import 'package:event_reg/features/admin_dashboard/data/repositories/admin_dashboard_repository.dart';
 import 'package:event_reg/features/admin_dashboard/presentation/bloc/admin_dashboard_bloc.dart';
-import 'package:event_reg/features/attendance/data/datasource/attendance_datasource.dart';
-import 'package:event_reg/features/attendance/data/repositories/attendance_repository.dart';
-import 'package:event_reg/features/attendance/presentation/bloc/attendance_bloc.dart';
 import 'package:event_reg/features/attendance_report/data/datasource/attendance_report_datasource.dart';
 import 'package:event_reg/features/attendance_report/data/repositories/attendance_report_repository.dart';
 import 'package:event_reg/features/attendance_report/presentation/bloc/attendance_report_bloc.dart';
@@ -150,15 +147,7 @@ Future<void> init() async {
     () => AdminDashboardDataSourceImpl(dioClient: sl(), userDataService: sl()),
   );
 
-  sl.registerLazySingleton<AttendanceRepository>(
-    () => AttendanceRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
-  );
-
-  sl.registerFactory(() => AttendanceBloc(repository: sl()));
-  sl.registerLazySingleton<AttendanceRemoteDataSource>(
-    () =>
-        AttendanceRemoteDataSourceImpl(dioClient: sl(), userDataService: sl()),
-  );
+ 
 
   sl.registerLazySingleton<ReportRemoteDataSource>(
     () => ReportRemoteDataSourceImpl(dioClient: sl(), userDataService: sl()),

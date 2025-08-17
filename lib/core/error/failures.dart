@@ -1,14 +1,34 @@
 // lib/core/error/failures.dart
 import 'package:equatable/equatable.dart';
 
+class AttendanceAlreadyTakenFailure extends Failure {
+  const AttendanceAlreadyTakenFailure({
+    required super.message,
+    required super.code,
+  });
+}
+
+class AuthenticationFailure extends Failure {
+  const AuthenticationFailure({required super.message, required super.code});
+}
+
+class AuthFailure extends Failure {
+  const AuthFailure({required super.message, required super.code});
+}
+
+class AuthorizationFailure extends Failure {
+  const AuthorizationFailure({required super.message, required super.code});
+}
+
+class CacheFailure extends Failure {
+  const CacheFailure({required super.message, required super.code});
+}
+
 abstract class Failure extends Equatable {
   final String message;
   final String code;
 
-  const Failure({
-    required this.message,
-    required this.code,
-  });
+  const Failure({required this.message, required this.code});
 
   @override
   List<Object?> get props => [message, code];
@@ -17,31 +37,30 @@ abstract class Failure extends Equatable {
   String toString() => '$runtimeType: $message (Code: $code)';
 }
 
-class ServerFailure extends Failure {
-  const ServerFailure({
-    required super.message,
-    required super.code,
-  });
+class FileFailure extends Failure {
+  const FileFailure({required super.message, required super.code});
 }
 
 class NetworkFailure extends Failure {
-  const NetworkFailure({
-    required super.message,
-    required super.code,
-  });
+  const NetworkFailure({required super.message, required super.code});
 }
 
-class CacheFailure extends Failure {
-  const CacheFailure({
-    required super.message,
-    required super.code,
-  });
+class ParseFailure extends Failure {
+  const ParseFailure({required super.message, required super.code});
 }
 
-class AuthFailure extends Failure {
-  const AuthFailure({
-    required super.message,
-    required super.code,
+class ServerFailure extends Failure {
+  const ServerFailure({required super.message, required super.code});
+}
+
+class TimeoutFailure extends Failure {
+  const TimeoutFailure({required super.message, required super.code});
+}
+
+class UnknownFailure extends Failure {
+  const UnknownFailure({
+    super.message = 'An unknown error occurred',
+    super.code = 'UNKNOWN_ERROR',
   });
 }
 
@@ -69,44 +88,14 @@ class ValidationFailure extends Failure {
   }
 }
 
-class AuthenticationFailure extends Failure {
-  const AuthenticationFailure({
-    required super.message,
-    required super.code,
-  });
+/// Represents a "not found" error.
+class NotFoundFailure extends Failure {
+  const NotFoundFailure({required super.message, required super.code});
 }
 
-class AuthorizationFailure extends Failure {
-  const AuthorizationFailure({
-    required super.message,
-    required super.code,
-  });
+/// Represents a business logic conflict error.
+class ConflictFailure extends Failure {
+  const ConflictFailure({required super.message, required super.code});
 }
 
-class FileFailure extends Failure {
-  const FileFailure({
-    required super.message,
-    required super.code,
-  });
-}
 
-class TimeoutFailure extends Failure {
-  const TimeoutFailure({
-    required super.message,
-    required super.code,
-  });
-}
-
-class ParseFailure extends Failure {
-  const ParseFailure({
-    required super.message,
-    required super.code,
-  });
-}
-
-class UnknownFailure extends Failure {
-  const UnknownFailure({
-    super.message = 'An unknown error occurred',
-    super.code = 'UNKNOWN_ERROR',
-  });
-}
