@@ -130,6 +130,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
       return Left(NetworkFailure(message: e.message, code: e.code));
     } on AuthenticationException catch (e) {
+      
       debugPrint('❌ Authentication error during create profile: ${e.message}');
 
       return Left(AuthenticationFailure(message: e.message, code: e.code));

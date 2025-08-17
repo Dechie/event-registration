@@ -40,6 +40,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         return "Please verify your email address before signing in";
       case "ACCOUNT_LOCKED":
         return "Account temporarily locked due to multiple failed attempts.";
+      case "WRONG_LOGIN_PAGE":
+        return failure.message;
 
       // registration errors:
       case "EMAIL_ALREADY_EXISTS":

@@ -29,13 +29,37 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthErrorState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+            if (state.errorCode == "WRONG_LOGIN_PAGE") {
+              // Show error message
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+              // Redirect to admin login if needed
+              if (state.message.contains("admin")) {
+                Future.delayed(const Duration(seconds: 2), () {
+                  if (context.mounted) {
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      RouteNames.adminLoginPage,
+                      (route) => false,
+                    );
+                  }
+                });
+              }
+            } else {
+              // Existing error handling
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
           } else if (state is AuthenticatedState) {
             // Check if user needs profile creation
             final userData = state.userData;

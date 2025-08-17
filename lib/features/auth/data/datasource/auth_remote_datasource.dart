@@ -51,7 +51,18 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
             ? (data["data"] ?? data)
             : data;
 
-        loginData["user"]["role"] = loginRequest.role;
+        final actualRole =
+            loginData["role"]["name"]; // Get actual role from response
+        if (loginRequest.role != actualRole) {
+          // User tried to login with wrong role
+          throw AuthenticationException(
+            message: actualRole == "participant"
+                ? "Please use the participant login page to sign in."
+                : "Please use the admin login page to sign in.",
+            code: "WRONG_LOGIN_PAGE",
+          );
+        }
+        loginData["user"]["role"] = actualRole;
         debugPrint("at auth remote datasoruce, login response:");
         debugPrint(jsonEncode(loginData));
         if (loginData is! Map<String, dynamic>) {
@@ -99,7 +110,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     } catch (e, stackTrace) {
       debugPrint('❌ Unexpected error during login: $e');
       debugPrint('❌ Stack trace: $stackTrace');
-      if (e is ServerException) rethrow;
+      if (e is ServerException || e is AuthenticationException) rethrow;
       throw ServerException(
         message: "An unexpected error occurred during login: $e",
         code: "UNEXPECTED_LOGIN_ERROR",

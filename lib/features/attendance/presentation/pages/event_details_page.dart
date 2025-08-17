@@ -152,7 +152,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "${event.title} A very very long text for the title, with even more space for longer text",
+                        event.title,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 3,
                         style: textTheme.titleMedium?.copyWith(
@@ -170,6 +170,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             // Event Report Button
             const SizedBox(height: 8),
             _buildEventInfoRow(
+              event: event,
               Icons.location_on,
               event.location,
               textTheme,

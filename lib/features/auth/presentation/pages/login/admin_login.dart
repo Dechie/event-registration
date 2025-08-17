@@ -38,13 +38,37 @@ class _AdminLoginPageState extends State<AdminLoginPage>
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthErrorState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+            if (state.errorCode == "WRONG_LOGIN_PAGE") {
+              // Show error message
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+              // Redirect to participant login if needed
+              if (state.message.contains("participant")) {
+                Future.delayed(const Duration(seconds: 2), () {
+                  if (context.mounted) {
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      RouteNames.participantLoginPage,
+                      (route) => false,
+                    );
+                  }
+                });
+              }
+            } else {
+              // Existing error handling
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
           } else if (state is AuthenticatedState) {
             // Admin successfully logged in, navigate to admin dashboard
             debugPrint("successfully authenticated as admin.");
