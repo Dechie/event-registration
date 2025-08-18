@@ -143,6 +143,74 @@ class _AdminLoginPageState extends State<AdminLoginPage>
     _animationController.forward();
   }
 
+  Widget _buildAlternativeActions() {
+    return Column(
+      children: [
+        // Register Button
+        // SizedBox(
+        //   width: double.infinity,
+        //   height: 48,
+        //   child: OutlinedButton(
+        //     onPressed: () {
+        //       Navigator.of(
+        //         context,
+        //       ).pushReplacementNamed(RouteNames.registrationPage);
+        //     },
+        //     style: OutlinedButton.styleFrom(
+        //       foregroundColor: Theme.of(context).primaryColor,
+        //       side: BorderSide(color: Theme.of(context).primaryColor),
+        //       shape: RoundedRectangleBorder(
+        //         borderRadius: BorderRadius.circular(12),
+        //       ),
+        //     ),
+        //     child: const Text(
+        //       'Create New Account',
+        //       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        //     ),
+        //   ),
+        // ),
+        // const SizedBox(height: 12),
+        // Admin Login Link
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.admin_panel_settings,
+                size: 16,
+                color: Colors.grey[600],
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Are you a participant? ',
+                style: TextStyle(color: Colors.grey[600], fontSize: 13),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, RouteNames.participantLoginPage);
+                },
+                child: Text(
+                  'Sign in here',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).primaryColor,
+                    fontWeight: FontWeight.w600,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildEmailField() {
     return TextFormField(
       controller: _emailController,
@@ -177,30 +245,34 @@ class _AdminLoginPageState extends State<AdminLoginPage>
   Widget _buildLoginButton() {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
-        return ElevatedButton(
-          onPressed: state is AuthLoadingState ? null : _handleLogin,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).primaryColor,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+        return SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: ElevatedButton(
+            onPressed: state is AuthLoadingState ? null : _handleLogin,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 2,
             ),
-            elevation: 2,
-          ),
-          child: state is AuthLoadingState
-              ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            child: state is AuthLoadingState
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : const Text(
+                    'Login',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
-                )
-              : const Text(
-                  'Login',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
+          ),
         );
       },
     );
@@ -266,7 +338,8 @@ class _AdminLoginPageState extends State<AdminLoginPage>
                 const SizedBox(height: 24),
                 _buildLoginButton(),
                 const SizedBox(height: 16),
-                _buildSignUpLink(),
+                //_buildSignUpLink(),
+                _buildAlternativeActions(),
               ],
             ),
           ),

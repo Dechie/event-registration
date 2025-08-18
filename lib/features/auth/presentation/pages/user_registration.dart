@@ -1,4 +1,3 @@
-// lib/features/auth/presentation/pages/user_registration_page.dart
 import 'package:event_reg/config/routes/route_names.dart';
 import 'package:event_reg/core/utils/validators.dart';
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
@@ -23,7 +22,6 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-  bool _acceptTerms = false;
   String _selectedRole = 'participant'; // Default to participant
 
   late AnimationController _animationController;
@@ -362,9 +360,9 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
                 _buildConfirmPasswordField(),
                 const SizedBox(height: 16),
 
-                // Role Selection
-                _buildRoleSelection(),
-                const SizedBox(height: 16),
+                // // Role Selection
+                // _buildRoleSelection(),
+                // const SizedBox(height: 16),
 
                 // Register Button
                 _buildRegisterButton(),
@@ -566,57 +564,6 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
               color: Theme.of(context).primaryColor,
               fontWeight: FontWeight.w600,
               decoration: TextDecoration.underline,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTermsAndConditions() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Checkbox(
-          value: _acceptTerms,
-          onChanged: (value) {
-            setState(() {
-              _acceptTerms = value ?? false;
-            });
-          },
-          activeColor: Theme.of(context).primaryColor,
-        ),
-        Expanded(
-          child: GestureDetector(
-            onTap: () {
-              setState(() {
-                _acceptTerms = !_acceptTerms;
-              });
-            },
-            child: Text.rich(
-              TextSpan(
-                text: 'I agree to the ',
-                style: Theme.of(context).textTheme.bodySmall,
-                children: [
-                  TextSpan(
-                    text: 'Terms of Service',
-                    style: TextStyle(
-                      color: Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.w600,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                  const TextSpan(text: ' and '),
-                  TextSpan(
-                    text: 'Privacy Policy',
-                    style: TextStyle(
-                      color: Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.w600,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ],
-              ),
             ),
           ),
         ),

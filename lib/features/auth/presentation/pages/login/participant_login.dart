@@ -156,8 +156,9 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
           height: 48,
           child: OutlinedButton(
             onPressed: () {
-              //Navigator.pushNamed(context, RouteNames.registrationPage);
-              Navigator.pushNamed(context, RouteNames.userRegistrationPage);
+              Navigator.of(
+                context,
+              ).pushReplacementNamed(RouteNames.registrationPage);
             },
             style: OutlinedButton.styleFrom(
               foregroundColor: Theme.of(context).primaryColor,
@@ -192,7 +193,7 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
               const SizedBox(width: 8),
               Text(
                 'Are you an admin? ',
-                style: TextStyle(color: Colors.grey[600]),
+                style: TextStyle(color: Colors.grey[600], fontSize: 13),
               ),
               GestureDetector(
                 onTap: () {
@@ -201,6 +202,7 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
                 child: Text(
                   'Sign in here',
                   style: TextStyle(
+                    fontSize: 13,
                     color: Theme.of(context).primaryColor,
                     fontWeight: FontWeight.w600,
                     decoration: TextDecoration.underline,
@@ -326,7 +328,7 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
 
         return SizedBox(
           width: double.infinity,
-          height: 48,
+          height: 50,
           child: ElevatedButton(
             onPressed: isLoading ? null : _handleLogin,
             style: ElevatedButton.styleFrom(
