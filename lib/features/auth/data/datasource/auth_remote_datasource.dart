@@ -51,8 +51,15 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
             ? (data["data"] ?? data)
             : data;
 
-        final actualRole =
+        var actualRole =
             loginData["role"]["name"]; // Get actual role from response
+        if (actualRole == "org_admin") {
+          actualRole =
+              "admin"; // do this because backend sends admin role as org_admin instead of admin. probably need a fix later
+        }
+
+        /// expected roles: "admin" and "participant"
+        /// backend sends us "org_admin" for admin but we change that to "admin" first
         if (loginRequest.role != actualRole) {
           // User tried to login with wrong role
           throw AuthenticationException(
