@@ -1,3 +1,4 @@
+import 'package:event_reg/config/routes/auth_guard.dart';
 import 'package:event_reg/config/routes/route_names.dart';
 import 'package:event_reg/features/admin_dashboard/presentation/pages/admin_dashboard_page.dart';
 import 'package:event_reg/features/attendance/presentation/pages/event_details_page.dart';
@@ -5,7 +6,6 @@ import 'package:event_reg/features/attendance_report/presentation/bloc/attendanc
 import 'package:event_reg/features/attendance_report/presentation/pages/attendance_report_page.dart';
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:event_reg/features/auth/presentation/bloc/events/auth_event.dart';
-import 'package:event_reg/features/auth/presentation/bloc/states/auth_state.dart';
 import 'package:event_reg/features/auth/presentation/pages/auth_otp_verification_page.dart';
 import 'package:event_reg/features/auth/presentation/pages/login/admin_login.dart';
 import 'package:event_reg/features/auth/presentation/pages/login/participant_login.dart';
@@ -41,8 +41,12 @@ class AppRouter {
         );
 
       case RouteNames.landingPage:
-        return MaterialPageRoute(builder: (_) => const UpdatedLandingPage());
-
+        return MaterialPageRoute(
+          builder: (_) => AuthGuard(
+            requiredrole: 'participant',
+            child: const UpdatedLandingPage(),
+          ),
+        );
       case RouteNames.badgePage:
         final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
@@ -101,8 +105,12 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => ReLoginPage());
 
       case RouteNames.adminDashboardPage:
-        return MaterialPageRoute(builder: (_) => const AdminDashboardPage());
-
+        return MaterialPageRoute(
+          builder: (_) => AuthGuard(
+            requiredrole: 'admin',
+            child: const AdminDashboardPage(),
+          ),
+        );
       case RouteNames.qrScannerPage:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
@@ -207,68 +215,6 @@ class AppRouter {
           builder: (_) => NotFoundPage(routeName: settings.name),
         );
     }
-  }
-}
-
-// Auth Guard Widget to protect routes
-class AuthGuard extends StatelessWidget {
-  final Widget child;
-  final String requiredrole;
-
-  const AuthGuard({super.key, required this.child, required this.requiredrole});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<AuthBloc, AuthState>(
-      builder: (context, state) {
-        debugPrint("required role: $requiredrole");
-        if (state is AuthenticatedState) {
-          debugPrint("state role: ${state.role}");
-        }
-        if (state is AuthOTPVerifiedState) {
-          debugPrint("state role: ${state.role}");
-        }
-
-        if (state is AuthLoadingState) {
-          debugPrint(
-            "at authguard: state is: ${state.runtimeType}, should be loading now",
-          );
-
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        if (state is AuthenticatedState && state.role == requiredrole) {
-          debugPrint(
-            "at authguard: state is: ${state.runtimeType}, role is: ${state.role}, should return proper next page",
-          );
-
-          return child;
-        }
-
-        if (state is AuthOTPVerifiedState && state.role == requiredrole) {
-          debugPrint(
-            "at authguard: state is: ${state.runtimeType}, role is: ${state.role}, should return proper next page",
-          );
-
-          return child;
-        }
-
-        // If none of the above conditions are met, redirect to the login page.
-        debugPrint(
-          "at authguard: state is: ${state.runtimeType}, force push to next page",
-        );
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          final route = requiredrole == 'admin'
-              ? RouteNames.adminLoginPage
-              : RouteNames.participantLoginPage;
-          Navigator.pushReplacementNamed(context, route);
-        });
-
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
-      },
-    );
   }
 }
 

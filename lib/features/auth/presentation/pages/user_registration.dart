@@ -552,7 +552,7 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
       children: [
         Text(
           'Already have an account? ',
-          style: TextStyle(color: Colors.grey[600]),
+          style: TextStyle(color: Colors.grey[600], fontSize: 13),
         ),
         GestureDetector(
           onTap: () {
@@ -561,6 +561,7 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
           child: Text(
             'Sign In',
             style: TextStyle(
+              fontSize: 13,
               color: Theme.of(context).primaryColor,
               fontWeight: FontWeight.w600,
               decoration: TextDecoration.underline,
@@ -605,7 +606,7 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
             TextButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
-                Navigator.pushNamed(context, RouteNames.participantLoginPage);
+                Navigator.pushReplacementNamed(context, RouteNames.participantLoginPage);
               },
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -619,7 +620,7 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
             TextButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
-                Navigator.pushNamed(context, RouteNames.adminLoginPage);
+                Navigator.pushReplacementNamed(context, RouteNames.adminLoginPage);
               },
               child: Row(
                 mainAxisSize: MainAxisSize.min,

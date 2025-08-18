@@ -48,6 +48,7 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
           break;
 
         case NavDestination.landing:
+          debugPrint("splash bloc: determined navdestination: landingPage");
           debugPrint("📍 → Landing Page");
           emit(SplashNavigateToLanding());
           break;
@@ -75,7 +76,7 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
     } catch (e) {
       debugPrint("❌ Error during authentication check: $e");
       // If there's an error, navigate to landing page as fallback
-      emit(SplashNavigateToLanding());
+      emit(SplashNavigateToRegistration());
     }
   }
 

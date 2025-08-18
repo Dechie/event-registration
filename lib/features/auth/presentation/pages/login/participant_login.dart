@@ -156,9 +156,10 @@ class _ParticipantLoginPageState extends State<ParticipantLoginPage>
           height: 48,
           child: OutlinedButton(
             onPressed: () {
-              Navigator.of(
-                context,
-              ).pushReplacementNamed(RouteNames.registrationPage);
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                RouteNames.registrationPage,
+                (route) => false,
+              );
             },
             style: OutlinedButton.styleFrom(
               foregroundColor: Theme.of(context).primaryColor,
