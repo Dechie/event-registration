@@ -1,47 +1,47 @@
-name: Build Release APK manually 
+# name: Build Release APK manually 
 
-on:
-  workflow_dispatch:
-    inputs:
-      build_type:
-        description: 'Build Type:'
-        required: true
-        default: 'release'
-        type: choice
-        options:
-          - release
-          - debug
-jobs:
-  build_apk:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+# on:
+#   workflow_dispatch:
+#     inputs:
+#       build_type:
+#         description: 'Build Type:'
+#         required: true
+#         default: 'release'
+#         type: choice
+#         options:
+#           - release
+#           - debug
+# jobs:
+#   build_apk:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-      - name: Setup Flutter 
-        uses: subosito/flutter-action@v2
-        with: 
-          channel: 'stable'
-          cache: true
-      - name: Get Flutter dependencies 
-        run: flutter pub get
+#       - name: Setup Flutter 
+#         uses: subosito/flutter-action@v2
+#         with: 
+#           channel: 'stable'
+#           cache: true
+#       - name: Get Flutter dependencies 
+#         run: flutter pub get
       
-      - name: Verify formatting
-        run: dart format --set-exit-if-changed lib
+#       - name: Verify formatting
+#         run: dart format --set-exit-if-changed lib
 
-      - name: Static Analysis
-        run: flutter analyze lib
+#       - name: Static Analysis
+#         run: flutter analyze lib
       
-      - name: Run Tests
-        run: flutter test
+#       - name: Run Tests
+#         run: flutter test
 
-      - name: Build Apk
-        run: |
-          flutter build apk --${{ inputs.build_type }} \
-            --no-color
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{inputs.build_type}}-app
-          path: build/app/outputs/flutter-apk/${{inputs.build_type}}-app.apk
-          retention-days: 4
+#       - name: Build Apk
+#         run: |
+#           flutter build apk --${{ inputs.build_type }} \
+#             --no-color
+#       - name: Upload Artifact
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: ${{inputs.build_type}}-app
+#           path: build/app/outputs/flutter-apk/${{inputs.build_type}}-app.apk
+#           retention-days: 4
