@@ -91,7 +91,7 @@ Future<void> init() async {
 
   // Bloc (depends on repository)
   debugPrint("registering authbloc");
-  sl.registerFactory(
+  sl.registerLazySingleton(
     () => AuthBloc(
       authRepository: sl(),
       profileRepository: sl(),
@@ -117,7 +117,7 @@ Future<void> init() async {
   );
 
   // Bloc
-  sl.registerFactory(() => SplashBloc(repository: sl()));
+  sl.registerLazySingleton<SplashBloc>(() => SplashBloc(repository: sl()));
 
   sl.registerFactory(
     () => EventRegistrationBloc(dataSource: sl(), userDataService: sl()),
@@ -146,8 +146,6 @@ Future<void> init() async {
   sl.registerLazySingleton<AdminDashboardDataSource>(
     () => AdminDashboardDataSourceImpl(dioClient: sl(), userDataService: sl()),
   );
-
- 
 
   sl.registerLazySingleton<ReportRemoteDataSource>(
     () => ReportRemoteDataSourceImpl(dioClient: sl(), userDataService: sl()),

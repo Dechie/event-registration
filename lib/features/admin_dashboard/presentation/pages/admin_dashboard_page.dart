@@ -6,6 +6,7 @@ import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:event_reg/features/auth/presentation/bloc/states/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../bloc/admin_dashboard_bloc.dart';
 import '../bloc/admin_dashboard_event.dart';
 
@@ -16,24 +17,9 @@ class AdminDashboardPage extends StatefulWidget {
   State<AdminDashboardPage> createState() => _AdminDashboardPageState();
 }
 
-class _AdminDashboardPageState extends State<AdminDashboardPage> 
+class _AdminDashboardPageState extends State<AdminDashboardPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    
-    // Load dashboard data when page initializes
-    context.read<AdminDashboardBloc>().add(LoadDashboardData());
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,25 +33,21 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(
-              icon: Icon(Icons.dashboard),
-              text: 'Quick Actions',
-            ),
-            Tab(
-              icon: Icon(Icons.analytics),
-              text: 'Analytics',
-            ),
+            Tab(icon: Icon(Icons.dashboard), text: 'Quick Actions'),
+            Tab(icon: Icon(Icons.analytics), text: 'Analytics'),
           ],
         ),
       ),
       drawer: const AdminDashboardDrawer(),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
+          debugPrint(
+            "admin dashboard page, auth state is ${state.runtimeType}, other state data: ${state.props.map((p) => p.toString())}",
+          );
           if (state is AuthLoggedOutState) {
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              RouteNames.reloginPage,
-              (route) => false,
-            );
+            Navigator.of(
+              context,
+            ).pushNamedAndRemoveUntil(RouteNames.reloginPage, (route) => false);
           }
 
           if (state is AuthErrorState) {
@@ -79,12 +61,25 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         },
         child: TabBarView(
           controller: _tabController,
-          children: const [
-            QuickActionsTab(),
-            DashboardStatsTab(),
-          ],
+          children: const [QuickActionsTab(), DashboardStatsTab()],
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    debugPrint("reached admin dashboard page.");
+    _tabController = TabController(length: 2, vsync: this);
+
+    // Load dashboard data when page initializes
+    context.read<AdminDashboardBloc>().add(LoadDashboardData());
   }
 }

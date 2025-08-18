@@ -230,7 +230,8 @@ class ParticipantLandingDrawer extends StatelessWidget {
             TextButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
-              },
+              
+               },
               child: const Text('Cancel'),
             ),
             ElevatedButton(

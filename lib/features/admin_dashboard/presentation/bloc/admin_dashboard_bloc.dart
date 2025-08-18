@@ -1,5 +1,6 @@
 // lib/features/admin_dashboard/presentation/bloc/admin_dashboard_bloc.dart
 
+import 'package:flutter/material.dart' show debugPrint;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/repositories/admin_dashboard_repository.dart';
 import 'admin_dashboard_event.dart';
@@ -20,7 +21,7 @@ class AdminDashboardBloc
     Emitter<AdminDashboardState> emit,
   ) async {
     emit(AdminDashboardLoading());
-
+    debugPrint("reached admin dashboard's loadDashboard data");
     final result = await repository.getDashboardData();
     result.fold(
       (failure) => emit(AdminDashboardError(failure.message)),
