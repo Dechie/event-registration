@@ -94,26 +94,26 @@ class _QuickActionsTabState extends State<QuickActionsTab> {
 
                 // Update your lib/features/admin_dashboard/presentation/widgets/quick_actions_tab.dart
                 // Add this action card to the GridView.count children:
-                _buildActionCard(
-                  textTheme: textTheme,
-                  colorScheme: colorScheme,
-                  context,
-                  icon: Icons.analytics,
-                  title: 'View Reports',
-                  description: 'Access attendance reports and analytics',
-                  color: Colors.indigo,
-                  onTap: () => _navigateToReports(context),
-                ),
-                _buildActionCard(
-                  textTheme: textTheme,
-                  colorScheme: colorScheme,
-                  context,
-                  icon: Icons.local_offer,
-                  title: 'Validate Coupon',
-                  description: 'Scan and validate participant coupons',
-                  color: Colors.orange,
-                  onTap: () => _navigateToScanner(context, 'coupon'),
-                ),
+                // _buildActionCard(
+                //   textTheme: textTheme,
+                //   colorScheme: colorScheme,
+                //   context,
+                //   icon: Icons.analytics,
+                //   title: 'View Reports',
+                //   description: 'Access attendance reports and analytics',
+                //   color: Colors.indigo,
+                //   onTap: () => _navigateToReports(context),
+                // ),
+                // _buildActionCard(
+                //   textTheme: textTheme,
+                //   colorScheme: colorScheme,
+                //   context,
+                //   icon: Icons.local_offer,
+                //   title: 'Validate Coupon',
+                //   description: 'Scan and validate participant coupons',
+                //   color: Colors.orange,
+                //   onTap: () => _navigateToScanner(context, 'coupon'),
+                // ),
                 // _buildActionCard(
                 //   textTheme: textTheme,
                 //   colorScheme: colorScheme,

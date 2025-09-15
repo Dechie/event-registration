@@ -211,6 +211,7 @@ class _EventListPageState extends State<EventListPage> {
       elevation: 2,
       child: InkWell(
         onTap: () {
+          debugPrint("going to event details page");
           Navigator.pushNamed(
             context,
             RouteNames.eventDetailsPage,

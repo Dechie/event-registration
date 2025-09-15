@@ -111,7 +111,17 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             );
           }
 
-          return const Center(child: Text('Something went wrong'));
+          //return const Center(child: Text('Something went wrong'));
+          return Center(
+            child: SizedBox(
+              width: 30,
+              height: 30,
+              child: const CircularProgressIndicator(
+                color: AppColors.primary,
+                strokeWidth: 3,
+              ),
+            ),
+          );
         },
       ),
     );
@@ -520,6 +530,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     AttendanceSession session,
     AttendanceLocation location,
   ) {
+    debugPrint("going to scanner page");
     Navigator.pushNamed(
       context,
       RouteNames.qrScannerPage,
