@@ -8,7 +8,6 @@ class RouteNames {
   static const String otpVerificationPage = '/auth-otp-verification';
   static const String registrationPage = '/registration';
 
-
   // profile routes:
   static const String profileAddPage = "/profile-add";
 
@@ -39,6 +38,10 @@ class RouteNames {
   static const String reportsDashboardPage = '/reports-dashboard';
   static const String eventReportPage = '/event-report';
   static const String sessionReportPage = '/session-report';
+
+  // Participant certificate pages
+  static const String myCertificatesPage = '/my-certificates';
+  static const String certificateViewerPage = '/certificate-viewer';
 
   // Utility routes
   static const String contactPage = '/contact';

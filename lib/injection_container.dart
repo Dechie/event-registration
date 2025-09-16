@@ -13,6 +13,9 @@ import 'package:event_reg/features/auth/data/datasource/profile_remote_datasourc
 import 'package:event_reg/features/auth/data/repositories/auth_repository.dart';
 import 'package:event_reg/features/auth/data/repositories/profile_add_repository.dart';
 import 'package:event_reg/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:event_reg/features/certificate/data/datasource/certificate_datasource.dart';
+import 'package:event_reg/features/certificate/data/repositories/certificate_repository.dart';
+import 'package:event_reg/features/certificate/presentation/bloc/certificate_bloc.dart';
 import 'package:event_reg/features/event_registration/data/datasource/event_registration_datasource.dart';
 import 'package:event_reg/features/event_registration/presentation/bloc/event_registration_bloc.dart';
 import 'package:event_reg/features/reports/data/datasource/reports_datasource.dart';
@@ -173,6 +176,23 @@ Future<void> init() async {
 
   // Bloc
   sl.registerFactory(() => AttendanceReportBloc(repository: sl()));
+
+  // ! Features - Certificate
+  // DataSource
+  debugPrint("registering certificate datasource");
+  sl.registerLazySingleton<CertificateDataSource>(
+    () => CertificateDataSourceImpl(dioClient: sl(), userDataService: sl()),
+  );
+
+  // Repository
+  debugPrint("registering certificate repository");
+  sl.registerLazySingleton<CertificateRepository>(
+    () => CertificateRepositoryImpl(dataSource: sl(), networkInfo: sl()),
+  );
+
+  // Bloc
+  debugPrint("registering certificate bloc");
+  sl.registerFactory(() => CertificateBloc(repository: sl()));
   // ! Features - Dashboard
   // DataSources
   // sl.registerLazySingleton<DashboardRemoteDataSource>(

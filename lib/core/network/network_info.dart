@@ -14,6 +14,7 @@ class NetworkInfoImpl implements NetworkInfo {
   //Future<bool> get isConnected => connectionChecker.hasConnection;
   Future<bool> get isConnected async {
     await Future.delayed(Duration.zero);
+
     return true;
   }
 }

@@ -111,17 +111,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             );
           }
 
-          //return const Center(child: Text('Something went wrong'));
-          return Center(
-            child: SizedBox(
-              width: 30,
-              height: 30,
-              child: const CircularProgressIndicator(
-                color: AppColors.primary,
-                strokeWidth: 3,
-              ),
-            ),
-          );
+          return const Center(child: Text('Something went wrong'));
         },
       ),
     );

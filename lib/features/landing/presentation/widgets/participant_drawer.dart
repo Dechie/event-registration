@@ -150,6 +150,26 @@ class ParticipantLandingDrawer extends StatelessWidget {
                     ).pushReplacementNamed(RouteNames.attendanceReportPage);
                   },
                 ),
+                // ListTile(
+                //   leading: Icon(
+                //     Icons.workspace_premium,
+                //     color: Theme.of(context).primaryColor,
+                //   ),
+                //   selected: selectedTile == 3,
+                //   selectedTileColor: Theme.of(
+                //     context,
+                //   ).primaryColor.withValues(alpha: 0.1),
+                //   title: const Text(
+                //     'My Certificates',
+                //     style: TextStyle(fontWeight: FontWeight.w500),
+                //   ),
+                //   onTap: () {
+                //     Navigator.pop(context);
+                //     Navigator.of(
+                //       context,
+                //     ).pushReplacementNamed(RouteNames.myCertificatesPage);
+                //   },
+                // ),
 
                 // // Profile
                 // ListTile(
@@ -230,8 +250,7 @@ class ParticipantLandingDrawer extends StatelessWidget {
             TextButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
-              
-               },
+              },
               child: const Text('Cancel'),
             ),
             ElevatedButton(
